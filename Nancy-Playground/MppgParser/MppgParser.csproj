@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <AssemblyName>Unipi.MppgParser</AssemblyName>
+        <RootNamespace>Unipi.MppgParser</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="Grammar\Mppg.g4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+      <PackageReference Include="Unipi.Nancy.Expressions" Version="1.0.0-beta.7" />
+    </ItemGroup>
+
+</Project>

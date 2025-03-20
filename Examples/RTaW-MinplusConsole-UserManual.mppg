@@ -1,0 +1,32 @@
+// create three affine functions
+f:=affine(7/4,2)
+g:=affine(4/5,3)
+h:=affine(2/5,5)
+// and use them to create an arrival function as their minimum
+arrival:=f/\g/\h
+// plot the arrival function and the affine functions from which is has been defined
+plot(arrival,f,g,h)
+// create a "rate latency" service function : we need to take the maximum with
+// a horizontal line to obtain the first horizontal segment
+service1:=affine(2,-4) \/ affine(0,0)
+// plot the service function
+plot(service1)
+plot(arrival,service1)
+// create some other service function
+service2:=affine(3.1,-12) \/ affine(0,0)
+plot(service2,service1,xlim=[-0.3,15],ylim=[-0.3,15])
+// compute the difference between two functions
+service3:=service1 - service2
+plot(service3,service1,service2)
+// compute the convolution of two service functions
+convService:=service1*service2
+plot(convService,service2,service1)
+// compute the convolution of two arrival functions
+convArrival:=f*g
+plot(convArrival,f,g)
+// compute the deconvolution of an arrival function by a service function
+deconf:=arrival/service1
+plot(deconf,arrival)
+// compute the subadditive closure
+closure:=star(deconf)
+plot(deconf,closure)
