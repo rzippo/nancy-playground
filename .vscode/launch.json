@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "MPPG test",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/test.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG hal-0451",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/hal-04513292v1.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG user manual example",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/RTaW-MinplusConsole-UserManual.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        }
+    ]
+}
