@@ -6,15 +6,15 @@ namespace Unipi.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override (CurveExpression? Function, RationalExpression? Number) VisitRateLatency(Grammar.MppgParser.RateLatencyContext context)
+    public override IExpression VisitRateLatency(Grammar.MppgParser.RateLatencyContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var (_, rateExp) = context.GetChild(2).Accept(this);
-        var (_, latencyExp) = context.GetChild(4).Accept(this);
+        var irateExp = context.GetChild(2).Accept(this);
+        var ilatencyExp = context.GetChild(4).Accept(this);
 
-        if (rateExp is null || latencyExp is null)
+        if (irateExp is not RationalExpression rateExp || ilatencyExp is not RationalExpression latencyExp)
             throw new Exception("Expected rate and latency expressions");
 
         var rate = rateExp.Compute();
@@ -23,18 +23,18 @@ public partial class ExpressionVisitor
         var curve = new RateLatencyServiceCurve(rate, latency);
         var curveExp = Expressions.FromCurve(curve, name: $"ratency_{{{rate}, {latency}}}");
 
-        return (curveExp, null);
+        return curveExp;
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitTokenBucket(Grammar.MppgParser.TokenBucketContext context)
+    public override IExpression VisitTokenBucket(Grammar.MppgParser.TokenBucketContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var (_, aExp) = context.GetChild(2).Accept(this);
-        var (_, bExp) = context.GetChild(4).Accept(this);
+        var iaExp = context.GetChild(2).Accept(this);
+        var ibExp = context.GetChild(4).Accept(this);
 
-        if (aExp is null || bExp is null)
+        if (iaExp is not RationalExpression aExp || ibExp is not RationalExpression bExp)
             throw new Exception("Expected a and b expressions");
 
         var a = aExp.Compute();
@@ -43,19 +43,19 @@ public partial class ExpressionVisitor
         var curve = new SigmaRhoArrivalCurve(b, a);
         var curveExp = Expressions.FromCurve(curve, name: $"bucket_{{{a}, {b}}}");
 
-        return (curveExp, null);
+        return curveExp;
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitAffineFunction(
+    public override IExpression VisitAffineFunction(
         Grammar.MppgParser.AffineFunctionContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var (_, slopeExp) = context.GetChild(2).Accept(this);
-        var (_, constantExp) = context.GetChild(4).Accept(this);
+        var islopeExp = context.GetChild(2).Accept(this);
+        var iconstantExp = context.GetChild(4).Accept(this);
 
-        if (slopeExp is null || constantExp is null)
+        if (islopeExp is not RationalExpression slopeExp || iconstantExp is not RationalExpression constantExp)
             throw new Exception("Expected slope and constant expressions");
 
         var slope = slopeExp.Compute();
@@ -70,20 +70,20 @@ public partial class ExpressionVisitor
         );
         var curveExp = Expressions.FromCurve(curve, name: $"affine_{{{slope}, {constant}}}");
 
-        return (curveExp, null);
+        return curveExp;
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitStairFunction(
+    public override IExpression VisitStairFunction(
         Grammar.MppgParser.StairFunctionContext context)
     {
         if (context.ChildCount != 8)
             throw new Exception("Expected 8 child expression");
 
-        var (_, oExp) = context.GetChild(2).Accept(this);
-        var (_, lExp) = context.GetChild(4).Accept(this);
-        var (_, hExp) = context.GetChild(6).Accept(this);
+        var ioExp = context.GetChild(2).Accept(this);
+        var ilExp = context.GetChild(4).Accept(this);
+        var ihExp = context.GetChild(6).Accept(this);
 
-        if (oExp is null || lExp is null || hExp is null)
+        if (ioExp is not RationalExpression oExp || ilExp is not RationalExpression lExp || ihExp is not RationalExpression hExp)
             throw new Exception("Expected expressions for o, l and h");
 
         var o = oExp.Compute();
@@ -99,13 +99,13 @@ public partial class ExpressionVisitor
         ).DelayBy(o);
         var curveExp = Expressions.FromCurve(curve, name: $"stair_{{{o}, {l}, {h}}}");
 
-        return (curveExp, null);
+        return curveExp;
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitZeroFunction(
+    public override IExpression VisitZeroFunction(
         Grammar.MppgParser.ZeroFunctionContext context)
     {
         var curveExp = Expressions.FromCurve(Curve.Zero());
-        return (curveExp, null);
+        return curveExp;
     }
 }

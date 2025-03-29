@@ -5,7 +5,7 @@ using Unipi.Nancy.Numerics;
 
 namespace Unipi.MppgParser.Visitors;
 
-public partial class ExpressionVisitor : MppgBaseVisitor<(CurveExpression? Function, RationalExpression? Number)>
+public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
 {
     public State State { get; init; }
 
@@ -14,31 +14,31 @@ public partial class ExpressionVisitor : MppgBaseVisitor<(CurveExpression? Funct
         State = state ?? new();
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitFunctionVariableExp(Unipi.MppgParser.Grammar.MppgParser.FunctionVariableExpContext context)
+    public override IExpression VisitFunctionVariableExp(Unipi.MppgParser.Grammar.MppgParser.FunctionVariableExpContext context)
     {
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
         if (!isPresent || type is null)
             throw new Exception($"Variable '{name}' not found");
         if (type == ExpressionType.Function)
-            return (State.GetFunctionVariable(name), null);
+            return State.GetFunctionVariable(name);
         else
-            return (null, State.GetNumberVariable(name));
+            return State.GetNumberVariable(name);
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitNumberVariableExp(Grammar.MppgParser.NumberVariableExpContext context)
+    public override IExpression VisitNumberVariableExp(Grammar.MppgParser.NumberVariableExpContext context)
     {
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
         if (!isPresent || type is null)
             throw new Exception($"Variable '{name}' not found");
         if (type == ExpressionType.Function)
-            return (State.GetFunctionVariable(name), null);
+            return State.GetFunctionVariable(name);
         else
-            return (null, State.GetNumberVariable(name));
+            return State.GetNumberVariable(name);
     }
 
-    public override (CurveExpression? Function, RationalExpression? Number) VisitNumberLiteralExp(Grammar.MppgParser.NumberLiteralExpContext context)
+    public override IExpression VisitNumberLiteralExp(Grammar.MppgParser.NumberLiteralExpContext context)
     {
         var numberText = context.GetText();
         Rational value;
@@ -73,6 +73,6 @@ public partial class ExpressionVisitor : MppgBaseVisitor<(CurveExpression? Funct
         }
 
         var valueExp = Expressions.FromRational(value, "");
-        return (null, valueExp);
+        return valueExp;
     }
 }

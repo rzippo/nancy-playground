@@ -102,12 +102,19 @@ public class LineParsing
     {
         var state = new State(functionVariables, rationalVariables);
         
-        var (ce, re) = ExpressionParsing.Parse(expression, state);
-        if (ce is null && re is null)
-            _testOutputHelper.WriteLine("No output.");
-        else if (ce is not null)
-            _testOutputHelper.WriteLine(ce.ToUnicodeString(showRationalsAsName: true));
-        else if (re is not null)
-            _testOutputHelper.WriteLine(re.ToUnicodeString(showRationalsAsName: true));
+        var ie = ExpressionParsing.Parse(expression, state);
+
+        switch (ie)
+        {
+            case CurveExpression ce:
+                _testOutputHelper.WriteLine(ce.ToUnicodeString(showRationalsAsName: true));
+                break;
+            case RationalExpression re:
+                _testOutputHelper.WriteLine(re.ToUnicodeString(showRationalsAsName: true));
+                break;
+            default:
+                _testOutputHelper.WriteLine("No output.");
+                break;
+        }
     }
 }

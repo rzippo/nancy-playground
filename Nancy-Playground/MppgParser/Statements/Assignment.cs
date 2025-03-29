@@ -1,4 +1,7 @@
 ﻿namespace Unipi.MppgParser;
+using Unipi.Nancy.Expressions;
+
+namespace Unipi.MppgParser;
 
 public class Assignment : Statement
 {
@@ -23,10 +26,17 @@ public class Assignment : Statement
         try
         {
             Expression.ParseTree(state);
-            if (Expression.ExpressionType == ExpressionType.Function)
-                state.StoreVariable(VariableName, Expression.FunctionExpression!, overwrite, changeType);
-            else
-                state.StoreVariable(VariableName, Expression.NumberExpression!, overwrite, changeType);
+            switch (Expression.NancyExpression)
+            {
+                case CurveExpression ce:
+                    state.StoreVariable(VariableName, ce, overwrite, changeType);
+                    break;
+                case RationalExpression re:
+                    state.StoreVariable(VariableName, re, overwrite, changeType);
+                    break;
+                default:
+                    throw new Exception($"Expression could not be parsed");
+            }
 
             return VariableName;
         }
