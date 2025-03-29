@@ -6,6 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
+COMMENT: '//' [a-zA-Z0-9 "'\t_\-,.:]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -23,11 +24,13 @@ statement
     | comment;
 assignment : VARIABLE_NAME ASSIGN expression ;
 expression : functionExpression | numberExpression;
-comment: '// ' (~NEW_LINE)+;
+comment: COMMENT;
 
 // Functions
 functionExpression
     :  '(' functionExpression ')' #functionBrackets
+    | functionExpression '/\\' functionExpression #functionMinimum
+    | functionExpression '\\/' functionExpression #functionMaximum
     | functionExpression ('*'|'*_') functionExpression #functionMinPlusConvolution
     | functionExpression '*^' functionExpression #functionMaxPlusConvolution
     | functionExpression ('/'|'/_') functionExpression #functionMinPlusDeconvolution
@@ -66,6 +69,8 @@ numberExpression
     | '(' numberExpression ')' #numberBrackets
     | numberExpression '*' numberExpression #numberMultiplication
     | numberExpression '+' numberExpression #numberSum
+    | numberExpression '/\\' numberExpression #numberMinimum
+    | numberExpression '\\/' numberExpression #numberMaximum
     | VARIABLE_NAME #numberVariableExp
     | NUMBER_LITERAL #numberLiteralExp
     ;

@@ -63,6 +63,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitComment([NotNull] MppgParser.CommentContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMaximum</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMaximum([NotNull] MppgParser.FunctionMaximumContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMaxPlusDeconvolution</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
@@ -125,6 +132,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionComposition([NotNull] MppgParser.FunctionCompositionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMinimum</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMinimum([NotNull] MppgParser.FunctionMinimumContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionRightExt</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -238,6 +252,20 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitNumberSum([NotNull] MppgParser.NumberSumContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberMaximum</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberMaximum([NotNull] MppgParser.NumberMaximumContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberMinimum</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberMinimum([NotNull] MppgParser.NumberMinimumContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberMultiplication</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
