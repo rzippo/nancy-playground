@@ -51,7 +51,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
             case PlotCommand plot:
             {
-                AnsiConsole.MarkupLineInterpolated($"[yellow]Not supported.[/]");
+                AnsiConsole.MarkupLineInterpolated($"[yellow]Plots not supported.[/]");
                 break;
             }
 
