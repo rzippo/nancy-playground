@@ -9,19 +9,20 @@ namespace Unipi.MppgParser;
 public class Expression
 {
     public ExpressionType ExpressionType =>
-        FunctionExpression is not null ? ExpressionType.Function : 
-        NumberExpression is not null ? ExpressionType.Number :
-        ExpressionType.Undetermined;
+        NancyExpression switch
+        {
+            CurveExpression => ExpressionType.Function,
+            RationalExpression => ExpressionType.Number,
+            _ => ExpressionType.Undetermined
+        };
     
-    public CurveExpression? FunctionExpression { get; private set; }
-    public RationalExpression? NumberExpression { get; private set; }
-
+    public IExpression? NancyExpression { get; private set; }
+    
     public Grammar.MppgParser.ExpressionContext ExpressionContext { get; private set; }
     
-    public Expression(CurveExpression? ce, RationalExpression? re)
+    public Expression(IExpression expression)
     {
-        FunctionExpression = ce;
-        NumberExpression = re;
+        NancyExpression = expression;
     }
 
     public Expression(Grammar.MppgParser.ExpressionContext context)
@@ -31,15 +32,15 @@ public class Expression
 
     public static Expression FromTree(Grammar.MppgParser.ExpressionContext context, State? state)
     {
-        var (ce, re) = ParseTree(context, state);
-        return new Expression(ce, re);
+        var expression = ParseTree(context, state);
+        return new Expression(expression);
     }
     
-    public static (CurveExpression? Function, RationalExpression? Number) ParseTree(Grammar.MppgParser.ExpressionContext context, State? state)
+    public static IExpression ParseTree(Grammar.MppgParser.ExpressionContext context, State? state)
     {
         var visitor = new ExpressionVisitor(state);
-        var (ce, re) = visitor.Visit(context);
-        return (ce, re);
+        var epression = visitor.Visit(context);
+        return epression;
     }
     
     /// <summary>
@@ -51,7 +52,7 @@ public class Expression
     /// *or* a <see cref="RationalExpression"/> if the expression resolves to a number.
     /// The returned tuple will have null for the other type.  
     /// </returns>
-    public static (CurveExpression? Function, RationalExpression? Number) ParseFromString(string expression, State? state)
+    public static IExpression ParseFromString(string expression, State? state)
     {
         var inputStream = CharStreams.fromString(expression);
         var lexer = new Grammar.MppgLexer(inputStream);
@@ -66,17 +67,16 @@ public class Expression
 
     public void ParseTree(State state)
     {
-        var (ce, re) = Expression.ParseTree(ExpressionContext, state);
-        FunctionExpression = ce;
-        NumberExpression = re;
+        var expression = Expression.ParseTree(ExpressionContext, state);
+        NancyExpression = expression;
     }
 
     public (Curve? function, Rational? number) Compute()
     {
-        if (FunctionExpression is not null)
-            return (FunctionExpression.Compute(), null);
-        else if (NumberExpression is not null)
-            return (null, NumberExpression.Compute());
+        if (NancyExpression is CurveExpression ce)
+            return (ce.Compute(), null);
+        else if (NancyExpression is RationalExpression re)
+            return (null, re.Compute());
         else
             throw new InvalidOperationException("No expression was parsed!");
     }

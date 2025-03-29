@@ -4,19 +4,19 @@ namespace Unipi.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override (CurveExpression? Function, RationalExpression? Number) VisitFunctionHorizontalDeviation(
+    public override IExpression VisitFunctionHorizontalDeviation(
         Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var (lCE, lRE) = context.GetChild(2).Accept(this);
-        var (rCE, rRE) = context.GetChild(4).Accept(this);
+        var ilE = context.GetChild(2).Accept(this);
+        var irE = context.GetChild(4).Accept(this);
         
-        if (lCE is not null && rCE is not null)
+        if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
             var rationalExp = Expressions.HorizontalDeviation(lCE, rCE);
-            return (null, rationalExp);
+            return rationalExp;
         }
         else
         {
@@ -24,19 +24,19 @@ public partial class ExpressionVisitor
         }
     }
     
-    public override (CurveExpression? Function, RationalExpression? Number) VisitFunctionVerticalDeviation(
+    public override IExpression VisitFunctionVerticalDeviation(
         Grammar.MppgParser.FunctionVerticalDeviationContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var (lCE, lRE) = context.GetChild(2).Accept(this);
-        var (rCE, rRE) = context.GetChild(4).Accept(this);
+        var ilE = context.GetChild(2).Accept(this);
+        var irE = context.GetChild(4).Accept(this);
         
-        if (lCE is not null && rCE is not null)
+        if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
             var rationalExp = Expressions.VerticalDeviation(lCE, rCE);
-            return (null, rationalExp);
+            return rationalExp;
         }
         else
         {
