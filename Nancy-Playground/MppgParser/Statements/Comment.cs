@@ -7,4 +7,13 @@ public class Comment : Statement
         // todo: make optional?
         return Text;
     }
+
+    public override StatementOutput ExecuteToFormattable(State state)
+    {
+        return new StatementOutput
+        {
+            StatementText = Text,
+            OutputText = Text
+        };
+    }
 }

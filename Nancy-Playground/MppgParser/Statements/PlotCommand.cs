@@ -6,4 +6,13 @@ public class PlotCommand : Statement
     {
         return "Not implemented";
     }
+
+    public override StatementOutput ExecuteToFormattable(State state)
+    {
+        return new StatementOutput
+        {
+            StatementText = Text,
+            OutputText = "Not implemented"
+        };
+    }
 }

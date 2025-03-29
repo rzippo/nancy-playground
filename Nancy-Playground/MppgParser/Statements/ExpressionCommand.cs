@@ -1,4 +1,8 @@
-﻿namespace Unipi.MppgParser;
+﻿using System.Diagnostics;
+using Unipi.Nancy.Expressions;
+using Unipi.Nancy.MinPlusAlgebra;
+
+namespace Unipi.MppgParser;
 
 public class ExpressionCommand : Statement
 {
@@ -20,5 +24,42 @@ public class ExpressionCommand : Statement
             return r.ToString()!;
         else
             return "undefined";
+    }
+
+    public override StatementOutput ExecuteToFormattable(State state)
+    {
+        var sw = Stopwatch.StartNew();
+        Expression.ParseTree(state);
+        switch (Expression.NancyExpression)
+        {
+            case CurveExpression ce:
+            {
+                ce.Compute();
+                break;
+            }
+            case RationalExpression re:
+            {
+                re.Compute();
+                break;
+            }
+            default:
+                throw new Exception($"Expression could not be parsed");
+        }
+        sw.Stop();
+
+        var output = Expression.NancyExpression switch
+        {
+            CurveExpression ce => ce.Value.ToCodeString(),
+            RationalExpression re => re.Value.ToCodeString(),
+            _ => throw new Exception($"Expression could not be parsed")
+        };
+        
+        return new ExpressionOutput()
+        {
+            StatementText = Text,
+            OutputText = output,
+            Expression = Expression.NancyExpression,
+            Time = sw.Elapsed,
+        };
     }
 }

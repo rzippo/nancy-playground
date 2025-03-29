@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MppgParser", "MppgParser\Mp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MppgParser.Tests", "MppgParser.Tests\MppgParser.Tests.csproj", "{AF35420C-A505-415D-93C1-A0D9D6EA6B2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NancyMppg", "NancyMppg\NancyMppg.csproj", "{A8AF625C-B786-4E66-B4C6-73ECB3945F11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{AF35420C-A505-415D-93C1-A0D9D6EA6B2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF35420C-A505-415D-93C1-A0D9D6EA6B2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF35420C-A505-415D-93C1-A0D9D6EA6B2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8AF625C-B786-4E66-B4C6-73ECB3945F11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8AF625C-B786-4E66-B4C6-73ECB3945F11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8AF625C-B786-4E66-B4C6-73ECB3945F11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8AF625C-B786-4E66-B4C6-73ECB3945F11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
