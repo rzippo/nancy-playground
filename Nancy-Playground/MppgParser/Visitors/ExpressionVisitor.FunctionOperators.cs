@@ -276,6 +276,62 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionMinimum(Grammar.MppgParser.FunctionMinimumContext context)
+    {
+        if (context.ChildCount != 3)
+            throw new Exception("Expected 3 child expression");
+
+        var ilE = context.GetChild(0).Accept(this);
+        var irE = context.GetChild(2).Accept(this);
+
+        switch (ilE, irE)
+        {
+            case (CurveExpression lCE, CurveExpression rCE):
+            {
+                var curveExp = Expressions.Minimum(lCE, rCE);
+                return curveExp;
+            }
+            case (RationalExpression lRE, RationalExpression rRE):
+            {
+                // this was mis-parsed
+                var rationalExp = RationalExpression.Min(lRE, rRE);
+                return rationalExp;
+            }
+            default:
+            {
+                throw new Exception($"Invalid expression \"{context.GetText()}\"");
+            }
+        }
+    }
+    
+    public override IExpression VisitFunctionMaximum(Grammar.MppgParser.FunctionMaximumContext context)
+    {
+        if (context.ChildCount != 3)
+            throw new Exception("Expected 3 child expression");
+
+        var ilE = context.GetChild(0).Accept(this);
+        var irE = context.GetChild(2).Accept(this);
+
+        switch (ilE, irE)
+        {
+            case (CurveExpression lCE, CurveExpression rCE):
+            {
+                var curveExp = Expressions.Maximum(lCE, rCE);
+                return curveExp;
+            }
+            case (RationalExpression lRE, RationalExpression rRE):
+            {
+                // this was mis-parsed
+                var rationalExp = RationalExpression.Max(lRE, rRE);
+                return rationalExp;
+            }
+            default:
+            {
+                throw new Exception($"Invalid expression \"{context.GetText()}\"");
+            }
+        }
+    }
+    
     public override IExpression VisitFunctionSum(Grammar.MppgParser.FunctionSumContext context)
     {
         if (context.ChildCount != 3)
@@ -303,7 +359,7 @@ public partial class ExpressionVisitor
             }
         }
     }
-    
+
     public override IExpression VisitFunctionSubtraction(Grammar.MppgParser.FunctionSubtractionContext context)
     {
         if (context.ChildCount != 3)

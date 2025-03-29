@@ -86,6 +86,17 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitComment([NotNull] MppgParser.CommentContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMaximum</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitFunctionMaximum([NotNull] MppgParser.FunctionMaximumContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMaxPlusDeconvolution</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// <para>
@@ -184,6 +195,17 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitFunctionComposition([NotNull] MppgParser.FunctionCompositionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMinimum</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitFunctionMinimum([NotNull] MppgParser.FunctionMinimumContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionRightExt</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -365,6 +387,28 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitNumberSum([NotNull] MppgParser.NumberSumContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberMaximum</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitNumberMaximum([NotNull] MppgParser.NumberMaximumContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberMinimum</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitNumberMinimum([NotNull] MppgParser.NumberMinimumContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberMultiplication</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
