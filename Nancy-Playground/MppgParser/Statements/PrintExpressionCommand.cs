@@ -35,4 +35,40 @@ public class PrintExpressionCommand : Statement
             }
         }
     }
+
+    public override StatementOutput ExecuteToFormattable(State state)
+    {
+        var (exists, type) = state.GetVariableType(VariableName);
+        if(!exists)
+            throw new Exception($"Variable \"{VariableName}\" not found");
+        else
+        {
+            string output;
+            switch (type)
+            {
+                case ExpressionType.Function:
+                {
+                    var ce = state.GetFunctionVariable(VariableName);
+                    output = ce.ToUnicodeString();
+                    break;
+                }
+                case ExpressionType.Number:
+                {
+                    var ne = state.GetNumberVariable(VariableName);
+                    output = ne.ToUnicodeString();
+                    break;
+                }
+                default:
+                {
+                    throw new Exception($"Unknown expression type for variable \"{VariableName}\"");
+                }
+            }
+
+            return new StatementOutput
+            {
+                StatementText = Text,
+                OutputText = output
+            };
+        }
+    }
 }
