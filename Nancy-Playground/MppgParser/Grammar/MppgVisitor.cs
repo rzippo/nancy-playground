@@ -112,6 +112,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionMinPlusDeconvolution([NotNull] MppgParser.FunctionMinPlusDeconvolutionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionUpNonDecreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionUpNonDecreasingClosure([NotNull] MppgParser.FunctionUpNonDecreasingClosureContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
@@ -168,6 +175,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionSubtraction([NotNull] MppgParser.FunctionSubtractionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionNonNegativeUpNonDecreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionNonNegativeUpNonDecreasingClosure([NotNull] MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionVariableExp</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
@@ -219,11 +233,23 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitStairFunction([NotNull] MppgParser.StairFunctionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.delayFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDelayFunction([NotNull] MppgParser.DelayFunctionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.zeroFunction"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitZeroFunction([NotNull] MppgParser.ZeroFunctionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.pureConstantFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPureConstantFunction([NotNull] MppgParser.PureConstantFunctionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberReturningfunctionOperationExp</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
@@ -280,6 +306,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitNumberLiteralExp([NotNull] MppgParser.NumberLiteralExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberDivision</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberDivision([NotNull] MppgParser.NumberDivisionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.numberReturningfunctionOperation"/>.
 	/// </summary>
