@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MppgParser", "MppgParser\Mp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MppgParser.Tests", "MppgParser.Tests\MppgParser.Tests.csproj", "{AF35420C-A505-415D-93C1-A0D9D6EA6B2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NancyMppg", "NancyMppg\NancyMppg.csproj", "{A8AF625C-B786-4E66-B4C6-73ECB3945F11}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nancy-Playground", "Nancy-Playground\Nancy-Playground.csproj", "{A8AF625C-B786-4E66-B4C6-73ECB3945F11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
