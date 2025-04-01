@@ -144,8 +144,8 @@ These operations return a _function_.
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ❌ |
-| upclosure(f) | Compute the "non-decreasing" closure of $f$. _WHICH one??_ | ❌ |
-| nnupclosure(f,n ) | Compute the "non-negative non-decreasing" closure of $f$. _WHICH one??_ | ❌ |
+| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ❌ |
+| nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ❌ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
 | left-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^-)$. _So it is a left-continuous "extension"?_ | ✅ |
 | right-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^+)$. _So it is a right-continuous "extension"?_ | ✅ |
