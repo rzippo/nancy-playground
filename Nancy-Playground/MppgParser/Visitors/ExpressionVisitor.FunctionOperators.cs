@@ -406,6 +406,42 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionUpNonDecreasingClosure(Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+        
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE.ToUpperNonDecreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetText()}\"");
+        }
+    }
+    
+    public override IExpression VisitFunctionNonNegativeUpNonDecreasingClosure(Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+        
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE
+                .ToNonNegative()
+                .ToUpperNonDecreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetText()}\"");
+        }
+    }
+    
     public override IExpression VisitFunctionLeftExt(Grammar.MppgParser.FunctionLeftExtContext context)
     {
         if (context.ChildCount != 4)
@@ -414,7 +450,7 @@ public partial class ExpressionVisitor
         var ilCE = context.GetChild(2).Accept(this);
         if (ilCE is CurveExpression lCE)
         {
-            var curveExp = Expressions.ToLeftContinuous(lCE);
+            var curveExp = lCE.ToLeftContinuous();
             return curveExp;
         }
         else
@@ -431,7 +467,7 @@ public partial class ExpressionVisitor
         var ilCE = context.GetChild(2).Accept(this);
         if (ilCE is CurveExpression lCE)
         {
-            var curveExp = Expressions.ToRightContinuous(lCE);
+            var curveExp = lCE.ToRightContinuous();
             return curveExp;
         }
         else
