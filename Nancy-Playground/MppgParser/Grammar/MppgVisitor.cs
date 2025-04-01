@@ -119,19 +119,19 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionUpNonDecreasingClosure([NotNull] MppgParser.FunctionUpNonDecreasingClosureContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>functionSubadditiveClosure</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionSubadditiveClosure([NotNull] MppgParser.FunctionSubadditiveClosureContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionComposition</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -245,11 +245,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitZeroFunction([NotNull] MppgParser.ZeroFunctionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.pureConstantFunction"/>.
+	/// Visit a parse tree produced by the <c>numberSub</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitPureConstantFunction([NotNull] MppgParser.PureConstantFunctionContext context);
+	Result VisitNumberSub([NotNull] MppgParser.NumberSubContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberReturningfunctionOperationExp</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.

@@ -174,17 +174,6 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitFunctionUpNonDecreasingClosure([NotNull] MppgParser.FunctionUpNonDecreasingClosureContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>functionSubadditiveClosure</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// <para>
@@ -195,6 +184,17 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitFunctionSubadditiveClosure([NotNull] MppgParser.FunctionSubadditiveClosureContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionComposition</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -376,7 +376,8 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitZeroFunction([NotNull] MppgParser.ZeroFunctionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.pureConstantFunction"/>.
+	/// Visit a parse tree produced by the <c>numberSub</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -384,7 +385,7 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitPureConstantFunction([NotNull] MppgParser.PureConstantFunctionContext context) { return VisitChildren(context); }
+	public virtual Result VisitNumberSub([NotNull] MppgParser.NumberSubContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberReturningfunctionOperationExp</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
