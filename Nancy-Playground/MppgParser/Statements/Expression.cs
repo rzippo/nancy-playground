@@ -18,7 +18,7 @@ public class Expression
     
     public IExpression? NancyExpression { get; private set; }
     
-    public Grammar.MppgParser.ExpressionContext ExpressionContext { get; private set; }
+    public Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
     
     public Expression(IExpression expression)
     {
@@ -67,6 +67,7 @@ public class Expression
 
     public void ParseTree(State state)
     {
+        if (ExpressionContext == null) return;
         var expression = Expression.ParseTree(ExpressionContext, state);
         NancyExpression = expression;
     }
