@@ -347,6 +347,18 @@ public partial class ExpressionVisitor
                 var curveExp = Expressions.Addition(lCE, rCE);
                 return curveExp;
             }
+            case (CurveExpression lCE, RationalExpression rRE):
+            {
+                // this was mis-parsed
+                var curveExp = Expressions.Shift(lCE, rRE);
+                return curveExp;
+            }
+            case (RationalExpression lRE, CurveExpression rCE):
+            {
+                // this was mis-parsed
+                var curveExp = Expressions.Shift(rCE, lRE);
+                return curveExp;
+            }
             case (RationalExpression lRE, RationalExpression rRE):
             {
                 // this was mis-parsed
@@ -373,6 +385,18 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, CurveExpression rCE):
             {
                 var curveExp = Expressions.Subtraction(lCE, rCE, nonNegative: false);
+                return curveExp;
+            }
+            case (CurveExpression lCE, RationalExpression rRE):
+            {
+                // this was mis-parsed
+                var curveExp = Expressions.Shift(lCE, rRE.Negate());
+                return curveExp;
+            }
+            case (RationalExpression lRE, CurveExpression rCE):
+            {
+                // this was mis-parsed
+                var curveExp = Expressions.Shift(rCE, lRE.Negate());
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
