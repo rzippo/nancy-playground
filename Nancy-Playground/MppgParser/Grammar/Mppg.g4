@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: '//' [a-zA-Z0-9 "'\t_\-,.:]+;
+COMMENT: '//' [a-zA-Z0-9 "'\t_\-,.:()/*+’]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -43,6 +43,8 @@ functionExpression
     | functionExpression '-' functionExpression #functionSubtraction
     | functionConstructor #functionConstructorExp
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
+    | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
+    | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
     | VARIABLE_NAME #functionVariableExp
@@ -54,20 +56,25 @@ functionConstructor
     | tokenBucket
     | affineFunction
     | stairFunction
+    | delayFunction
     | zeroFunction
+    | pureConstantFunction
     ;
 
 rateLatency : 'ratency' '(' numberExpression ',' numberExpression ')';
 tokenBucket : 'bucket' '(' numberExpression ',' numberExpression ')';
 affineFunction : 'affine' '(' numberExpression ',' numberExpression ')';
 stairFunction : 'stair' '(' numberExpression ',' numberExpression ',' numberExpression ')';
+delayFunction : 'delay' '(' numberExpression ')';
 zeroFunction : 'zero';
+pureConstantFunction: numberExpression;
 
 // Numbers
 numberExpression 
     : numberReturningfunctionOperation #numberReturningfunctionOperationExp 
     | '(' numberExpression ')' #numberBrackets
     | numberExpression '*' numberExpression #numberMultiplication
+    | numberExpression '/' numberExpression #numberDivision
     | numberExpression '+' numberExpression #numberSum
     | numberExpression '/\\' numberExpression #numberMinimum
     | numberExpression '\\/' numberExpression #numberMaximum
