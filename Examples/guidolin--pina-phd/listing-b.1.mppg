@@ -54,14 +54,10 @@ delay_T23 := hDev ( aT23 , b_r_T23 )
 delay_T23
 
 // Output maximal arrival curve before the scaling ( Server + Packetizer )
-aT2p_aS := ( ( aT2 * beta_M ) / (b_r_T2 - C_T2) )
-/\ ( sigma + C_T2) /\ ( aT2 / delay ( delay_T2 ) )
-aT3p_aS := ( ( aT3 * beta_M ) / (b_r_T2 - C_T3) )
-/\ ( sigma + C_T3) /\ ( aT3 / delay ( delay_T3 ) )
-aT4p_aS := ( ( aT4 * beta_M ) / (b_r_T2 - C_T4) )
-/\ ( sigma + C_T4) /\ ( aT4 / delay ( delay_T4 ) )
-aT23p_aS := ( ( aT23 * beta_M ) / ( b_r_T23 - C_T2 - C_T3) )
-/\ ( sigma + C_T2 + C_T3) /\ ( aT23 / delay ( delay_T2 /\ delay_T3 ) )
+aT2p_aS := ( ( aT2 * beta_M ) / (b_r_T2 - C_T2) ) /\ ( sigma + C_T2) /\ ( aT2 / delay ( delay_T2 ) )
+aT3p_aS := ( ( aT3 * beta_M ) / (b_r_T2 - C_T3) ) /\ ( sigma + C_T3) /\ ( aT3 / delay ( delay_T3 ) )
+aT4p_aS := ( ( aT4 * beta_M ) / (b_r_T2 - C_T4) ) /\ ( sigma + C_T4) /\ ( aT4 / delay ( delay_T4 ) )
+aT23p_aS := ( ( aT23 * beta_M ) / ( b_r_T23 - C_T2 - C_T3) ) /\ ( sigma + C_T2 + C_T3) /\ ( aT23 / delay ( delay_T2 /\ delay_T3 ) )
 
 // scaling functions between CPU1/2 and BUS
 s2 := affine (C_T2p/C_T2, 0 )
@@ -69,7 +65,7 @@ s3 := affine (C_T3p/C_T3, 0 )
 s4 := affine (C_T4p/C_T4, 0 )
 s23 := ( s2 * s3 )
 
-// Output maximum arrival curves a f t e r the scaling
+// Output maximum arrival curves after the scaling
 aT2p := s2 comp aT2p_aS
 aT3p := s3 comp aT3p_aS
 aT4p := s4 comp aT4p_aS
@@ -96,21 +92,17 @@ delay_T23p := hDev ( aT23p , b_r_T23p )
 delay_T23p
 
 // Output maximal arrival curve before the scaling ( Server + Packetizer )
-aT2pp_aS := ( ( aT2p * beta_M ) / ( b_r_T2p - C_T2p) )
-/\ ( sigma + C_T2p) /\ ( aT2p / delay ( delay_T2p ) )
-aT3pp_aS := ( ( aT3p * beta_M ) / ( b_r_T2p - C_T3p) )
-/\ ( sigma + C_T3p) /\ ( aT3p / delay ( delay_T3p ) )
-aT4pp_aS := ( ( aT4p * beta_M ) / ( b_r_T2p - C_T4p) )
-/\ ( sigma + C_T4p) /\ ( aT4p / delay ( delay_T4p ) )
-aT23pp_aS := ( ( aT23p * beta_M ) / ( b_r_T23p - C_T2p - C_T3p) )
-/\ ( sigma + C_T2p + C_T3p) /\ ( aT23p / delay ( delay_T2p /\ delay_T3p ) )
+aT2pp_aS := ( ( aT2p * beta_M ) / ( b_r_T2p - C_T2p) ) /\ ( sigma + C_T2p) /\ ( aT2p / delay ( delay_T2p ) )
+aT3pp_aS := ( ( aT3p * beta_M ) / ( b_r_T2p - C_T3p) ) /\ ( sigma + C_T3p) /\ ( aT3p / delay ( delay_T3p ) )
+aT4pp_aS := ( ( aT4p * beta_M ) / ( b_r_T2p - C_T4p) ) /\ ( sigma + C_T4p) /\ ( aT4p / delay ( delay_T4p ) )
+aT23pp_aS := ( ( aT23p * beta_M ) / ( b_r_T23p - C_T2p - C_T3p) ) /\ ( sigma + C_T2p + C_T3p) /\ ( aT23p / delay ( delay_T2p /\ delay_T3p ) )
 
 // scaling functions between BUS and CPU3
 s2p := affine (C_T2pp/C_T2p, 0 )
 s3p := affine (C_T3pp/C_T3p, 0 )
 s4p := affine (C_T4pp/C_T4p, 0 )
 
-// Output maximum arrival curves a f t e r the scaling
+// Output maximum arrival curves after the scaling
 aT2pp := s2p comp aT2pp_aS
 aT3pp := s3p comp aT3pp_aS
 aT4pp := s4p comp aT4pp_aS
@@ -172,7 +164,6 @@ delay_PBOO_T4
 b_T4_aggr := (b_r_T4 - C_T4) \/ 0
 b_T4p_aggr := ( b_r_T4p_aggr - C_T4p) \/ 0
 b_T4pp_aggr := ( b_r_T4pp_aggr - C_T4pp) \/ 0
-beta_PBOO_T4_aggr := ( ( s4 * s4p ) comp b_T4_aggr )
-* ( s4p comp b_T4p_aggr ) * b_T4pp_aggr
+beta_PBOO_T4_aggr := ( ( s4 * s4p ) comp b_T4_aggr ) * ( s4p comp b_T4p_aggr ) * b_T4pp_aggr
 delay_PBOO_T4_aggr := hDev ( ( ( s4 * s4p ) comp aT4 ) , beta_PBOO_T4_aggr )
 delay_PBOO_T4_aggr
