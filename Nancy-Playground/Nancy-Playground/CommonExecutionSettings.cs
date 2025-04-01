@@ -4,14 +4,17 @@ namespace NancyMppg;
 
 public class CommonExecutionSettings : CommandSettings
 {
-    [CommandOption("-o|--output-mode")]
-    public OutputMode? OutputMode { get; init; }
+    [CommandOption("-o|--output-mode")] 
+    public OutputMode? OutputMode { get; init; } 
+        = NancyMppg.OutputMode.NancyNew;
     
     [CommandOption("-r|--run-mode")]
     public RunMode? RunMode { get; init; }
+        = NancyMppg.RunMode.PerStatement;
     
     [CommandOption("-e|--on-error")]
     public OnErrorMode? OnErrorMode { get; init; }
+        = NancyMppg.OnErrorMode.Stop;
 }
 
 public enum OutputMode
