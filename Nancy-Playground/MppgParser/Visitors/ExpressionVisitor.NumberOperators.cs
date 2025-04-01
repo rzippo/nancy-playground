@@ -27,7 +27,7 @@ public partial class ExpressionVisitor
             }
             default:
             {
-                throw new Exception($"Invalid expression \"{context.GetText()}\"");
+                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
             }
         }
     }
@@ -55,7 +55,7 @@ public partial class ExpressionVisitor
             }
             default:
             {
-                throw new Exception($"Invalid expression \"{context.GetText()}\"");
+                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
             }
         }
     }
@@ -83,7 +83,7 @@ public partial class ExpressionVisitor
             }
             default:
             {
-                throw new Exception($"Invalid expression \"{context.GetText()}\"");
+                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
             }
         }
     }
