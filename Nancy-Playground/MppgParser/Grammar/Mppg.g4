@@ -30,7 +30,9 @@ comment: COMMENT;
 functionExpression
     :  '(' functionExpression ')' #functionBrackets
     | functionExpression '/\\' functionExpression #functionMinimum
+    | functionExpression '/\\' numberExpression #functionMinimum
     | functionExpression '\\/' functionExpression #functionMaximum
+    | functionExpression '\\/' numberExpression #functionMaximum
     | functionExpression ('*'|'*_') functionExpression #functionMinPlusConvolution
     | functionExpression '*^' functionExpression #functionMaxPlusConvolution
     | functionExpression ('/'|'/_') functionExpression #functionMinPlusDeconvolution
@@ -41,12 +43,12 @@ functionExpression
     | functionExpression '/' numberExpression #functionScalarDivision
     | functionExpression '+' functionExpression #functionSum
     | functionExpression '-' functionExpression #functionSubtraction
-    | functionConstructor #functionConstructorExp
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
+    | functionConstructor #functionConstructorExp
     | VARIABLE_NAME #functionVariableExp
     ;
 
@@ -58,7 +60,6 @@ functionConstructor
     | stairFunction
     | delayFunction
     | zeroFunction
-    | pureConstantFunction
     ;
 
 rateLatency : 'ratency' '(' numberExpression ',' numberExpression ')';
@@ -67,7 +68,6 @@ affineFunction : 'affine' '(' numberExpression ',' numberExpression ')';
 stairFunction : 'stair' '(' numberExpression ',' numberExpression ',' numberExpression ')';
 delayFunction : 'delay' '(' numberExpression ')';
 zeroFunction : 'zero';
-pureConstantFunction: numberExpression;
 
 // Numbers
 numberExpression 
@@ -76,6 +76,7 @@ numberExpression
     | numberExpression '*' numberExpression #numberMultiplication
     | numberExpression '/' numberExpression #numberDivision
     | numberExpression '+' numberExpression #numberSum
+    | numberExpression '-' numberExpression #numberSub
     | numberExpression '/\\' numberExpression #numberMinimum
     | numberExpression '\\/' numberExpression #numberMaximum
     | VARIABLE_NAME #numberVariableExp
