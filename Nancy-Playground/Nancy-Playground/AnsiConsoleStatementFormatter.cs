@@ -32,14 +32,41 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case ExpressionCommand expression:
             {
                 var expressionOutput = (ExpressionOutput) output;
-                AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionOutput.OutputText}[/]");
+                if (expressionOutput.Expression.IsComputed)
+                {
+                    var expressionValue = expressionOutput.Expression switch
+                    {
+                        CurveExpression ce => ce.Value.ToString(),
+                        RationalExpression re => re.Value.ToString(),
+                        _ => throw new InvalidOperationException()
+                    };
+                    AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionValue}[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionOutput.OutputText}[/]");
+                }
                 break;
             }
             
             case Assignment assignment:
             {
                 var assignmentOutput = (AssignmentOutput) output;
-                AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]");
+                if (assignmentOutput.Expression.IsComputed)
+                {
+                    var expressionValue = assignmentOutput.Expression switch
+                    {
+                        CurveExpression ce => ce.Value.ToString(),
+                        RationalExpression re => re.Value.ToString(),
+                        _ => throw new InvalidOperationException()
+                    };
+                    AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]");
+
+                }
+                else
+                {
+                    AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]");
+                }
                 break;
             }
 
