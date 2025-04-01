@@ -102,6 +102,25 @@ public partial class ExpressionVisitor
         return curveExp;
     }
 
+    public override IExpression VisitDelayFunction(
+        Grammar.MppgParser.DelayFunctionContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var idExp = context.GetChild(2).Accept(this);
+
+        if (idExp is not RationalExpression dExp)
+            throw new Exception("Expected expression for d");
+
+        var d = dExp.Compute();
+
+        var curve = new DelayServiceCurve(d);
+        var curveExp = curve.ToExpression();
+
+        return curveExp;
+    }
+    
     public override IExpression VisitZeroFunction(
         Grammar.MppgParser.ZeroFunctionContext context)
     {
