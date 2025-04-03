@@ -92,7 +92,8 @@ functionVerticalDeviation : 'vDev' '(' functionExpression ',' functionExpression
 
 // Plots
 plotCommand: 'plot' '(' functionsToPlot (',' plotArgs)? ')';
-functionsToPlot: VARIABLE_NAME (',' VARIABLE_NAME)*;
+functionsToPlot: functionName (',' functionName)*;
+functionName: VARIABLE_NAME;
 plotArgs: plotArg (',' plotArg)*;
 plotArg
     : 'main' '=' string

@@ -7,6 +7,8 @@ namespace NancyMppg;
 
 public class AnsiConsoleStatementFormatter : IStatementFormatter
 {
+    public IPlotFormatter? PlotFormatter { get; set; }
+    
     public void FormatStatementPreamble(Statement statement)
     {
         switch (statement)
@@ -78,7 +80,10 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
             case PlotCommand plot:
             {
-                AnsiConsole.MarkupLineInterpolated($"[yellow]Plots not supported.[/]");
+                if(PlotFormatter is not null)
+                    PlotFormatter.FormatPlot((PlotOutput) output);
+                else
+                    AnsiConsole.MarkupLineInterpolated($"[yellow]Plots not supported.[/]");
                 break;
             }
 

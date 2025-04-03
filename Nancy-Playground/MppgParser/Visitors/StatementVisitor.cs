@@ -1,4 +1,5 @@
-﻿using Unipi.MppgParser.Grammar;
+﻿using Antlr4.Runtime;
+using Unipi.MppgParser.Grammar;
 
 namespace Unipi.MppgParser.Visitors;
 
@@ -12,9 +13,20 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
     public override Statement VisitPlotCommand(Grammar.MppgParser.PlotCommandContext context)
     {
-        // todo: parse args to do something useful
         var text = context.GetJoinedText();
-        return new PlotCommand {  Text = text };
+        var functionsToPlotContext = context.GetChild<Grammar.MppgParser.FunctionsToPlotContext>(0);
+        var functionNameContexts = functionsToPlotContext.GetRuleContexts<Grammar.MppgParser.FunctionNameContext>();
+        
+        var variableNames = functionNameContexts
+            .Select(ctx => ctx.GetText())
+            .Select(name => new Expression(name))
+            .ToList();
+        
+        return new PlotCommand
+        {
+            FunctionsToPlot = variableNames,
+            Text = text
+        };
     }
 
     public override Statement VisitExpression(Grammar.MppgParser.ExpressionContext context)

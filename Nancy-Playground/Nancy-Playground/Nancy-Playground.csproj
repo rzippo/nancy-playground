@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.77" />
+      <PackageReference Include="XPlot.Plotly" Version="4.1.0" />
     </ItemGroup>
 
 </Project>
