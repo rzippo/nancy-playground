@@ -42,7 +42,9 @@ functionExpression
     | numberExpression '*' functionExpression #functionScalarMultiplicationRight
     | functionExpression '/' numberExpression #functionScalarDivision
     | functionExpression '+' functionExpression #functionSum
+    | functionExpression '+' numberExpression #functionSum
     | functionExpression '-' functionExpression #functionSubtraction
+    | functionExpression '-' numberExpression #functionSubtraction
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
@@ -67,7 +69,7 @@ tokenBucket : 'bucket' '(' numberExpression ',' numberExpression ')';
 affineFunction : 'affine' '(' numberExpression ',' numberExpression ')';
 stairFunction : 'stair' '(' numberExpression ',' numberExpression ',' numberExpression ')';
 delayFunction : 'delay' '(' numberExpression ')';
-zeroFunction : 'zero';
+zeroFunction : 'zero' ;
 
 // Numbers
 numberExpression 
