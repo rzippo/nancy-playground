@@ -40,6 +40,16 @@
             "startRule": "program",
             "printParseTree": true,
             "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.1 Verbose",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.1-verbose.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
         }
     ]
 }
