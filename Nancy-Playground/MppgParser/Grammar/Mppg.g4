@@ -85,8 +85,10 @@ numberExpression
 
 // Number-returning function operations
 numberReturningfunctionOperation 
-    : functionHorizontalDeviation 
+    : functionValueAt
+    | functionHorizontalDeviation 
     | functionVerticalDeviation;
+functionValueAt: functionName '(' numberExpression ')';
 functionHorizontalDeviation : 'hDev' '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : 'vDev' '(' functionExpression ',' functionExpression ')';
 
