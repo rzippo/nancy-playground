@@ -50,14 +50,19 @@ public class RunCommand : Command<RunCommand.Settings>
             _ => false
         };
             
+        var totalComputationTime = TimeSpan.Zero;
         while (!program.IsEndOfProgram)
         {
             var output = program.ExecuteNextStatement(formatter, immediateComputeValue);
+            if(output is ExpressionOutput expressionOutput)
+                totalComputationTime += expressionOutput.Time;
             if (settings.OnErrorMode == OnErrorMode.Stop &&
                 output is ErrorOutput)
                 break;
         }
 
+        // use formatter?
+        Console.WriteLine($"Total computation time: {totalComputationTime}");
         return 0;
     }
 }

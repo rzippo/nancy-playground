@@ -297,6 +297,18 @@ public partial class ExpressionVisitor
                 var rationalExp = RationalExpression.Min(lRE, rRE);
                 return rationalExp;
             }
+            case (CurveExpression lCE, RationalExpression rRE):
+            {
+                var constantCurve = new PureConstantCurve(rRE.Compute());
+                var curveExp = Expressions.Minimum(lCE, constantCurve);
+                return curveExp;
+            }
+            case (RationalExpression lRE, CurveExpression rCE):
+            {
+                var constantCurve = new PureConstantCurve(lRE.Compute());
+                var curveExp = Expressions.Minimum(rCE, constantCurve);
+                return curveExp;
+            }
             default:
             {
                 throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
@@ -324,6 +336,18 @@ public partial class ExpressionVisitor
                 // this was mis-parsed
                 var rationalExp = RationalExpression.Max(lRE, rRE);
                 return rationalExp;
+            }
+            case (CurveExpression lCE, RationalExpression rRE):
+            {
+                var constantCurve = new PureConstantCurve(rRE.Compute());
+                var curveExp = Expressions.Maximum(lCE, constantCurve);
+                return curveExp;
+            }
+            case (RationalExpression lRE, CurveExpression rCE):
+            {
+                var constantCurve = new PureConstantCurve(lRE.Compute());
+                var curveExp = Expressions.Maximum(rCE, constantCurve);
+                return curveExp;
             }
             default:
             {
