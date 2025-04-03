@@ -19,7 +19,7 @@ public class PlotCommand : Statement
             {   
                 ex.ParseTree(state);
                 if(ex.NancyExpression is CurveExpression ce)
-                    return ce.Compute();
+                    return (ce.Name, ce.Compute());
                 else
                     throw new Exception("Cannot plot a number.");
             })

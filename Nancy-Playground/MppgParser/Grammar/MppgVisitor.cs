@@ -345,6 +345,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionsToPlot([NotNull] MppgParser.FunctionsToPlotContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.functionName"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionName([NotNull] MppgParser.FunctionNameContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.plotArgs"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

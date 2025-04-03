@@ -84,6 +84,17 @@ public class State
         return NumberVariables[key];
     }
 
+    public IExpression GetVariable(string variableName)
+    {
+        var (exists, type) = GetVariableType(variableName);
+        if(!exists)
+            throw new ArgumentException($"The variable {variableName} is not present.");
+        if(type == ExpressionType.Function)
+            return FunctionVariables[variableName];
+        else
+            return NumberVariables[variableName];
+    }
+    
     public void StoreVariable(
         string name, 
         RationalExpression value, 
@@ -102,7 +113,7 @@ public class State
         if (NumberVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
-            NumberVariables[name] = value;
+            NumberVariables[name] = value with {Name = name};
     }
     
     public void StoreVariable(
@@ -126,7 +137,7 @@ public class State
         if (FunctionVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
-            FunctionVariables[name] = value;
+            FunctionVariables[name] = value with {Name = name};
     }
 
     public void Add(string key, CurveExpression value)

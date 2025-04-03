@@ -36,9 +36,13 @@ public class RunCommand : Command<RunCommand.Settings>
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
-            OutputMode.NancyNew => new AnsiConsoleStatementFormatter(),
+            OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
+            {
+                PlotFormatter = new HtmlPlotFormatter()
+            },
             _ => new PlainConsoleStatementFormatter()
         };
+
         var immediateComputeValue = settings.RunMode switch
         {
             RunMode.ExpressionDriven => false,

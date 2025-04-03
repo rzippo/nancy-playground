@@ -8,6 +8,15 @@ namespace Unipi.MppgParser;
 
 public class Expression
 {
+    private enum ExpressionSourceType
+    {
+        ExpressionContext,
+        NancyExpression,
+        VariableName
+    }
+    
+    private ExpressionSourceType SourceType { get; init; }
+    
     public ExpressionType ExpressionType =>
         NancyExpression switch
         {
@@ -16,18 +25,28 @@ public class Expression
             _ => ExpressionType.Undetermined
         };
     
-    public IExpression? NancyExpression { get; private set; }
+    public IExpression? NancyExpression { get; internal set; }
     
     public Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
+    
+    public string? VariableName { get; private set; }
     
     public Expression(IExpression expression)
     {
         NancyExpression = expression;
+        SourceType = ExpressionSourceType.NancyExpression;
     }
 
     public Expression(Grammar.MppgParser.ExpressionContext context)
     {
         ExpressionContext = context;
+        SourceType = ExpressionSourceType.ExpressionContext;
+    }
+
+    public Expression(string variableName)
+    {
+        VariableName = variableName;
+        SourceType = ExpressionSourceType.VariableName;
     }
 
     public static Expression FromTree(Grammar.MppgParser.ExpressionContext context, State? state)
@@ -67,9 +86,32 @@ public class Expression
 
     public void ParseTree(State state)
     {
-        if (ExpressionContext == null) return;
-        var expression = Expression.ParseTree(ExpressionContext, state);
-        NancyExpression = expression;
+        switch (SourceType)
+        {
+            case ExpressionSourceType.ExpressionContext:
+            {
+                if(ExpressionContext == null)
+                    throw new InvalidOperationException("Invalid state: no expression context");
+                var expression = Expression.ParseTree(ExpressionContext, state);
+                NancyExpression = expression;
+                break;
+            }
+            case ExpressionSourceType.NancyExpression:
+            {
+                // do nothing
+                break;
+            }
+            case ExpressionSourceType.VariableName:
+            {
+                if(string.IsNullOrWhiteSpace(VariableName))
+                    throw new InvalidOperationException("Invalid state: no variable name");
+                var expression = state.GetVariable(VariableName);
+                NancyExpression = expression;
+                break;
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 
     public (Curve? function, Rational? number) Compute()
