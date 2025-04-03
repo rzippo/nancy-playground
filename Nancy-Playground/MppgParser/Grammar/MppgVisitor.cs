@@ -321,6 +321,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberReturningfunctionOperation([NotNull] MppgParser.NumberReturningfunctionOperationContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.functionValueAt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionValueAt([NotNull] MppgParser.FunctionValueAtContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.functionHorizontalDeviation"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

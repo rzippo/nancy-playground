@@ -4,6 +4,28 @@ namespace Unipi.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
+    public override IExpression VisitFunctionValueAt(Grammar.MppgParser.FunctionValueAtContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+        
+        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionName = functionNameContext.GetText();
+        var curveExpr = State.GetFunctionVariable(functionName);
+        
+        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var iRE = timeExpression.Accept(this);
+        if (iRE is RationalExpression re)
+        {
+            var valueAtExpr = curveExpr.ValueAt(re);
+            return valueAtExpr;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionHorizontalDeviation(
         Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
