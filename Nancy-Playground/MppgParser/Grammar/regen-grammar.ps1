@@ -1,13 +1,45 @@
 ﻿Push-Location $PSScriptRoot
 try {
+    # This variable will contain the antlr command to call
+    $antlrCommand = $null;
+
+    # First check if a compatible version is globally installed
+    # 'Compatible' currently means 4.13.x
     if(Get-Command antlr4 -ErrorAction SilentlyContinue)
     {
-        antlr4 -Dlanguage=CSharp -o ./ -package Unipi.MppgParser.Grammar -visitor -no-listener -lib ./ ./Mppg.g4
+        $output = @( antlr4 );
+        $isMatch = $output[0] -match "Version (\d+\.\d+)\.\d+";
+        if($isMatch)
+        {
+            $version = $Matches[1];
+            if($version -eq "4.13")
+            {
+                $antlrCommand = "altr4";
+            }
+        }
     }
-    else
+
+    # Else, we download and use the jar version locally
+    if($null -eq $antlrCommand)
     {
-        Write-Host "ANTLR is not installed. Follow the instructions at https://github.com/antlr/antlr4/blob/master/doc/getting-started.md"
-    }    
+        $filename = "antlr/antlr-4.13.2-complete.jar";
+        $url = "https://www.antlr.org/download/antlr-4.13.2-complete.jar";
+        if(Test-Path $filename)
+        {
+            # The jar was already downloaded
+        }
+        else
+        {
+            if(-not(Test-Path "antlr")) {
+                New-Item -ItemType Directory "antlr"
+            }
+            Invoke-WebRequest -Uri $url -OutFile $filename;
+        }
+        $antlrCommand = "java -jar $filename";
+    }
+
+    $command = "$antlrCommand -Dlanguage=CSharp -o ./ -package Unipi.MppgParser.Grammar -visitor -no-listener -lib ./ ./Mppg.g4";
+    Invoke-Expression $command;
 }
 finally {
     Pop-Location
