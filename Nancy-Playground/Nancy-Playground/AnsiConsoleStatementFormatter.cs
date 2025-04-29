@@ -38,7 +38,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 {
                     var expressionValue = expressionOutput.Expression switch
                     {
-                        CurveExpression ce => ce.Value.ToString(),
+                        CurveExpression ce => ce.Value.ToCodeString(),
                         RationalExpression re => re.Value.ToString(),
                         _ => throw new InvalidOperationException()
                     };
@@ -58,7 +58,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 {
                     var expressionValue = assignmentOutput.Expression switch
                     {
-                        CurveExpression ce => ce.Value.ToString(),
+                        CurveExpression ce => ce.Value.ToCodeString(),
                         RationalExpression re => re.Value.ToString(),
                         _ => throw new InvalidOperationException()
                     };
