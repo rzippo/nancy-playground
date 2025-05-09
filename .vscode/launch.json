@@ -50,6 +50,76 @@
             "startRule": "program",
             "printParseTree": true,
             "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-0",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-0.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-1",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-1.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-2",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-2.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-3",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-3.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-4",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-4.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG Guidolin--Pina B.2-case-5",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/guidolin--pina-phd/listing-b.2-case-5.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
         }
     ]
 }
