@@ -10,11 +10,15 @@ This syntax is re-organized, compared to the source material [[1]](https://www.r
 
 ## Comments ✅
 
-Lines that start with `//` are comments and are ignored.
+Lines that start with `//` or `%` are comments and are ignored.
 
 ```
 // This is a comment
+% This is also a comment
 ```
+
+> Fun thing, `%` is not documented.
+> It is used heavily in the PhD Thesis of Guidolin--Pina, though.
 
 ## Types ✅
 
@@ -102,6 +106,16 @@ upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
 > The increment is optional. 
 > The period is purely informational.
 
+##### Examples
+
+```
+upp( period( [(0, 0) 0 (2, 0)[ [(2, 0) 1 (7, 5)] ](7, 5) 0 (12, 5)[ ))
+```
+
+```
+upp( [(0, +Infinity) 0 (6, +Infinity)], period (](6, 0) 0 (10.5, 0)[ [(10.5, +Infinity) 0 (18, +Infinity)]), 0, 12)
+```
+
 ## Scalar values ✅
 
 ### Number syntax
@@ -128,8 +142,8 @@ These operations return a _function_.
 
 | Expression | Description | Implemented |
 |----|----|----|
-| f1 ∧ f2 | Minimum of $f_1$ and $f_2$. | ❌ |
-| f1 ∨ f2 | Maximum of $f_1$ and $f_2$. | ❌ |
+| f1 ∧ f2 | Minimum of $f_1$ and $f_2$. | ✅ |
+| f1 ∨ f2 | Maximum of $f_1$ and $f_2$. | ✅ |
 | f1 + f2 | Sum of $f_1$ and $f_2$. | ✅ |
 | f1 - f2 | Subtraction of $f_2$ from $f_1$. | ✅ |
 | f1 * f2 | (min,+) convolution of $f_1$ and $f_2$. | ✅ |
@@ -138,20 +152,25 @@ These operations return a _function_.
 | f1 / f2 | (min,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | f1 /_ f2 | (min,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | f1 /^ f2 | (max,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
-| star(f) | Subadditive closure of $f$. | ❌ |
+| star(f) | Subadditive closure of $f$. | ✅ |
 | hShift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ❌ |
+| hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ❌ |
 | vShift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ❌ |
+| vshift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ❌ |
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ❌ |
-| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ❌ |
-| nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ❌ |
+| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
+| nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
 | left-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^-)$. _So it is a left-continuous "extension"?_ | ✅ |
 | right-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^+)$. _So it is a right-continuous "extension"?_ | ✅ |
 | scalar * f | Function multiplication by a scalar value. | ✅ |
 | f * scalar | Function multiplication by a scalar value. | ✅ |
 | f / scalar | Function division by a scalar value. | ✅ |
+
+> `hShift` and `hshift` are both fine, like `vShift` and `vshift`.
+> Fun thing: this is not documented, but used heavily in the PhD Thesis of Guidolin--Pina.
 
 ## Scalar-returning operations
 
@@ -163,8 +182,13 @@ These operations work on functions, but return scalars.
 | f(x+) | Value of f at the right of x | ❌ |
 | f(x-) | Value of f at the left of x | ❌ |
 | hDev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
+| hdev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | vDev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
+| vdev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | maxBacklogPeriod(f, g) | Max backlog period length between $f$ and $g$. | ❌ |
+
+> `hDev` and `hdev` are both fine, like `vDev` and `vdev`.
+> Fun thing: this is not documented, but used heavily in the PhD Thesis of Guidolin--Pina.
 
 ## Operations _between_ scalars
 
@@ -172,13 +196,13 @@ These operations work between scalars, and return scalars.
 
 | Expression | Description | Implemented |
 |----|----|----|
-| v1 /\ v2 | Minimum of v1 and v2. | ❌ |
-| v1 \/ v2 | Maximum of v1 and v2. | ❌ |
+| v1 /\ v2 | Minimum of v1 and v2. | ✅ |
+| v1 \/ v2 | Maximum of v1 and v2. | ✅ |
 | v1 + v2 | Sum of v1 and v2. | ✅ |
-| v1 - v2 | Substraction of v1 and v2. | ❌ |
+| v1 - v2 | Substraction of v1 and v2. | ✅ |
 | v1 * v2 | Multiplication of v1 and v2. | ✅ |
-| v1 ÷ v2 | Division of v1 and v2. | ❌ |
-| v1 div v2 | Division of v1 by v2. | ❌ |
+| v1 ÷ v2 | Division of v1 and v2. | ✅ |
+| v1 div v2 | Division of v1 by v2. | ✅ |
 
 
 ## Output ✅
@@ -191,7 +215,9 @@ By typing the name of a variable, one can have its content printed to the consol
 
 The value of a _function_ variable is its definition as `uaf` or `upp`, regardless of the constructor used.
 
-## Plots ❌
+## Plots ✅
+
+> Limited support. Can be parsed completely, but not all options actually affect the output.
 
 `plot(f1, ..., args)`
 

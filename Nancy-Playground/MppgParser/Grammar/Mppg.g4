@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: '//' [a-zA-Z0-9 "'\t_\-,.:()/*+’]+;
+COMMENT: '//'|'%' [a-zA-Z0-9 "'\t_\-,.:()/*+’%]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -46,6 +46,8 @@ functionExpression
     | functionExpression '-' functionExpression #functionSubtraction
     | functionExpression '-' numberExpression #functionSubtraction
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
+    | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
+    | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
@@ -62,6 +64,8 @@ functionConstructor
     | stairFunction
     | delayFunction
     | zeroFunction
+    | ultimatelyPseudoPeriodicFunction
+    | ultimatelyAffineFunction
     ;
 
 rateLatency : 'ratency' '(' numberExpression ',' numberExpression ')';
@@ -71,12 +75,37 @@ stairFunction : 'stair' '(' numberExpression ',' numberExpression ',' numberExpr
 delayFunction : 'delay' '(' numberExpression ')';
 zeroFunction : 'zero' ;
 
+// Ultimately Affine
+ultimatelyAffineFunction: 'uaf' '(' sequence ')';
+
+// Ultimately Pseudo-Periodic
+ultimatelyPseudoPeriodicFunction: 'upp' '(' uppTransientPart?  uppPeriodicPart increment? ')';
+uppTransientPart: sequence ',';
+uppPeriodicPart: 'period' '(' sequence ')';
+increment: ',' NUMBER_LITERAL periodLenght?;
+periodLenght: ',' NUMBER_LITERAL;
+
+// Segments
+sequence: segment+;
+segment
+    : segmentLeftOpenRightOpen
+    | segmentLeftOpenRightClosed
+    | segmentLeftClosedRightOpen
+    | segmentLeftClosedRightClosed
+    ;
+point: '(' NUMBER_LITERAL ',' NUMBER_LITERAL ')';
+segmentLeftOpenRightOpen: ']' point NUMBER_LITERAL point '[';
+segmentLeftOpenRightClosed: ']' point NUMBER_LITERAL point ']';
+segmentLeftClosedRightOpen: '[' point NUMBER_LITERAL point '[';
+segmentLeftClosedRightClosed: '[' point NUMBER_LITERAL point ']';
+
 // Numbers
 numberExpression 
     : numberReturningfunctionOperation #numberReturningfunctionOperationExp 
     | '(' numberExpression ')' #numberBrackets
     | numberExpression '*' numberExpression #numberMultiplication
     | numberExpression '/' numberExpression #numberDivision
+    | numberExpression 'div' numberExpression #numberDivision
     | numberExpression '+' numberExpression #numberSum
     | numberExpression '-' numberExpression #numberSub
     | numberExpression '/\\' numberExpression #numberMinimum
@@ -91,8 +120,8 @@ numberReturningfunctionOperation
     | functionHorizontalDeviation 
     | functionVerticalDeviation;
 functionValueAt: functionName '(' numberExpression ')';
-functionHorizontalDeviation : 'hDev' '(' functionExpression ',' functionExpression ')';
-functionVerticalDeviation : 'vDev' '(' functionExpression ',' functionExpression ')';
+functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
+functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
 // Plots
 plotCommand: 'plot' '(' functionsToPlot (',' plotArgs)? ')';
