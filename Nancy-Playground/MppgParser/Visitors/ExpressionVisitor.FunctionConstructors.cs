@@ -1,6 +1,7 @@
 ﻿using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.NetworkCalculus;
+using Unipi.Nancy.Numerics;
 
 namespace Unipi.MppgParser.Visitors;
 
@@ -127,4 +128,46 @@ public partial class ExpressionVisitor
         var curveExp = Expressions.FromCurve(Curve.Zero());
         return curveExp;
     }
+
+    public override IExpression VisitUltimatelyPseudoPeriodicFunction(Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
+    {
+        var sequenceElements = Enumerable.Empty<Element>();
+        var elementsVisitor = new ElementsVisitor();
+        
+        var transientContext = context.GetChild<Grammar.MppgParser.UppTransientPartContext>(0);
+        if (transientContext is not null)
+        {
+            var transientSequenceContext = transientContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
+            var transientElements = transientSequenceContext.Accept(elementsVisitor);
+            sequenceElements = sequenceElements.Concat(transientElements);
+        }
+
+        var periodContext = context.GetChild<Grammar.MppgParser.UppPeriodicPartContext>(0);
+        var periodSequenceContext = periodContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
+        var periodElements = periodSequenceContext.Accept(elementsVisitor);
+        var periodSequence = new Sequence(periodElements);
+
+        var t = periodSequence.DefinedFrom;
+        var d = periodSequence.DefinedUntil - periodSequence.DefinedFrom;
+        Rational c = 0;
+
+        var incrementContext = context.GetChild<Grammar.MppgParser.IncrementContext>(0);
+        if (incrementContext is not null)
+        {
+            var incrementLiteralContext = incrementContext.GetChild(1);
+            var numberLiteralVisitor = new NumberLiteralVisitor();
+            var increment = incrementLiteralContext.Accept(numberLiteralVisitor);
+            c = increment;
+        }
+        
+        var allElements = sequenceElements.Concat(periodSequence.Elements);
+        var sequence = new Sequence(allElements);
+        var curve = new Curve(
+            sequence,
+            t, d, c
+        );
+        return curve
+            .ToExpression("");
+    }
+
 }
