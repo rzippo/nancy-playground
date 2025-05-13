@@ -147,6 +147,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionMinimum([NotNull] MppgParser.FunctionMinimumContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionVShift</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionVShift([NotNull] MppgParser.FunctionVShiftContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionRightExt</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
@@ -188,6 +195,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionVariableExp([NotNull] MppgParser.FunctionVariableExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionHShift</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionHShift([NotNull] MppgParser.FunctionHShiftContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionScalarDivision</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -244,6 +258,84 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitZeroFunction([NotNull] MppgParser.ZeroFunctionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.ultimatelyAffineFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUltimatelyAffineFunction([NotNull] MppgParser.UltimatelyAffineFunctionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.ultimatelyPseudoPeriodicFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUltimatelyPseudoPeriodicFunction([NotNull] MppgParser.UltimatelyPseudoPeriodicFunctionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.uppTransientPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUppTransientPart([NotNull] MppgParser.UppTransientPartContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.uppPeriodicPart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUppPeriodicPart([NotNull] MppgParser.UppPeriodicPartContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.increment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIncrement([NotNull] MppgParser.IncrementContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.periodLenght"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPeriodLenght([NotNull] MppgParser.PeriodLenghtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.sequence"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSequence([NotNull] MppgParser.SequenceContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegment([NotNull] MppgParser.SegmentContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.point"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPoint([NotNull] MppgParser.PointContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segmentLeftOpenRightOpen"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegmentLeftOpenRightOpen([NotNull] MppgParser.SegmentLeftOpenRightOpenContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segmentLeftOpenRightClosed"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegmentLeftOpenRightClosed([NotNull] MppgParser.SegmentLeftOpenRightClosedContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segmentLeftClosedRightOpen"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegmentLeftClosedRightOpen([NotNull] MppgParser.SegmentLeftClosedRightOpenContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segmentLeftClosedRightClosed"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegmentLeftClosedRightClosed([NotNull] MppgParser.SegmentLeftClosedRightClosedContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberSub</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
