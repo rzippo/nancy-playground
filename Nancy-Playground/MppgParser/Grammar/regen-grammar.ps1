@@ -14,7 +14,7 @@ try {
             $version = $Matches[1];
             if($version -eq "4.13")
             {
-                $antlrCommand = "altr4";
+                $antlrCommand = "antlr4";
             }
         }
     }
