@@ -407,6 +407,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberDivision([NotNull] MppgParser.NumberDivisionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.numberLiteral"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberLiteral([NotNull] MppgParser.NumberLiteralContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.numberReturningfunctionOperation"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
