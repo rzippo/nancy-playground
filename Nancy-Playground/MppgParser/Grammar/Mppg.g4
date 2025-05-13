@@ -82,8 +82,8 @@ ultimatelyAffineFunction: 'uaf' '(' sequence ')';
 ultimatelyPseudoPeriodicFunction: 'upp' '(' uppTransientPart?  uppPeriodicPart increment? ')';
 uppTransientPart: sequence ',';
 uppPeriodicPart: 'period' '(' sequence ')';
-increment: ',' NUMBER_LITERAL periodLenght?;
-periodLenght: ',' NUMBER_LITERAL;
+increment: ',' numberLiteral periodLenght?;
+periodLenght: ',' numberLiteral;
 
 // Segments
 sequence: segment+;
@@ -93,11 +93,12 @@ segment
     | segmentLeftClosedRightOpen
     | segmentLeftClosedRightClosed
     ;
-point: '(' NUMBER_LITERAL ',' NUMBER_LITERAL ')';
-segmentLeftOpenRightOpen: ']' point NUMBER_LITERAL point '[';
-segmentLeftOpenRightClosed: ']' point NUMBER_LITERAL point ']';
-segmentLeftClosedRightOpen: '[' point NUMBER_LITERAL point '[';
-segmentLeftClosedRightClosed: '[' point NUMBER_LITERAL point ']';
+
+point: '(' numberLiteral ',' numberLiteral ')';
+segmentLeftOpenRightOpen: ']' point numberLiteral point '[';
+segmentLeftOpenRightClosed: ']' point numberLiteral point ']';
+segmentLeftClosedRightOpen: '[' point numberLiteral point '[';
+segmentLeftClosedRightClosed: '[' point numberLiteral point ']';
 
 // Numbers
 numberExpression 
@@ -111,8 +112,10 @@ numberExpression
     | numberExpression '/\\' numberExpression #numberMinimum
     | numberExpression '\\/' numberExpression #numberMaximum
     | VARIABLE_NAME #numberVariableExp
-    | NUMBER_LITERAL #numberLiteralExp
+    | numberLiteral #numberLiteralExp
     ;
+
+numberLiteral: NUMBER_LITERAL;
 
 // Number-returning function operations
 numberReturningfunctionOperation 
