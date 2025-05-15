@@ -113,7 +113,7 @@ public class State
         if (NumberVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
-            NumberVariables[name] = value with {Name = name};
+            NumberVariables[name] = value.WithName(name);
     }
     
     public void StoreVariable(
@@ -137,7 +137,7 @@ public class State
         if (FunctionVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
-            FunctionVariables[name] = value with {Name = name};
+            FunctionVariables[name] = value.WithName(name);
     }
 
     public void Add(string key, CurveExpression value)
