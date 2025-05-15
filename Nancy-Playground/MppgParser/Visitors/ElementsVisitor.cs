@@ -47,7 +47,10 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var slope = numberLiteralVisitor.Visit(slopeContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
-        
+
+        if (rightPoint.Time.IsInfinite)
+            rightPoint = new Point(leftPoint.Time + 1, leftPoint.Value + slope); 
+
         var segment = SegmentFromEndPointsAndSlope(leftPoint, slope, rightPoint);
 
         yield return leftPoint;
@@ -70,7 +73,10 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var slope = numberLiteralVisitor.Visit(slopeContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
-        
+
+        if (rightPoint.Time.IsInfinite)
+            rightPoint = new Point(leftPoint.Time + 1, leftPoint.Value + slope); 
+
         var segment = SegmentFromEndPointsAndSlope(leftPoint, slope, rightPoint);
 
         yield return leftPoint;
@@ -92,7 +98,10 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var slope = numberLiteralVisitor.Visit(slopeContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
-        
+
+        if (rightPoint.Time.IsInfinite)
+            rightPoint = new Point(leftPoint.Time + 1, leftPoint.Value + slope); 
+
         var segment = SegmentFromEndPointsAndSlope(leftPoint, slope, rightPoint);
 
         yield return segment;
@@ -114,7 +123,10 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var slope = numberLiteralVisitor.Visit(slopeContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
-        
+
+        if (rightPoint.Time.IsInfinite)
+            rightPoint = new Point(leftPoint.Time + 1, leftPoint.Value + slope); 
+
         var segment = SegmentFromEndPointsAndSlope(leftPoint, slope, rightPoint);
 
         yield return segment;
@@ -122,7 +134,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
     public static Segment SegmentFromEndPointsAndSlope(Point left, Rational slope, Point right)
     {
-        // this may not work for all combinations, especially with +Infinity
+        if (left.Time.IsInfinite || right.Time.IsInfinite)
+            throw new InvalidOperationException("Cannot build segment with infinite times.");
+
         var segment = new Segment(
             startTime: left.Time,
             endTime: right.Time,
