@@ -454,6 +454,36 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionHShift(Grammar.MppgParser.FunctionHShiftContext context)
+    {
+        if (context.ChildCount != 6)
+            throw new Exception("Expected 6 child expression");
+
+        var ifExp = context.GetChild(2).Accept(this);
+        var ishiftExp = context.GetChild(4).Accept(this);
+
+        if (ifExp is not CurveExpression fExp || ishiftExp is not RationalExpression shiftExp)
+            throw new Exception("Expected f and shift expressions");
+
+        var curveExp = fExp.HorizontalShift(shiftExp);
+        return curveExp;
+    }
+
+    public override IExpression VisitFunctionVShift(Grammar.MppgParser.FunctionVShiftContext context)
+    {
+        if (context.ChildCount != 6)
+            throw new Exception("Expected 6 child expression");
+
+        var ifExp = context.GetChild(2).Accept(this);
+        var ishiftExp = context.GetChild(4).Accept(this);
+
+        if (ifExp is not CurveExpression fExp || ishiftExp is not RationalExpression shiftExp)
+            throw new Exception("Expected f and shift expressions");
+
+        var curveExp = fExp.VerticalShift(shiftExp);
+        return curveExp;
+    }
+
     public override IExpression VisitFunctionUpNonDecreasingClosure(Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
     {
         if (context.ChildCount != 4)
