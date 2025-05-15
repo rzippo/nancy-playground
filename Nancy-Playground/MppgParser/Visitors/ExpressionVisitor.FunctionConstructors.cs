@@ -159,8 +159,31 @@ public partial class ExpressionVisitor
             var increment = incrementLiteralContext.Accept(numberLiteralVisitor);
             c = increment;
         }
-        
-        var allElements = sequenceElements.Concat(periodSequence.Elements);
+
+        IEnumerable<Element> allElements;
+        if (periodSequence is { IsLeftOpen: true, IsRightClosed: true })
+        {
+            // problem: period must be nudged so that it is actually left-closed, right-open
+            // we do it using the first segment
+            var firstSegment = (Segment) periodSequence.Elements[0];
+            var firstSegmentShifted = firstSegment
+                .HorizontalShift(d)
+                .VerticalShift(c);
+            allElements = sequenceElements
+                .Concat(periodSequence.Elements)
+                .Append(firstSegmentShifted);
+            t += firstSegment.Length;
+        }
+        else if (periodSequence is { IsLeftClosed: true, IsRightOpen: true })
+        {
+            allElements = sequenceElements.Concat(periodSequence.Elements);
+        }
+        else
+        {
+            // defensive check
+            throw new InvalidOperationException("This period sequence cannot work");
+        }
+
         var sequence = new Sequence(allElements);
         var curve = new Curve(
             sequence,
