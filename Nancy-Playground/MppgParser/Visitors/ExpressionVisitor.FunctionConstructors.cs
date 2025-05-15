@@ -193,4 +193,48 @@ public partial class ExpressionVisitor
             .ToExpression("");
     }
 
+    public override IExpression VisitUltimatelyAffineFunction(Grammar.MppgParser.UltimatelyAffineFunctionContext context)
+    {
+        var elementsVisitor = new ElementsVisitor();
+
+        var sequenceContext = context.GetChild<Grammar.MppgParser.SequenceContext>(0);
+        var elements = sequenceContext.Accept(elementsVisitor);
+        var sequence = new Sequence(elements);
+
+        Rational t, d, c;
+        if (sequence is not { Elements: { Count: >= 2 }})
+            throw new InvalidOperationException("This UAF sequence cannot work");
+
+        if (sequence is { IsRightOpen: true })
+        {
+            var lastPoint = (Point)sequence.Elements[^2];
+            var lastSegment = (Segment)sequence.Elements[^1];
+            t = lastPoint.Time;
+            d = lastSegment.Length;
+            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;    
+        }
+        else
+        {
+            var lastPoint = (Point)sequence.Elements[^1];
+            var lastSegment = (Segment)sequence.Elements[^2];
+            t = lastPoint.Time;
+            d = lastSegment.Length;
+            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
+            var lastSegmentShifted = lastSegment
+                .HorizontalShift(d)
+                .VerticalShift(c);
+            sequence = new Sequence(sequence.Elements.Append(lastSegmentShifted));
+        }
+
+        var curve = new Curve(
+            sequence,
+            t, d, c
+        );
+
+        if(curve is not {IsUltimatelyAffine: true})
+            throw new InvalidOperationException("This curve is not UA");
+
+        return curve
+            .ToExpression("");
+    }
 }
