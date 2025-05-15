@@ -91,13 +91,13 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.Shift(lCE, rRE);
+                var curveExp = Expressions.VerticalShift(lCE, rRE);
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.Shift(rCE, lRE);
+                var curveExp = Expressions.VerticalShift(rCE, lRE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -131,13 +131,13 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.Shift(lCE, rRE.Negate());
+                var curveExp = Expressions.VerticalShift(lCE, rRE.Negate());
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.Shift(rCE, lRE.Negate());
+                var curveExp = Expressions.VerticalShift(rCE, lRE.Negate());
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
