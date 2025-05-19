@@ -255,6 +255,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAffineFunction([NotNull] MppgParser.AffineFunctionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.stepFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStepFunction([NotNull] MppgParser.StepFunctionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.stairFunction"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -272,6 +278,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitZeroFunction([NotNull] MppgParser.ZeroFunctionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.epsilonFunction"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEpsilonFunction([NotNull] MppgParser.EpsilonFunctionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.ultimatelyAffineFunction"/>.
 	/// </summary>
