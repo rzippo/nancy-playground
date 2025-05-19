@@ -48,6 +48,8 @@ functionExpression
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
+    | ('inv'|'low_inv') '(' functionExpression ')' #functionLowerPseudoInverse
+    | 'up_inv' '(' functionExpression ')' #functionUpperPseudoInverse
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
@@ -120,9 +122,13 @@ numberLiteral: NUMBER_LITERAL;
 // Number-returning function operations
 numberReturningfunctionOperation 
     : functionValueAt
+    | functionLeftLimitAt
+    | functionRightLimitAt
     | functionHorizontalDeviation 
     | functionVerticalDeviation;
 functionValueAt: functionName '(' numberExpression ')';
+functionLeftLimitAt: functionName '(' numberExpression '-' ')';
+functionRightLimitAt: functionName '(' numberExpression '+' ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
