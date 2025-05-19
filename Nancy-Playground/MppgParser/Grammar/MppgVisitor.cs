@@ -105,6 +105,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionScalarMultiplicationRight([NotNull] MppgParser.FunctionScalarMultiplicationRightContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionLowerPseudoInverse</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionLowerPseudoInverse([NotNull] MppgParser.FunctionLowerPseudoInverseContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMinPlusDeconvolution</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
@@ -202,6 +209,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionHShift([NotNull] MppgParser.FunctionHShiftContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionUpperPseudoInverse</c>
+	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionUpperPseudoInverse([NotNull] MppgParser.FunctionUpperPseudoInverseContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionScalarDivision</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
@@ -424,6 +438,18 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionValueAt([NotNull] MppgParser.FunctionValueAtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.functionLeftLimitAt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionLeftLimitAt([NotNull] MppgParser.FunctionLeftLimitAtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.functionRightLimitAt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionRightLimitAt([NotNull] MppgParser.FunctionRightLimitAtContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.functionHorizontalDeviation"/>.
 	/// </summary>

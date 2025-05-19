@@ -157,9 +157,9 @@ These operations return a _function_.
 | hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
 | vShift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
 | vshift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
-| inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
-| low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
-| up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ❌ |
+| inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
+| low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
+| up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
 | upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
 | nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
@@ -178,14 +178,17 @@ These operations work on functions, but return scalars.
 
 | Expression | Description | Implemented |
 |----|----|----|
-| f(x) | Value of f at x | ❌ |
-| f(x+) | Value of f at the right of x | ❌ |
-| f(x-) | Value of f at the left of x | ❌ |
+| f(x) | Value of f at x | ✅ |
+| f(x+) | Value of f at the right of x | ✅ |
+| f(x-) | Value of f at the left of x | ✅ |
 | hDev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | hdev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | vDev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | vdev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | maxBacklogPeriod(f, g) | Max backlog period length between $f$ and $g$. | ❌ |
+
+> Although mentioned in the [syntax quick reference](https://www.realtimeatwork.com/minplus-quickref-syntax/), 
+> `f(x+)` and `f(x-)` do not work in the [online playground](https://www.realtimeatwork.com/minplus-playground).
 
 > `hDev` and `hdev` are both fine, like `vDev` and `vdev`.
 > Fun thing: this is not documented, but used heavily in the PhD Thesis of Guidolin--Pina.

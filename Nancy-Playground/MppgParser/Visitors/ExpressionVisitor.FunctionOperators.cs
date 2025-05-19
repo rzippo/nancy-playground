@@ -484,6 +484,40 @@ public partial class ExpressionVisitor
         return curveExp;
     }
 
+    public override IExpression VisitFunctionLowerPseudoInverse(Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+        
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = Expressions.LowerPseudoInverse(lCE);
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    public override IExpression VisitFunctionUpperPseudoInverse(Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+        
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = Expressions.UpperPseudoInverse(lCE);
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionUpNonDecreasingClosure(Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
     {
         if (context.ChildCount != 4)

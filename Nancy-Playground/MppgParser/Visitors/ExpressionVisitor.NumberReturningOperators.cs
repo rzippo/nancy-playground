@@ -26,6 +26,50 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionLeftLimitAt(Grammar.MppgParser.FunctionLeftLimitAtContext context)
+    {
+        if (context.ChildCount != 5)
+            throw new Exception("Expected 4 child expression");
+        
+        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionName = functionNameContext.GetText();
+        var curveExpr = State.GetFunctionVariable(functionName);
+        
+        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var iRE = timeExpression.Accept(this);
+        if (iRE is RationalExpression re)
+        {
+            var valueAtExpr = curveExpr.LeftLimitAt(re);
+            return valueAtExpr;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    public override IExpression VisitFunctionRightLimitAt(Grammar.MppgParser.FunctionRightLimitAtContext context)
+    {
+        if (context.ChildCount != 5)
+            throw new Exception("Expected 4 child expression");
+        
+        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionName = functionNameContext.GetText();
+        var curveExpr = State.GetFunctionVariable(functionName);
+        
+        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var iRE = timeExpression.Accept(this);
+        if (iRE is RationalExpression re)
+        {
+            var valueAtExpr = curveExpr.RightLimitAt(re);
+            return valueAtExpr;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionHorizontalDeviation(
         Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
