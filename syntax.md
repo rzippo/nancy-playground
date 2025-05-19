@@ -51,31 +51,31 @@ Here is the information in a markdown table format:
 | zero | Constructs a function that has zero as its value everywhere: $f(x)=0$ for $x \geq 0$. | ✅ |
 | epsilon | Constructs the "epsilon" function: $f(x)=+\infty$ for $x \geq 0$. | ❌ |
 
-### Arbitrarily-shaped functions ❌
+### Arbitrarily-shaped functions ✅
 
 A more general syntax is available to define functions that do not fit in the shapes above.
 One can use `uaf` to define Ultimately Affine functions, and `upp` to define Ultimately Pseudo-Periodic functions.
 
 Both are built using _segments_.
 
-#### Segments ❌
+#### Segments 🟨
 
 > Despite the name, the sound more like _elements_ of Nancy.
 
-| Expression | Description |
-| ---------- | ----------- |
-| [(x, y)] | A _spot_ in $(x, y)$ |
-| [(x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is included. |
-| [(x1, y1)slope(x1, y1)[ | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is not included. |
-| ](x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The left spot is not included, but right one is. |
-| [(x1, y1)(x1, y1)[ | A segment from $(x1, y1)$ to $(x2, y2)$. The slope is automatically computed. |
+| Expression | Description | Implemented |
+|----|----|----|
+| [(x, y)] | A _spot_ in $(x, y)$ | ❌ |
+| [(x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is included. | ✅ |
+| [(x1, y1)slope(x1, y1)[ | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is not included. | ✅ |
+| ](x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The left spot is not included, but right one is. | ✅ |
+| [(x1, y1)(x1, y1)[ | A segment from $(x1, y1)$ to $(x2, y2)$. The slope is automatically computed. | ✅ |
 
 The docs claim "x and y could be any number, or +inf, +infinity, -inf,
 -infinity", which opens to _a lot_ of edge cases and uncertainty.
 
 The end value of a segment is used for consistency checks, even for a right-open segment.
 
-#### Ultimately Affine functions ❌
+#### Ultimately Affine functions ✅
 
 ```
 uaf(SEGMENT+) 
@@ -93,7 +93,7 @@ uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
 > uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)1(+inf,+inf)[ )
 > ```
 
-#### Ultimately Pseudo-Periodic functions ❌
+#### Ultimately Pseudo-Periodic functions ✅
 
 ```
 upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
@@ -153,10 +153,10 @@ These operations return a _function_.
 | f1 /_ f2 | (min,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | f1 /^ f2 | (max,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | star(f) | Subadditive closure of $f$. | ✅ |
-| hShift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ❌ |
-| hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ❌ |
-| vShift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ❌ |
-| vshift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ❌ |
+| hShift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
+| hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
+| vShift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
+| vshift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ❌ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ❌ |
