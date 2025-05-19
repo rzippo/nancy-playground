@@ -2,10 +2,10 @@
     "version": "2.0.0",
     "configurations": [
         {
-            "name": "MPPG test",
+            "name": "MPPG pseudoinverses-example",
             "type": "antlr-debug",
             "request": "launch",
-            "input": "Examples/test.mppg",
+            "input": "Examples/pseudoinverses-example.mppg",
             "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
             "startRule": "program",
             "printParseTree": true,
