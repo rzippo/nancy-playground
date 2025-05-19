@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: ('//'|'%') [a-zA-Z0-9 "'\t_\-,.:()/*+’%]+;
+COMMENT: ('//'|'%') [a-zA-Z0-9 "'\t_\-,.:()/*+’%[\]<>]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -63,9 +63,11 @@ functionConstructor
     : rateLatency 
     | tokenBucket
     | affineFunction
+    | stepFunction
     | stairFunction
     | delayFunction
     | zeroFunction
+    | epsilonFunction
     | ultimatelyPseudoPeriodicFunction
     | ultimatelyAffineFunction
     ;
@@ -73,9 +75,11 @@ functionConstructor
 rateLatency : 'ratency' '(' numberExpression ',' numberExpression ')';
 tokenBucket : 'bucket' '(' numberExpression ',' numberExpression ')';
 affineFunction : 'affine' '(' numberExpression ',' numberExpression ')';
+stepFunction : 'step' '(' numberExpression ',' numberExpression ')';
 stairFunction : 'stair' '(' numberExpression ',' numberExpression ',' numberExpression ')';
 delayFunction : 'delay' '(' numberExpression ')';
 zeroFunction : 'zero' ;
+epsilonFunction : 'epsilon' ;
 
 // Ultimately Affine
 ultimatelyAffineFunction: 'uaf' '(' sequence ')';

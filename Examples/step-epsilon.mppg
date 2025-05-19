@@ -1,0 +1,8 @@
+f := step(2, 1)
+% Should be 0 in [0, 2], then 1 for all t > 2
+plot(f, xlim=[0, 10])
+
+g := epsilon
+% Should both be +Infinity
+g(0)
+g(10)

@@ -74,6 +74,27 @@ public partial class ExpressionVisitor
         return curveExp;
     }
 
+    public override IExpression VisitStepFunction(
+        Grammar.MppgParser.StepFunctionContext context)
+    {
+        if (context.ChildCount != 6)
+            throw new Exception("Expected 6 child expression");
+
+        var ioExp = context.GetChild(2).Accept(this);
+        var ihExp = context.GetChild(4).Accept(this);
+
+        if (ioExp is not RationalExpression oExp || ihExp is not RationalExpression hExp)
+            throw new Exception("Expected expressions for o, l and h");
+
+        var o = oExp.Compute();
+        var h = hExp.Compute();
+
+        var curve = new StepCurve(h, o);
+        var curveExp = Expressions.FromCurve(curve, name: $"step_{{{o}, {h}}}");
+
+        return curveExp;
+    }
+
     public override IExpression VisitStairFunction(
         Grammar.MppgParser.StairFunctionContext context)
     {
@@ -126,6 +147,13 @@ public partial class ExpressionVisitor
         Grammar.MppgParser.ZeroFunctionContext context)
     {
         var curveExp = Expressions.FromCurve(Curve.Zero());
+        return curveExp;
+    }
+
+    public override IExpression VisitEpsilonFunction(
+        Grammar.MppgParser.EpsilonFunctionContext context)
+    {
+        var curveExp = Expressions.FromCurve(Curve.PlusInfinite());
         return curveExp;
     }
 
