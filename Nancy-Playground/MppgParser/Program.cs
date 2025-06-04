@@ -9,7 +9,7 @@ public class Program
 
     public int ProgramCounter { get; private set; } = 0;
     
-    public State State { get; init; } =  new State();
+    public ProgramContext ProgramContext { get; init; } =  new ();
 
     /// <summary>
     /// True if there are no more program statements to execute.
@@ -58,7 +58,7 @@ public class Program
         var statement = Statements[ProgramCounter++];
         if (statement is not Comment)
             yield return $">> {statement.Text}";
-        yield return statement.Execute(State);
+        yield return statement.Execute(ProgramContext.State);
     }
 
     public StatementOutput? ExecuteNextStatement(
@@ -74,28 +74,8 @@ public class Program
         else
         {
             var statement = Statements[ProgramCounter++];
-            formatter.FormatStatementPreamble(statement);
-            try
-            {
-                var output = statement switch
-                {
-                    Assignment assignment => assignment.ExecuteToFormattable(State, immediateComputeValue),
-                    _ => statement.ExecuteToFormattable(State)
-                };
-                formatter.FormatStatementOutput(statement, output);
-                return output;
-            }
-            catch (Exception e)
-            {
-                var error = new ErrorOutput
-                {
-                    StatementText = statement.Text,
-                    OutputText = string.Empty,
-                    Exception = e
-                };
-                formatter.FormatError(statement, error);
-                return error;
-            }
+            return ProgramContext.ExecuteStatement(
+                statement, formatter, immediateComputeValue);
         }
     }
 }
