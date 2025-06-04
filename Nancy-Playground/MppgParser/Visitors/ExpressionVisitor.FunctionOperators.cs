@@ -12,6 +12,15 @@ public partial class ExpressionVisitor
         return context.GetChild(1).Accept(this);
     }
 
+    public override IExpression VisitNumberBrackets(Grammar.MppgParser.NumberBracketsContext context)
+    {
+        if (context.ChildCount != 3)
+            throw new Exception("Expected 3 child expression");
+
+        return context.GetChild(1).Accept(this);
+
+    }
+
     public override IExpression VisitFunctionMinPlusConvolution(
         Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
     {
