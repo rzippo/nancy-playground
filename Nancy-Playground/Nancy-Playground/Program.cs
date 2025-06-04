@@ -8,5 +8,6 @@ var app = new CommandApp();
 app.Configure(config =>
 {
     config.AddCommand<RunCommand>("run");
+    config.AddCommand<InteractiveCommand>("interactive");
 });
 return app.Run(args);
