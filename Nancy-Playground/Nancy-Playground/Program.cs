@@ -4,7 +4,7 @@ using NancyMppg;
 using Spectre.Console.Cli;
 
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-var app = new CommandApp();
+var app = new CommandApp<InteractiveCommand>();
 app.Configure(config =>
 {
     config.AddCommand<RunCommand>("run");
