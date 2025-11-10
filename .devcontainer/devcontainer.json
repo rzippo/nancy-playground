@@ -11,7 +11,9 @@
 				"ms-dotnettools.csharp",
 				"ms-dotnettools.csdevkit",
 				"ms-dotnettools.dotnet-interactive-vscode",
-				"mike-lischke.vscode-antlr4"
+				"mike-lischke.vscode-antlr4",
+				"ms-vscode.powershell",
+				"eamodio.gitlens"
 			]
 		}
 	}
