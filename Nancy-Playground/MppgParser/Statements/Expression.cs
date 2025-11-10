@@ -58,14 +58,15 @@ public class Expression
     public static IExpression ParseTree(Grammar.MppgParser.ExpressionContext context, State? state)
     {
         var visitor = new ExpressionVisitor(state);
-        var epression = visitor.Visit(context);
-        return epression;
+        var expression = visitor.Visit(context);
+        return expression;
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="expression"></param>
+    /// <param name="state"></param>
     /// <returns>
     /// This method returns *either* a <see cref="CurveExpression"/>, if the expression resolves to a function,
     /// *or* a <see cref="RationalExpression"/> if the expression resolves to a number.
