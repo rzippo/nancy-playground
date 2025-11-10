@@ -1,7 +1,8 @@
 FROM debian:bullseye
 
 RUN apt-get update && \
-    apt-get install -y sudo wget curl libicu67 git        
+    apt-get install -y sudo wget curl libicu67 git \
+    openjdk-17-jdk
 
 # Create the non-root user, with sudo access
 ARG USER_UID=1000
