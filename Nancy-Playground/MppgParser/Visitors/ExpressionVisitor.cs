@@ -46,4 +46,13 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         var valueExp = Expressions.FromRational(value, "");
         return valueExp;
     }
+    
+    public override IExpression VisitEncNumberLiteralExp(Grammar.MppgParser.EncNumberLiteralExpContext context)
+    {
+        var numberLiteralVisitor = new NumberLiteralVisitor();
+        var value = numberLiteralVisitor.Visit(context);
+        
+        var valueExp = Expressions.FromRational(value, "");
+        return valueExp;
+    }
 }
