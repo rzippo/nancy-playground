@@ -18,7 +18,14 @@ public partial class ExpressionVisitor
             throw new Exception("Expected 3 child expression");
 
         return context.GetChild(1).Accept(this);
+    }
+    
+    public override IExpression VisitEncNumberBrackets(Grammar.MppgParser.EncNumberBracketsContext context)
+    {
+        if (context.ChildCount != 3)
+            throw new Exception("Expected 3 child expression");
 
+        return context.GetChild(1).Accept(this);
     }
 
     public override IExpression VisitFunctionMinPlusConvolution(
@@ -417,7 +424,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Subtraction(lCE, rCE, nonNegative: false);
+                var curveExp = Expressions.Subtraction(lCE, rCE);
                 return curveExp;
             }
             case (CurveExpression lCE, RationalExpression rRE):

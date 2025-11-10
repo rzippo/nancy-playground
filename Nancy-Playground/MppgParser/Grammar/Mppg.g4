@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: ('//'|'%') [a-zA-Z0-9 "'\t_\-,.:()/*+’%[\]<>]+;
+COMMENT: ('//'|'%') [a-zA-Z0-9 "'\t_\-,.:()/*+\u0060%[\]<>]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -30,21 +30,21 @@ comment: COMMENT;
 functionExpression
     :  '(' functionExpression ')' #functionBrackets
     | functionExpression '/\\' functionExpression #functionMinimum
-    | functionExpression '/\\' numberExpression #functionMinimum
+    | functionExpression '/\\' numberEnclosedExpression #functionMinimum
     | functionExpression '\\/' functionExpression #functionMaximum
-    | functionExpression '\\/' numberExpression #functionMaximum
+    | functionExpression '\\/' numberEnclosedExpression #functionMaximum
     | functionExpression ('*'|'*_') functionExpression #functionMinPlusConvolution
     | functionExpression '*^' functionExpression #functionMaxPlusConvolution
     | functionExpression ('/'|'/_') functionExpression #functionMinPlusDeconvolution
     | functionExpression '/^' functionExpression #functionMaxPlusDeconvolution
     | functionExpression 'comp' functionExpression #functionComposition
-    | functionExpression '*' numberExpression #functionScalarMultiplicationLeft
-    | numberExpression '*' functionExpression #functionScalarMultiplicationRight
-    | functionExpression '/' numberExpression #functionScalarDivision
+    | functionExpression '*' numberEnclosedExpression #functionScalarMultiplicationLeft
+    | numberEnclosedExpression '*' functionExpression #functionScalarMultiplicationRight
+    | functionExpression '/' numberEnclosedExpression #functionScalarDivision
     | functionExpression '+' functionExpression #functionSum
-    | functionExpression '+' numberExpression #functionSum
+    | functionExpression '+' numberEnclosedExpression #functionSum
     | functionExpression '-' functionExpression #functionSubtraction
-    | functionExpression '-' numberExpression #functionSubtraction
+    | functionExpression '-' numberEnclosedExpression #functionSubtraction
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
@@ -119,6 +119,13 @@ numberExpression
     | numberExpression '\\/' numberExpression #numberMaximum
     | VARIABLE_NAME #numberVariableExp
     | numberLiteral #numberLiteralExp
+    ;
+
+numberEnclosedExpression
+    : numberReturningfunctionOperation #encNumberReturningfunctionOperationExp
+    | '(' numberExpression ')' #encNumberBrackets
+    | VARIABLE_NAME #encNumberVariableExp
+    | numberLiteral #encNumberLiteralExp
     ;
 
 numberLiteral: NUMBER_LITERAL;

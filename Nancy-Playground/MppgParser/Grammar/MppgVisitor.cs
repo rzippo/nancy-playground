@@ -433,6 +433,34 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberDivision([NotNull] MppgParser.NumberDivisionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberReturningfunctionOperationExp</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberReturningfunctionOperationExp([NotNull] MppgParser.EncNumberReturningfunctionOperationExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberBrackets</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberBrackets([NotNull] MppgParser.EncNumberBracketsContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberVariableExp</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberVariableExp([NotNull] MppgParser.EncNumberVariableExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberLiteralExp</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberLiteralExp([NotNull] MppgParser.EncNumberLiteralExpContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.numberLiteral"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
