@@ -2,6 +2,7 @@
 using NancyMppg.Nancy.Plots;
 using Spectre.Console;
 using Unipi.MppgParser;
+using Unipi.MppgParser.Utility;
 
 namespace NancyMppg;
 
@@ -33,15 +34,42 @@ public class HtmlPlotFormatter: IPlotFormatter
             // how to move the legend below?
             
             var html = plot.GetHtml();
-            
-            var htmlTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".html";
-            File.WriteAllText(htmlTempFileName, html);
-            var psi = new ProcessStartInfo
+
+            if (plotOutput.Settings.ShowInBrowser)
             {
-                FileName = htmlTempFileName,
-                UseShellExecute = true
-            };
-            Process.Start(psi);
+                var htmlTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".html";
+                File.WriteAllText(htmlTempFileName, html);
+                AnsiConsole.MarkupLine($"[gray]Html written to: {htmlTempFileName}; opening in default browser[/]");
+                var psi = new ProcessStartInfo
+                {
+                    FileName = htmlTempFileName,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[gray]In-browser plot skipped.[/]");
+            }
+
+            if (!plotOutput.Settings.OutPath.IsNullOrWhiteSpace())
+            {
+                var imagePath = plotOutput.Settings.OutPath;
+                byte[] imageBytes;
+                try
+                {
+                    imageBytes = HtmlToImage.RenderAsync(html).Result;
+                }
+                catch (Exception e)
+                {
+                    AnsiConsole.MarkupLine("Image rendering failed. May be due to dependencies: try running [yellow]nancy-playground setup[/]");
+                    Console.WriteLine(e.Message);
+                    return;
+                }
+
+                File.WriteAllBytes(imagePath, imageBytes);
+                
+            }
         }
     }
 }

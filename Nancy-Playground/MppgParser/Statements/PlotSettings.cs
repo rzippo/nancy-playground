@@ -37,10 +37,15 @@ public record PlotSettings
     /// <summary>
     /// If false, removes the grid from the plot.
     /// </summary>
-    public bool Grid { get; init; } = true;
+    public bool ShowGrid { get; init; } = true;
 
     /// <summary>
     /// If false, remove the background from the plot.
     /// </summary>
-    public bool Background { get; init; } = true;
+    public bool ShowBackground { get; init; } = true;
+
+    /// <summary>
+    /// If false, the plot is NOT shown in the browser.
+    /// </summary>
+    public bool ShowInBrowser { get; init; } = true;
 }

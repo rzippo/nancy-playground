@@ -132,7 +132,7 @@ elseif($IsLinux)
 
         # Copy build to install folder
         $publishDir = "$projectRootPath/bin/$runConfiguration/net9.0/publish";
-        Copy-Item -Recurse -Path "$publishDir/*" -Destination $installFolder;
+        Copy-Item -Recurse -Force -Path "$publishDir/*" -Destination $installFolder;
 
         # If install folder is not in path, add it
         $profileScript = "/etc/profile.d/$projectName.sh";

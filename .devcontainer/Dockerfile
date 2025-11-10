@@ -2,7 +2,9 @@ FROM debian:bullseye
 
 RUN apt-get update && \
     apt-get install -y sudo wget curl libicu67 git \
-    openjdk-17-jdk
+    openjdk-17-jdk \
+    # To run Chromium and Firefox
+    libxkbcommon0 libgbm1 libgtk-3-0
 
 # Create the non-root user, with sudo access
 ARG USER_UID=1000
