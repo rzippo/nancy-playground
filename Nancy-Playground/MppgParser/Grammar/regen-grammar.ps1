@@ -38,7 +38,7 @@ try {
         $antlrCommand = "java -jar $filename";
     }
 
-    $command = "$antlrCommand -Dlanguage=CSharp -o ./ -package Unipi.MppgParser.Grammar -visitor -no-listener -lib ./ ./Mppg.g4";
+    $command = "$antlrCommand -Dlanguage=CSharp -o ./ -package Unipi.MppgParser.Grammar -visitor -no-listener -encoding utf-8 -lib ./ ./Mppg.g4";
     Invoke-Expression $command;
 }
 finally {
