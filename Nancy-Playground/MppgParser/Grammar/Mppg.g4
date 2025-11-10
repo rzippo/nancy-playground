@@ -155,8 +155,9 @@ plotArg
     | 'xlab' '=' string
     | 'ylab' '=' string
     | 'out' '=' string
-    | 'grid' '=' '"no"'
-    | 'bg' '=' '"no"'
+    | 'grid' '=' ('"no"'|'"yes"')
+    | 'bg' '=' ('"no"'|'"yes"')
+    | 'browser' '=' ('"no"'|'"yes"')
     ;
 
 string
