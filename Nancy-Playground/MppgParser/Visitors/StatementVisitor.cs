@@ -21,11 +21,16 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             .Select(ctx => ctx.GetText())
             .Select(name => new Expression(name))
             .ToList();
-        
+
+        var plotArgsContext = context.GetChild<Grammar.MppgParser.PlotArgsContext>(0);
+        var plotSettingsVisitor = new PlotSettingsVisitor();
+        var plotSettings = plotSettingsVisitor.Visit(plotArgsContext);
+
         return new PlotCommand
         {
             FunctionsToPlot = variableNames,
-            Text = text
+            Text = text,
+            Settings = plotSettings
         };
     }
 

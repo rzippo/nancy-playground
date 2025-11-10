@@ -9,5 +9,6 @@ app.Configure(config =>
 {
     config.AddCommand<RunCommand>("run");
     config.AddCommand<InteractiveCommand>("interactive");
+    config.AddCommand<SetupCommand>("setup");
 });
 return app.Run(args);
