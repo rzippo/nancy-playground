@@ -5,6 +5,8 @@ Param(
     [switch]$DebugConfig = $false
 );
 
+$ErrorActionPreference = 'Stop'
+
 if($IsWindows)
 {
     $runConfiguration = $DebugConfig ? "Debug" : "Release";
@@ -53,7 +55,7 @@ if($IsWindows)
 
         # Create install folder if not exists, else clear its contents
         if( -not (Test-Path $installFolder) ) {
-            New-Item $installFolder -ItemType Directory
+            New-Item $installFolder -ItemType Directory -Force
         }
         else {
             Remove-Item -Recurse "$installFolder/*"
@@ -117,7 +119,30 @@ elseif($IsLinux)
     }
     else
     {
-        Write-Host "NOT IMPLEMENTED";
+        # Build latest code
+        dotnet publish -c $runConfiguration $projectPath;
+
+        # Create install folder if not exists, else clear its contents
+        if( -not (Test-Path $installFolder) ) {
+            New-Item $installFolder -ItemType Directory
+        }
+        else {
+            Remove-Item -Recurse "$installFolder/*";
+        }
+
+        # Copy build to install folder
+        $publishDir = "$projectRootPath/bin/$runConfiguration/net9.0/publish";
+        Copy-Item -Recurse -Path "$publishDir/*" -Destination $installFolder;
+
+        # If install folder is not in path, add it
+        $profileScript = "/etc/profile.d/$projectName.sh";
+        if(-not (Test-Path $profileScript )) {
+            "#!/bin/sh" | Out-File $profileScript;
+            "export PATH=`"`$PATH:$installFolder`"" | Out-File $profileScript -Append;
+            chmod a+x $profileScript;
+        }
+
+        Write-Host "Done installing: compiled mode."
     }
 }
 else
