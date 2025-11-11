@@ -21,7 +21,41 @@ The file extension can be used to associate it with the programs created in this
 
 # Usage
 
-TODO
+`nancy-playground` can run either in _interactive_ mode, where each line is submitted by the user one by one, or in _scripted_ mode, where a `.mppg` script is provided.
+
+Examples:
+```
+nancy-playground interactive
+nancy-playground run ./Examples/hal-04513292v1.mppg
+```
+
+`--help` is also available.
+```
+USAGE:
+    nancy-playground [OPTIONS] [COMMAND]
+
+OPTIONS:
+    -h, --help           Prints help information                                                                                                                                                                                                      
+    -o, --output-mode    How the output is formatted. Available options: MppgClassic, NancyNew (default)                                                                                                                                              
+    -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased
+    -e, --on-error       Specifies what to do when an error occurs. Available options: Stop (default), Continue                                                                                                                                       
+
+COMMANDS:
+    run <file>     Runs a .mppg script                                                   
+    interactive    Interactive mode, where the user can input MPPG lines one by one      
+    setup          Initializes dependencies. Required to enable exporting plots to images
+```
+
+## Plot exporting setup
+
+One of rough spots, as of now, is plotting and export of plots to files.
+
+To provide interactive plots, the current setup uses `Plotly` and your default browser.
+To export such a plot to image, `nancy-playground` will run an embedded browser to render the plot and screenshot it.
+
+> Not the best ergonomics - but it works.
+
+To do this, you need to run at least once `nancy-playground setup`, which will download the embedded browser to use.
 
 # Requirements
 
@@ -30,8 +64,8 @@ TODO
 `Nancy-Playground` is a .NET 9.0 application, written in C# 12. 
 Both SDK and runtime for .NET are cross-platform, and can be downloaded from [here](https://dotnet.microsoft.com/en-us/download).
 
-A Powershell script is available to "install" `nancy-playground` to be run from a terminal, which currently support only Windows and Linux.
-You will need [Powershell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.5) to run it.
+A PowerShell script is available to "install" `nancy-playground` to be run from a terminal, which currently support only Windows and Linux.
+You will need [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.5) to run it.
 
 ```
 > ./install-nancy-playground.ps1
@@ -52,7 +86,7 @@ If you make any changes to the grammar, e.g. to add a new operator, you will nee
 
 To do this, run the [`regen-grammar.ps1`](./Nancy-Playground/MppgParser/Grammar/regen-grammar.ps1) script, which will download and run `ANTLR` locally, with the right arguments.
 
-You will need [Powershell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.5) to run the script and [Java 11 or later](https://adoptium.net/temurin/releases/) to run `ANTLR`.
+You will need [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.5) to run the script and [Java 11 or later](https://adoptium.net/temurin/releases/) to run `ANTLR`.
 
 # Academic attribution
 
