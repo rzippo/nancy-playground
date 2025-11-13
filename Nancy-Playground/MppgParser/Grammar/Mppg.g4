@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: ('//'|'%') [a-zA-Z0-9 "'\t_\-,.:()/*+\u0060%[\]<>]+;
+COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;

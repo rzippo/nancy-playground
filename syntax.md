@@ -10,15 +10,16 @@ This syntax is re-organized, compared to the source material [[1]](https://www.r
 
 ## Comments ✅
 
-Lines that start with `//` or `%` are comments and are ignored.
+Lines that start with `//`, `%` or `#` are comments and are ignored.
 
 ```
 // This is a comment
 % This is also a comment
+# This is a comment as well
 ```
 
-> Fun thing, `%` is not documented.
-> It is used heavily in the PhD Thesis of Guidolin--Pina, though.
+> Fun thing, `%` and `#` are not documented.
+> They are used heavily, for example, in the PhD Thesis of Guidolin--Pina.
 
 ## Types ✅
 
