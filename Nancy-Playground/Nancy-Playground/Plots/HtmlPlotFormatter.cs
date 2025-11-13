@@ -45,7 +45,13 @@ public class HtmlPlotFormatter: IPlotFormatter
                     FileName = htmlTempFileName,
                     UseShellExecute = true
                 };
-                Process.Start(psi);
+                try {
+                    Process.Start(psi);
+                }
+                catch(System.ComponentModel.Win32Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Unable to open plot in browser.[/] [gray]Is this a container?[/]");
+                }
             }
             else
             {
