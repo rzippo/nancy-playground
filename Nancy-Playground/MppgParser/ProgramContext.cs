@@ -23,6 +23,9 @@ public class ProgramContext
         }
         catch (Exception e)
         {
+            #if DEBUG
+            throw;
+            #else
             var error = new ErrorOutput
             {
                 StatementText = statement.Text,
@@ -31,6 +34,7 @@ public class ProgramContext
             };
             formatter.FormatError(statement, error);
             return error;
+            #endif
         }
     }
 }
