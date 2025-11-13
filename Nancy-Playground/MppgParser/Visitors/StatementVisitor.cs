@@ -22,9 +22,12 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             .Select(name => new Expression(name))
             .ToList();
 
+        var plotSettings = new PlotSettings();
         var plotArgsContext = context.GetChild<Grammar.MppgParser.PlotArgsContext>(0);
-        var plotSettingsVisitor = new PlotSettingsVisitor();
-        var plotSettings = plotSettingsVisitor.Visit(plotArgsContext);
+        if(plotArgsContext != null) {
+            var plotSettingsVisitor = new PlotSettingsVisitor();
+            plotSettings = plotSettingsVisitor.Visit(plotArgsContext);
+        }
 
         return new PlotCommand
         {
