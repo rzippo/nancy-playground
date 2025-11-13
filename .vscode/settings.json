@@ -3,5 +3,6 @@
         "mode": "internal",
         "listeners": true,
         "visitors": false
-    }
+    },
+    "search.useIgnoreFiles": false,
 }
