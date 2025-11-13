@@ -1,7 +1,7 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 RUN apt-get update && \
-    apt-get install -y sudo wget curl libicu67 git \
+    apt-get install -y sudo wget curl libicu72 git \
     openjdk-17-jdk \
     # To run Chromium and Firefox
     libxkbcommon0 libgbm1 libgtk-3-0
@@ -14,12 +14,12 @@ RUN groupadd --gid $USER_GID dotnet \
     && echo dotnet ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dotnet \
     && chmod 0440 /etc/sudoers.d/dotnet
 
-# Add powershell 7.4, using deb package
+# Add powershell 7.5.4, using deb package
 USER root
-RUN wget https://github.com/PowerShell/PowerShell/releases/download/v7.4.2/powershell_7.4.2-1.deb_amd64.deb
-RUN dpkg -i powershell_7.4.2-1.deb_amd64.deb
+RUN wget https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/powershell_7.5.4-1.deb_amd64.deb
+RUN dpkg -i powershell_7.5.4-1.deb_amd64.deb
 ## Cleanup
-RUN rm powershell_7.4.2-1.deb_amd64.deb
+RUN rm powershell_7.5.4-1.deb_amd64.deb
 
 # Add dotnet 8.0 and 9.0, using user-local install
 USER dotnet
@@ -27,6 +27,7 @@ RUN wget https://dot.net/v1/dotnet-install.sh -O /home/dotnet/dotnet-install.sh 
     chmod +x /home/dotnet/dotnet-install.sh
 RUN /home/dotnet/dotnet-install.sh --channel 8.0
 RUN /home/dotnet/dotnet-install.sh --channel 9.0
+RUN /home/dotnet/dotnet-install.sh --channel 10.0
 ## Cleanup
 RUN rm /home/dotnet/dotnet-install.sh
 
