@@ -81,11 +81,12 @@ elseif($IsLinux)
     $runConfiguration = $DebugConfig ? "Debug" : "Release";
 
     $projectName = "Nancy-Playground";
+    $projectNameLc = $projectName.ToLowerInvariant();
     $projectRootPath = "./Nancy-Playground/$projectName";
     $projectPath = "$projectRootPath/$projectName.csproj";
     $scriptsFolder = "./scripts";
 
-    $installFolder = "/opt/$projectName";
+    $installFolder = "/opt/$projectNameLc";
 
     if($Dev)
     {
@@ -99,16 +100,16 @@ elseif($IsLinux)
 
         # Configure and copy ps script to install folder
         $fullProjectPath = Resolve-Path $projectPath;
-        $psContent = Get-Content -Raw -Path "$scriptsFolder/$projectName.ps1";
+        $psContent = Get-Content -Raw -Path "$scriptsFolder/$projectNameLc.ps1";
         $psContent = $psContent -replace "!! REPLACE projectPath !!",$fullProjectPath;
         
-        $psContent | Out-File "$installFolder/$projectName.ps1";
+        $psContent | Out-File "$installFolder/$projectNameLc.ps1";
 
         # Copy sh script to install folder
-        Copy-Item -Path "$scriptsFolder/$projectName.sh" -Destination "$installFolder/$projectName";
+        Copy-Item -Path "$scriptsFolder/$projectNameLc.sh" -Destination "$installFolder/$projectNameLc";
 
         # If install folder is not in path, add it
-        $profileScript = "/etc/profile.d/$projectName.sh";
+        $profileScript = "/etc/profile.d/$projectNameLc.sh";
         if(-not (Test-Path $profileScript )) {
             "#!/bin/sh" | Out-File $profileScript;
             "export PATH=`"`$PATH:$installFolder`"" | Out-File $profileScript -Append;
