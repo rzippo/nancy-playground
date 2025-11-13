@@ -12,11 +12,12 @@ if($IsWindows)
     $runConfiguration = $DebugConfig ? "Debug" : "Release";
 
     $projectName = "Nancy-Playground";
+    $projectNameLc = $projectName.ToLowerInvariant();
     $projectRootPath = "./Nancy-Playground/$projectName";
     $projectPath = "$projectRootPath/$projectName.csproj";
     $scriptsFolder = "./scripts";
 
-    $installFolder = "$env:LOCALAPPDATA/Programs/$projectName";
+    $installFolder = "$env:LOCALAPPDATA/Programs/$projectNameLc";
 
     if($Dev)
     {
@@ -30,13 +31,13 @@ if($IsWindows)
 
         # Configure and copy ps script to install folder
         $fullProjectPath = Resolve-Path $projectPath;
-        $psContent = Get-Content -Raw -Path "$scriptsFolder/$projectName.ps1";
+        $psContent = Get-Content -Raw -Path "$scriptsFolder/$projectNameLc.ps1";
         $psContent = $psContent -replace "!! REPLACE projectPath !!",$fullProjectPath;
         
-        $psContent | Out-File "$installFolder/$projectName.ps1";
+        $psContent | Out-File "$installFolder/$projectNameLc.ps1";
 
         # Copy bat script to install folder
-        Copy-Item -Path "$scriptsFolder/$projectName.bat" -Destination "$installFolder/$projectName.bat";
+        Copy-Item -Path "$scriptsFolder/$projectNameLc.bat" -Destination "$installFolder/$projectNameLc.bat";
 
         # If install folder is not in path, add it
         $pathVariable = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User);
