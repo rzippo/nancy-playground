@@ -19,7 +19,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
         if (!isPresent || type is null)
-            throw new Exception($"Variable '{name}' not found");
+            throw new VariableNotFoundException($"Variable '{name}' not found");
         if (type == ExpressionType.Function)
             return State.GetFunctionVariable(name);
         else
@@ -31,7 +31,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
         if (!isPresent || type is null)
-            throw new Exception($"Variable '{name}' not found");
+            throw new VariableNotFoundException($"Variable '{name}' not found");
         if (type == ExpressionType.Function)
             return State.GetFunctionVariable(name);
         else
