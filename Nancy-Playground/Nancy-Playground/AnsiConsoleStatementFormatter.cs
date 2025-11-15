@@ -1,5 +1,4 @@
 ﻿using Spectre.Console;
-using Spectre.Console.Cli;
 using Unipi.MppgParser;
 using Unipi.Nancy.Expressions;
 
@@ -109,7 +108,21 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
     public void FormatError(Statement statement, ErrorOutput error)
     {
-        AnsiConsole.MarkupLineInterpolated($"[red]ERROR[/] {error.Exception.Message}");
+        switch(error.Exception)
+        {
+            case SyntaxErrorException:
+            {
+                AnsiConsole.MarkupLineInterpolated($"[red]Syntax error[/]: {error.Exception.Message}");
+                break;
+            }
+
+            default:
+            {
+                AnsiConsole.MarkupLineInterpolated($"[red]Execution error[/]: {error.Exception.Message}");
+                break;
+            }
+        }
+
     }
 
     public void FormatEndOfProgram()
