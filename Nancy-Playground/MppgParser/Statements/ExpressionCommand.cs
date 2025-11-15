@@ -4,6 +4,10 @@ using Unipi.Nancy.MinPlusAlgebra;
 
 namespace Unipi.MppgParser;
 
+/// <summary>
+/// Statements without assignement.
+/// Most commonly used to print-out the value of a variable.
+/// </summary>
 public class ExpressionCommand : Statement
 {
     public Expression Expression { get; set; }
