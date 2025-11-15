@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using Antlr4.Runtime.Misc;
 using Unipi.MppgParser.Grammar;
 
 namespace Unipi.MppgParser.Visitors;
@@ -9,6 +10,11 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
     {
         var text = context.GetJoinedText();
         return new Comment { Text = text };
+    }
+
+    public override Statement VisitEmpty([NotNull] Grammar.MppgParser.EmptyContext context)
+    {
+        return new EmptyStatement();
     }
 
     public override Statement VisitPlotCommand(Grammar.MppgParser.PlotCommandContext context)

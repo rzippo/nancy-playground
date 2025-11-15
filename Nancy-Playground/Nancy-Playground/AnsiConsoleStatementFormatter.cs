@@ -19,6 +19,12 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 break;
             }
 
+            case EmptyStatement es:
+            {
+                // do nothing
+                break;
+            }
+
             default:
             {
                 AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
@@ -75,6 +81,12 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case Comment comment:
             {
                 AnsiConsole.MarkupLineInterpolated($"[green]{comment.Text}[/]");
+                break;
+            }
+
+            case EmptyStatement es:
+            {
+                // do nothing
                 break;
             }
 
