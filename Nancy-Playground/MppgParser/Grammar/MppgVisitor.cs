@@ -63,6 +63,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitComment([NotNull] MppgParser.CommentContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.empty"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEmpty([NotNull] MppgParser.EmptyContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMaximum</c>
 	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
