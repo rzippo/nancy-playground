@@ -48,7 +48,7 @@ public class HtmlPlotFormatter: IPlotFormatter
                 try {
                     Process.Start(psi);
                 }
-                catch(System.ComponentModel.Win32Exception ex)
+                catch(System.ComponentModel.Win32Exception)
                 {
                     AnsiConsole.MarkupLine($"[yellow]Unable to open plot in browser.[/] [gray]Is this a container?[/]");
                 }
