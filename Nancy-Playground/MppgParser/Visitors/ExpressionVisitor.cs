@@ -37,6 +37,18 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         else
             return State.GetNumberVariable(name);
     }
+    
+    public override IExpression VisitEncNumberVariableExp(Grammar.MppgParser.EncNumberVariableExpContext context)
+    {
+        var name = context.GetText();
+        var (isPresent, type) = State.GetVariableType(name);
+        if (!isPresent || type is null)
+            throw new VariableNotFoundException($"Variable '{name}' not found");
+        if (type == ExpressionType.Function)
+            return State.GetFunctionVariable(name);
+        else
+            return State.GetNumberVariable(name);
+    }
 
     public override IExpression VisitNumberLiteralExp(Grammar.MppgParser.NumberLiteralExpContext context)
     {
