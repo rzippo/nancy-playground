@@ -21,7 +21,9 @@ public class ProgramContext
             formatter.FormatStatementOutput(statement, output);
             return output;
         }
+#pragma warning disable CS0168 // Variable is declared but never used
         catch (Exception e)
+#pragma warning restore CS0168 // Variable is declared but never used
         {
             #if DEBUG
             throw;
