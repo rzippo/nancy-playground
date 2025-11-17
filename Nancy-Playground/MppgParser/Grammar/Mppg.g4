@@ -146,11 +146,10 @@ functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functio
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
 // Plots
-plotCommand: 'plot' '(' functionsToPlot (',' plotArgs)? ')';
-functionsToPlot: functionName (',' functionName)*;
+plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';
+plotArg: functionName | plotOption;
 functionName: VARIABLE_NAME;
-plotArgs: plotArg (',' plotArg)*;
-plotArg
+plotOption
     : 'main' '=' string
     | 'xlim' '=' interval
     | 'ylim' '=' interval

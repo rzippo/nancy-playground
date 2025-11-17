@@ -239,13 +239,15 @@ Plot a graph displaying the functions `f1, f2, ...`
 Notes: 
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
-of numbers, variables and strings for labels.
+of numbers, variables and strings for labels
+- *not documented*: args and function names can appear in any order
 
 ### Examples
 - `plot(f1)`
 - `plot(f1, f2)`
 - `plot(service2,service1,xlim=[-0.3,15],ylim=[-0.3,15])`
 - `plot(f1, main="f1 for J=" +J +"Jitter", xlim=[-0.5, 5], xlab="time", ylab="packets", out = "image.png")`
+- `plot(xlim=[-0.3,15], ylim=[-0.3,15], service2, service1)`
 
 ## New shiny syntax
 

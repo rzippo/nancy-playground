@@ -515,11 +515,11 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitPlotCommand([NotNull] MppgParser.PlotCommandContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.functionsToPlot"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.plotArg"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitFunctionsToPlot([NotNull] MppgParser.FunctionsToPlotContext context);
+	Result VisitPlotArg([NotNull] MppgParser.PlotArgContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.functionName"/>.
 	/// </summary>
@@ -527,17 +527,11 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionName([NotNull] MppgParser.FunctionNameContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.plotArgs"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.plotOption"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitPlotArgs([NotNull] MppgParser.PlotArgsContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.plotArg"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitPlotArg([NotNull] MppgParser.PlotArgContext context);
+	Result VisitPlotOption([NotNull] MppgParser.PlotOptionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.string"/>.
 	/// </summary>
