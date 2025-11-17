@@ -191,13 +191,15 @@ public static partial class Plotly
                 var breakpoints = sequence.EnumerateBreakpoints();
                 foreach (var (left, center, right) in breakpoints)
                 {
-                    points.Add((x: (decimal)center.Time, y: (decimal)center.Value));
-                    if (left is not null && left.LeftLimitAtEndTime != center.Value)
+                    if( center is not { IsPlusInfinite: true })
+                        points.Add((x: (decimal)center.Time, y: (decimal)center.Value));
+                    
+                    if (left is not null and not { IsPlusInfinite: true } && left.LeftLimitAtEndTime != center.Value)
                     {
                         discontinuities.Add((x: (decimal)center.Time, y: (decimal)left.LeftLimitAtEndTime));
                     }
 
-                    if (right is not null)
+                    if (right is not null and not { IsPlusInfinite: true })
                     {
                         segments.Add((
                             a: (x: (decimal)right.StartTime, y: (decimal)right.RightLimitAtStartTime),
@@ -213,10 +215,12 @@ public static partial class Plotly
                 if (sequence.IsRightOpen)
                 {
                     var tail = (Segment)sequence.Elements.Last();
-                    segments.Add((
-                        a: (x: (decimal)tail.StartTime, y: (decimal)tail.RightLimitAtStartTime),
-                        b: (x: (decimal)tail.EndTime, y: (decimal)tail.LeftLimitAtEndTime)
-                    ));
+                    if (tail is not { IsPlusInfinite: true }) {
+                        segments.Add((
+                            a: (x: (decimal)tail.StartTime, y: (decimal)tail.RightLimitAtStartTime),
+                            b: (x: (decimal)tail.EndTime, y: (decimal)tail.LeftLimitAtEndTime)
+                        ));
+                    }
                 }
 
                 var segmentsLegend = segments.Any();
