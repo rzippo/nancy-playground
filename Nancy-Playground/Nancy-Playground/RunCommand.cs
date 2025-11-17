@@ -30,7 +30,11 @@ public class RunCommand : Command<RunCommand.Settings>
             AnsiConsole.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
             return 1;
         }
-        
+
+        // todo: make this configurable
+        var plotsRoot = mppgFile.Directory?.FullName;
+        AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
+
         var programText = File.ReadAllText(mppgFile.FullName);
         var program = Unipi.MppgParser.Program.FromText(programText);
         IStatementFormatter formatter = settings.OutputMode switch
@@ -38,7 +42,7 @@ public class RunCommand : Command<RunCommand.Settings>
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
-                PlotFormatter = new HtmlPlotFormatter()
+                PlotFormatter = new HtmlPlotFormatter(plotsRoot)
             },
             _ => new PlainConsoleStatementFormatter()
         };
