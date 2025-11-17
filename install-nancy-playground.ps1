@@ -99,6 +99,9 @@ elseif($IsLinux)
             Remove-Item -Recurse "$installFolder/*";
         }
 
+        # Make sure the install folder can be modified
+        chmod -R a+wr $installFolder;
+
         # Configure and copy ps script to install folder
         $fullProjectPath = Resolve-Path $projectPath;
         $psContent = Get-Content -Raw -Path "$scriptsFolder/$projectNameLc.ps1";
@@ -131,6 +134,9 @@ elseif($IsLinux)
         else {
             Remove-Item -Recurse "$installFolder/*";
         }
+
+        # Make sure the install folder can be modified
+        chmod -R a+wr $installFolder;
 
         # Copy build to install folder
         $publishDir = "$projectRootPath/bin/$runConfiguration/net9.0/publish";
