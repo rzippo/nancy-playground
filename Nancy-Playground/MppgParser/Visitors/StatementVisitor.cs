@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Unipi.MppgParser.Grammar;
+using Unipi.MppgParser.Utility;
 
 namespace Unipi.MppgParser.Visitors;
 
@@ -20,26 +21,121 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
     public override Statement VisitPlotCommand(Grammar.MppgParser.PlotCommandContext context)
     {
         var text = context.GetJoinedText();
-        var functionsToPlotContext = context.GetChild<Grammar.MppgParser.FunctionsToPlotContext>(0);
-        var functionNameContexts = functionsToPlotContext.GetRuleContexts<Grammar.MppgParser.FunctionNameContext>();
+        var args = context.GetRuleContexts<Grammar.MppgParser.PlotArgContext>();
+
+        var functionNameContexts = args
+            .Select(arg => arg.GetChild<Grammar.MppgParser.FunctionNameContext>(0))
+            .Where(ctx => ctx != null);
+        var plotOptionContexts = args
+            .Select(arg => arg.GetChild<Grammar.MppgParser.PlotOptionContext>(0))
+            .Where(ctx => ctx != null);
         
         var variableNames = functionNameContexts
             .Select(ctx => ctx.GetText())
             .Select(name => new Expression(name))
             .ToList();
 
-        var plotSettings = new PlotSettings();
-        var plotArgsContext = context.GetChild<Grammar.MppgParser.PlotArgsContext>(0);
-        if(plotArgsContext != null) {
-            var plotSettingsVisitor = new PlotSettingsVisitor();
-            plotSettings = plotSettingsVisitor.Visit(plotArgsContext);
+        var settings = new PlotSettings();
+        foreach (var plotArgContext in plotOptionContexts)
+        {
+            var argName = plotArgContext.GetChild(0).GetText();
+            var argString = plotArgContext.GetChild(2).GetText()
+                .TrimQuotes();
+
+            switch (argName)
+            {
+                case "main":
+                {
+                    // todo
+                    break;
+                }
+                
+                case "xlim":
+                {
+                    // todo
+                    break;
+                }
+                
+                case "ylim":
+                {
+                    // todo
+                    break;
+                }
+                
+                case "xlab":
+                {
+                    // todo
+                    break;
+                }
+                
+                case "ylab":
+                {
+                    // todo
+                    break;
+                }
+                
+                case "out":
+                {
+                    settings = settings with
+                    {
+                        OutPath = argString
+                    };
+                    break;
+                }
+                
+                case "grid":
+                {
+                    settings = settings with
+                    {
+                        ShowGrid = argString switch
+                        {
+                            "yes" => true,
+                            "no" => false,
+                            _ => true
+                        }
+                    };
+                    break;
+                }
+                
+                case "bg":
+                {
+                    settings = settings with
+                    {
+                        ShowBackground = argString switch
+                        {
+                            "yes" => true,
+                            "no" => false,
+                            _ => true
+                        }
+                    };
+                    break;
+                }
+                
+                case "browser":
+                {
+                    settings = settings with
+                    {
+                        ShowInBrowser = argString switch
+                        {
+                            "yes" => true,
+                            "no" => false,
+                            _ => true
+                        }
+                    };
+                    break;
+                }
+                
+                default:
+                    // do nothing
+                    break;
+            }
         }
 
         return new PlotCommand
         {
             FunctionsToPlot = variableNames,
             Text = text,
-            Settings = plotSettings
+            Settings = settings
         };
     }
 
