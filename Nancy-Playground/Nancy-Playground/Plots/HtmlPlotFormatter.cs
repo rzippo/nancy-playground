@@ -8,6 +8,15 @@ namespace NancyMppg;
 
 public class HtmlPlotFormatter: IPlotFormatter
 {
+    public string PlotsRoot { get; set; }
+
+    public HtmlPlotFormatter(string? plotsRoot)
+    {
+        PlotsRoot = string.IsNullOrWhiteSpace(plotsRoot) ?
+            Environment.CurrentDirectory :
+            plotsRoot;
+    }
+
     public void FormatPlot(PlotOutput plotOutput)
     {
         if (plotOutput.FunctionsToPlot.Count == 0)
@@ -60,7 +69,7 @@ public class HtmlPlotFormatter: IPlotFormatter
 
             if (!plotOutput.Settings.OutPath.IsNullOrWhiteSpace())
             {
-                var imagePath = plotOutput.Settings.OutPath;
+                var imagePath = Path.Join(PlotsRoot, plotOutput.Settings.OutPath);
                 byte[] imageBytes;
                 try
                 {

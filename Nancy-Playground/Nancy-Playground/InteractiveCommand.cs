@@ -14,13 +14,16 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
     public override int Execute(CommandContext context, Settings settings)
     {
         var programContext = new ProgramContext();
-        
+
+        // todo: make this configurable
+        var plotsRoot = Environment.CurrentDirectory;
+
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
-                PlotFormatter = new HtmlPlotFormatter()
+                PlotFormatter = new HtmlPlotFormatter(plotsRoot)
             },
             _ => new PlainConsoleStatementFormatter()
         };
