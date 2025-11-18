@@ -10,10 +10,10 @@ public class ExpressionOutput : StatementOutput
     public required IExpression Expression { get; init; }
 
     /// <summary>
-    /// The time it took to compute the result to be assigned.
+    /// The time it took to compute the results to be compared.
     /// </summary>
     /// <remarks>
-    /// May vary depending on whether the expression was fully computed before assignment or not. 
+    /// May vary depending on whether the expressions were fully computed before comparison or not. 
     /// </remarks>
     public required TimeSpan Time { get; init; }
 }

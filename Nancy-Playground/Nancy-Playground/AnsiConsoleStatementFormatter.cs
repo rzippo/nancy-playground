@@ -81,6 +81,13 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 break;
             }
 
+            case Assertion assertion:
+            {
+                var assertionOutput = (AssertionOutput) output;
+                AnsiConsole.MarkupLineInterpolated($"[blue][[{assertionOutput.Time}]][/] [magenta]{output.OutputText}[/]");
+                break;
+            }
+            
             case Comment comment:
             {
                 AnsiConsole.MarkupLineInterpolated($"[green]{comment.Text}[/]");
