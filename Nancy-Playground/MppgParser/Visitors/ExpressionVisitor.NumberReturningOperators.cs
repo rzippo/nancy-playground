@@ -28,8 +28,8 @@ public partial class ExpressionVisitor
 
     public override IExpression VisitFunctionLeftLimitAt(Grammar.MppgParser.FunctionLeftLimitAtContext context)
     {
-        if (context.ChildCount != 5)
-            throw new Exception("Expected 4 child expression");
+        // if (context.ChildCount != 5)
+        //     throw new Exception("Expected 5 child expression");
         
         var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
@@ -50,8 +50,8 @@ public partial class ExpressionVisitor
 
     public override IExpression VisitFunctionRightLimitAt(Grammar.MppgParser.FunctionRightLimitAtContext context)
     {
-        if (context.ChildCount != 5)
-            throw new Exception("Expected 4 child expression");
+        // if (context.ChildCount != 5)
+        //     throw new Exception("Expected 5 child expression");
         
         var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();

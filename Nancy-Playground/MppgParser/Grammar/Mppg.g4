@@ -146,8 +146,8 @@ numberReturningfunctionOperation
     | functionHorizontalDeviation 
     | functionVerticalDeviation;
 functionValueAt: functionName '(' numberExpression ')';
-functionLeftLimitAt: functionName '(' numberExpression '-' ')';
-functionRightLimitAt: functionName '(' numberExpression '+' ')';
+functionLeftLimitAt: functionName '(' numberExpression '~'? '-' ')';
+functionRightLimitAt: functionName '(' numberExpression '~'? '+' ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
