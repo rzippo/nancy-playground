@@ -12,6 +12,26 @@
             "visualParseTree": true
         },
         {
+            "name": "MPPG assertions-test",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/tests/assertions-test.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG comments-test",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/tests/comments-test.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
             "name": "MPPG pseudoinverses-example",
             "type": "antlr-debug",
             "request": "launch",

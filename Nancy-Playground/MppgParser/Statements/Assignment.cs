@@ -3,7 +3,7 @@ using Unipi.Nancy.Expressions;
 
 namespace Unipi.MppgParser;
 
-public class Assignment : Statement
+public record class Assignment : Statement
 {
     public string VariableName { get; set; }
     public Expression Expression { get; set; }

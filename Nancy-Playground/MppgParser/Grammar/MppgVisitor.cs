@@ -39,6 +39,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitProgram([NotNull] MppgParser.ProgramContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.statementLine"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStatementLine([NotNull] MppgParser.StatementLineContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -62,6 +68,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitComment([NotNull] MppgParser.CommentContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.inlineComment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitInlineComment([NotNull] MppgParser.InlineCommentContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.empty"/>.
 	/// </summary>
@@ -544,6 +556,18 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitInterval([NotNull] MppgParser.IntervalContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.assertion"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssertion([NotNull] MppgParser.AssertionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.assertionOperator"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssertionOperator([NotNull] MppgParser.AssertionOperatorContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.printExpressionCommand"/>.
 	/// </summary>

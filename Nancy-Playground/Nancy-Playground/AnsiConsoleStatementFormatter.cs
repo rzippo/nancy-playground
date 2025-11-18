@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using Unipi.MppgParser;
+using Unipi.MppgParser.Utility;
 using Unipi.Nancy.Expressions;
 
 namespace NancyMppg;
@@ -26,7 +27,10 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
             default:
             {
-                AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                if (statement.InlineComment.IsNullOrWhiteSpace())
+                    AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                else
+                    AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
                 break;
             }
         }

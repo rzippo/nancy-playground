@@ -6,7 +6,7 @@ WHITE_SPACE : [ \t]+ -> skip;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 ASSIGN : ':=';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-COMMENT: ('//'|'%'|'#'|'>') [\p{L}\p{Nd}\p{P}\p{S} \t]+;
+INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]+;
 
 // Number literals
 NUMBER_LITERAL : RATIONAL_NUMBER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
@@ -15,17 +15,23 @@ DECIMAL_NUMBER_LITERAL : [-+]?[0-9]+('.'[0-9]+)?;
 INFINITE_NUMBER_LITERAL : [-+]('inf'|'infinity'|'Infinity');
 
 // parser rules
-program : statement (NEW_LINE statement)* NEW_LINE? EOF;
+program : statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
+statementLine: statement inlineComment? ;
 statement 
     : assignment 
     | expression 
     | plotCommand 
+    | assertion
     | printExpressionCommand
     | comment
     | empty;
 assignment : VARIABLE_NAME ASSIGN expression ;
 expression : functionExpression | numberExpression;
-comment: COMMENT;
+comment
+    : INLINABLE_COMMENT
+    // less precise that INLINABLE_COMMENT, but could not figure out a better way
+    | '>' (~NEW_LINE)*?;
+inlineComment: INLINABLE_COMMENT;
 empty: ;
 
 // Functions
@@ -168,6 +174,18 @@ string
     | NUMBER_LITERAL;
 
 interval: '[' NUMBER_LITERAL ',' NUMBER_LITERAL ']';
+
+// Assertions
+assertion
+    : 'assert' '(' expression assertionOperator expression ')' ;
+assertionOperator
+    : '='
+    | '!='
+    | '<'   // custom addition
+    | '<='
+    | '>'   // custom addition
+    | '>='
+    ;
 
 // extra commands
 printExpressionCommand

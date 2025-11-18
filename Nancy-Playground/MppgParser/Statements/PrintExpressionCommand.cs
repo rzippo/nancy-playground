@@ -1,6 +1,6 @@
 ﻿namespace Unipi.MppgParser;
 
-public class PrintExpressionCommand : Statement
+public record class PrintExpressionCommand : Statement
 {
     public string VariableName { get; set; }
 

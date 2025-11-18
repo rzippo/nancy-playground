@@ -8,7 +8,7 @@ namespace Unipi.MppgParser;
 /// Statements without assignement.
 /// Most commonly used to print-out the value of a variable.
 /// </summary>
-public class ExpressionCommand : Statement
+public record class ExpressionCommand : Statement
 {
     public Expression Expression { get; set; }
 
