@@ -157,6 +157,7 @@ plotArg: functionName | plotOption;
 functionName: VARIABLE_NAME;
 plotOption
     : 'main' '=' string
+    | 'title' '=' string
     | 'xlim' '=' interval
     | 'ylim' '=' interval
     | 'xlab' '=' string
