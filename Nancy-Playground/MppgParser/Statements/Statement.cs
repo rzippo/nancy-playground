@@ -3,9 +3,11 @@ using Unipi.MppgParser.Visitors;
 
 namespace Unipi.MppgParser;
 
-public abstract class Statement
+public abstract record class Statement
 {
     public string Text { get; init; } = string.Empty;
+
+    public string InlineComment { get; init; } = string.Empty;
 
     public abstract string Execute(State state);
     

@@ -7,6 +7,30 @@ namespace Unipi.MppgParser.Visitors;
 
 public class StatementVisitor : MppgBaseVisitor<Statement>
 {
+    public override Statement VisitStatementLine([NotNull] Grammar.MppgParser.StatementLineContext context)
+    {
+        var statementContext = context.GetChild<Grammar.MppgParser.StatementContext>(0);
+        var inlineCommentContext = context.GetChild<Grammar.MppgParser.InlineCommentContext>(0);
+
+        var statement = statementContext.Accept(this);
+        if (inlineCommentContext != null)
+        {
+            var inlineComment = inlineCommentContext.GetJoinedText();
+            if (statement is Comment c)
+                return c with
+                {
+                    Text = $"{c.Text} {inlineComment}"
+                };
+            else
+                return statement with
+                {
+                    InlineComment = inlineComment
+                };
+        }
+        else
+            return statement;
+    }
+
     public override Statement VisitComment(Grammar.MppgParser.CommentContext context)
     {
         var text = context.GetJoinedText();

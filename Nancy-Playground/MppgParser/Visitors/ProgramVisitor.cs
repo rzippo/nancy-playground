@@ -11,7 +11,7 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           for (int i = 0; i < context.ChildCount; i++)
           {
                var child = context.GetChild(i);
-               if (child is Grammar.MppgParser.StatementContext)
+               if (child is Grammar.MppgParser.StatementLineContext)
                {
                     var visitor = new StatementVisitor();
                     var statement = child.Accept(visitor);

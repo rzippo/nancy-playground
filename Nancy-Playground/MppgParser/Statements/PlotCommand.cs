@@ -2,7 +2,7 @@
 
 namespace Unipi.MppgParser;
 
-public class PlotCommand : Statement
+public record class PlotCommand : Statement
 {
     public List<Expression> FunctionsToPlot { get; init; } = [];
     public PlotSettings Settings { get; init; } = new();

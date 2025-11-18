@@ -3,7 +3,7 @@ namespace Unipi.MppgParser;
 /// <summary>
 /// Empty statement are supported for compatibility, but should be effectively ignored.
 /// </summary>
-public class EmptyStatement : Statement
+public record class EmptyStatement : Statement
 {
     public override string Execute(State state)
     {

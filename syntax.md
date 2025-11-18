@@ -10,16 +10,30 @@ This syntax is re-organized, compared to the source material [[1]](https://www.r
 
 ## Comments ✅
 
-Lines that start with `//`, `%` or `#` are comments and are ignored.
+### Line comments
+
+Lines that start with `//`, `%`, `#` or `>` are comments and are ignored.
 
 ```
 // This is a comment
 % This is also a comment
 # This is a comment as well
+> This is a comment as well
 ```
 
-> Fun thing, `%` and `#` are not documented.
+> Fun thing, `%`, `#` and `>` are not documented.
 > They are used heavily, for example, in the PhD Thesis of Guidolin--Pina.
+
+### Inline comments
+
+Statements may end with comments that start with `//`, `%` or `#`.
+Inline comments cannot start with `>`.
+
+```
+f := ... // This is a comment
+g := ... % This is also a comment
+h := ... # This is a comment as well
+```
 
 ## Types ✅
 
@@ -219,22 +233,27 @@ By typing the name of a variable, one can have its content printed to the consol
 
 The value of a _function_ variable is its definition as `uaf` or `upp`, regardless of the constructor used.
 
-## Plots ✅
+## Plots 🟨
 
 > Limited support. Can be parsed completely, but not all options actually affect the output.
 
 `plot(f1, ..., args)`
 
 Plot a graph displaying the functions `f1, f2, ...` 
-`args` contains parameters for the drawing. Valid `args` are:
-- `main` : the graph title
-- `xlim` : range for x-axis
-- `ylim` : range for y-axis
-- `xlab` : label for x axis
-- `ylab` : label for y axis
-- `out` : name of png file to save plot to
-- `grid ="no"` : remove grid from plot
-- `bg ="no"` : use white background instead of default grey
+`args` contains parameters for the drawing. 
+Valid `args` are the following.
+
+| Arg | Description | Implemented |
+|----|----|----|
+| `main` | the graph title | ❌ |
+| `xlim` | range for x-axis | ❌ |
+| `ylim` | range for y-axis | ❌ |
+| `xlab` | label for x axis | ❌ |
+| `ylab` | label for y axis | ❌ |
+| `out` | name of png file to save plot to | ✅ |
+| `grid ="no"` | remove grid from plot | ❌ |
+| `bg ="no"` | use white background instead of default grey | ❌ |
+| `browser ="no"` | custom option, skips rendering via browser | ✅ |
 
 Notes: 
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
@@ -248,6 +267,27 @@ of numbers, variables and strings for labels
 - `plot(service2,service1,xlim=[-0.3,15],ylim=[-0.3,15])`
 - `plot(f1, main="f1 for J=" +J +"Jitter", xlim=[-0.5, 5], xlab="time", ylab="packets", out = "image.png")`
 - `plot(xlim=[-0.3,15], ylim=[-0.3,15], service2, service1)`
+
+## Asserts
+
+> This feature is not mentioned on the publicly available documentation.
+> The behavior is therefore not well specified, I poked around.
+
+The general form is `assert( f OP g )`, which tests relation `OP` between `f` and `g`.
+If successful, outputs `true`. 
+Otherwise, it outputs `assertion failed` followed by an explanation.
+
+> If the assertion syntax is not supported, or "too complex to be understood", it outputs `-1`
+
+Both sides can be either variable names, or expressions, which can evaluate to both function or number.
+When comparing two functions, the relation is true if $f(t) OP g(t)$ is true for all $t$.
+When comparing a function and a number, the relation is true if $f(t) OP g$ for all $t$ (i.e., as if $g$ was a constant function of that value).
+
+The operators supported are `=`, `!=`, `<=`, and `>=`.
+
+There seems _not_ to be any support for complex logic like `and`, `or` and `not`, or strict inequalities `<` and `>`.
+
+> Note: some of the above restrictions may not be matched by `nancy-playground`, as detecting "too complex" expressions may be harder than just computing them.
 
 ## New shiny syntax
 
