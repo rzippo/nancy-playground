@@ -73,31 +73,37 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
                     // todo
                     break;
                 }
-                
+
+                case "title":
+                {
+                    // todo: custom alias for main, to accomodate syntax errors
+                    break;
+                }
+
                 case "xlim":
                 {
                     // todo
                     break;
                 }
-                
+
                 case "ylim":
                 {
                     // todo
                     break;
                 }
-                
+
                 case "xlab":
                 {
                     // todo
                     break;
                 }
-                
+
                 case "ylab":
                 {
                     // todo
                     break;
                 }
-                
+
                 case "out":
                 {
                     settings = settings with
@@ -106,7 +112,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
                     };
                     break;
                 }
-                
+
                 case "grid":
                 {
                     settings = settings with
@@ -120,7 +126,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
                     };
                     break;
                 }
-                
+
                 case "bg":
                 {
                     settings = settings with
@@ -134,7 +140,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
                     };
                     break;
                 }
-                
+
                 case "browser":
                 {
                     settings = settings with
