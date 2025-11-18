@@ -193,4 +193,28 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
         return new PrintExpressionCommand(name) { Text = text };
     }
+
+    public override Statement VisitAssertion(Grammar.MppgParser.AssertionContext context)
+    {
+        var leftExpressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(0);
+        var rightExpressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(1);
+        var operatorContext = context.GetChild<Grammar.MppgParser.AssertionOperatorContext>(0);
+        var text = context.GetJoinedText();
+        
+        var leftExpression = new Expression(leftExpressionContext);
+        var rightExpression = new Expression(rightExpressionContext);
+        var operatorText = operatorContext.GetJoinedText(); 
+        var @operator = operatorText switch
+        {
+            "=" => Assertion.AssertionOperator.Equal,
+            "!=" => Assertion.AssertionOperator.NotEqual,
+            "<" => Assertion.AssertionOperator.Less,
+            "<=" => Assertion.AssertionOperator.LessOrEqual,
+            ">" => Assertion.AssertionOperator.Greater,
+            ">=" => Assertion.AssertionOperator.GreaterOrEqual,
+            _ => throw new ArgumentException($"Operator '{operatorText}' not recognized")
+        };
+
+        return new Assertion(leftExpression, rightExpression, @operator){ Text = text };
+    }
 }
