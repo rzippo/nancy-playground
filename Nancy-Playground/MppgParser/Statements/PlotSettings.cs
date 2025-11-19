@@ -7,7 +7,7 @@ public record PlotSettings
     /// <summary>
     /// The graph title.
     /// </summary>
-    public string Title { get; init; } = string.Empty;
+    public ComputableString Title { get; init; } = new();
 
     /// <summary>
     /// Range for the x-axis.
@@ -47,5 +47,5 @@ public record PlotSettings
     /// <summary>
     /// If false, the plot is NOT shown in the browser.
     /// </summary>
-    public bool ShowInBrowser { get; init; } = true;
+    public bool? ShowInBrowser { get; init; } = null;
 }

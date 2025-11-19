@@ -551,6 +551,18 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitString([NotNull] MppgParser.StringContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.stringLiteral"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStringLiteral([NotNull] MppgParser.StringLiteralContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.stringVariable"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStringVariable([NotNull] MppgParser.StringVariableContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.interval"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

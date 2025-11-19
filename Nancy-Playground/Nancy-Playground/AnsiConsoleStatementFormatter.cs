@@ -72,7 +72,6 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                         _ => throw new InvalidOperationException()
                     };
                     AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]");
-
                 }
                 else
                 {

@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System.Text;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Unipi.MppgParser.Grammar;
 using Unipi.MppgParser.Utility;
@@ -70,13 +71,25 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             {
                 case "main":
                 {
-                    // todo
+                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var visitor = new ComputableStringVisitor();
+                    var cs = visitor.Visit(stringContext);
+                    settings = settings with
+                    {
+                        Title = cs
+                    };
                     break;
                 }
 
                 case "title":
                 {
-                    // todo: custom alias for main, to accomodate syntax errors
+                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var visitor = new ComputableStringVisitor();
+                    var cs = visitor.Visit(stringContext);
+                    settings = settings with
+                    {
+                        Title = cs
+                    };
                     break;
                 }
 

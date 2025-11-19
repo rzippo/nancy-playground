@@ -24,9 +24,12 @@ public record class PlotCommand : Statement
                     throw new Exception("Cannot plot a number.");
             })
             .ToList();
+        var title = Settings.Title.Compute(state);
+
         return new PlotOutput
         {
             FunctionsToPlot = functions,
+            Title = title,
             Settings = Settings,
             StatementText = Text,
             OutputText = "If you are reading this, the formatter does not implement plots."
