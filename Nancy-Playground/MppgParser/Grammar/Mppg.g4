@@ -170,11 +170,13 @@ plotOption
 
 string
     : string '+' string
-    | STRING_LITERAL
-    | VARIABLE_NAME
-    | NUMBER_LITERAL;
+    | stringLiteral
+    | stringVariable
+    | numberLiteral;
+stringLiteral: STRING_LITERAL;
+stringVariable: VARIABLE_NAME;
 
-interval: '[' NUMBER_LITERAL ',' NUMBER_LITERAL ']';
+interval: '[' numberLiteral ',' numberLiteral ']';
 
 // Assertions
 assertion

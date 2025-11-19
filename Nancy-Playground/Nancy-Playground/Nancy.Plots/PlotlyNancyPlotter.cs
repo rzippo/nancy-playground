@@ -1,118 +1,22 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-using Unipi.Nancy.MinPlusAlgebra;
-using Unipi.Nancy.Numerics;
+﻿using Unipi.Nancy.MinPlusAlgebra;
 using XPlot.Plotly;
 
 namespace NancyMppg.Nancy.Plots;
 
 /// <summary>
-/// Static class with extension methods that provide plotting functionality
-/// to <see cref="Curve"/> and <see cref="Sequence"/>,
-/// using <a href="https://github.com/fslaborg/XPlot">XPlot.Plotly</a>
+/// Plotter for Nancy types using <a href="https://github.com/fslaborg/XPlot">XPlot.Plotly</a>
 /// </summary>
-public static partial class Plotly
+public partial class PlotlyNancyPlotter : NancyPlotter<PlotlyChart>
 {
-    #region Curves
-
-    /// <summary>
-    /// Plots a set of curves.
-    /// </summary>
-    /// <param name="curves">The curves to plot.</param>
-    /// <param name="names">The names of the curves.</param>
-    /// <param name="upTo">
-    /// The x-axis right edge of the plot.
-    /// If null, it is set by default as $max_{i}(T_i + 2 * d_i)$.
-    /// </param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this IReadOnlyCollection<Curve> curves,
-        IEnumerable<string> names,
-        Rational? upTo = null
-    )
-    {
-        Rational t;
-        if (upTo is not null)
-            t = (Rational)upTo;
-        else
-            t = curves.Max(c => c.SecondPseudoPeriodEnd);
-        t = t == 0 ? 10 : t;
-
-        var cuts = curves
-            .Select(c => c.Cut(0, t, isEndIncluded: true))
-            .ToList();
-
-        return Plot(cuts, names);
-    }
-
-    /// <summary>
-    /// Plots a curve.
-    /// </summary>
-    /// <param name="curve">The curve to plot.</param>
-    /// <param name="name">
-    /// The name of the curve.
-    /// By default, it captures the expression used for <paramref name="curve"/>.
-    /// </param>
-    /// <param name="upTo">
-    /// The x-axis right edge of the plot.
-    /// If null, it is set by default as $T + 2 * d$.
-    /// </param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this Curve curve,
-        [CallerArgumentExpression("curve")] string name = "f",
-        Rational? upTo = null
-    )
-    {
-        return Plot([curve], [name], upTo);
-    }
-
-    /// <summary>
-    /// Plots a set of curves.
-    /// The curves will be given default names f, g, h and so on.
-    /// </summary>
-    /// <param name="curves">The curves to plot.</param>
-    /// <param name="upTo">
-    /// The x-axis right edge of the plot.
-    /// If null, it is set by default as $max_{i}(T_i + 2 * d_i)$.
-    /// </param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this IReadOnlyCollection<Curve> curves,
-        Rational? upTo = null
-    )
-    {
-        var names = curves.Select((_, i) => $"{(char)('f' + i)}");
-        return Plot(curves, names, upTo);
-    }
-
-    /// <summary>
-    /// Plots a set of curves.
-    /// The curves will be given default names f, g, h and so on.
-    /// The x-axis right edge of the plot will be set to $max_{i}(T_i + 2 * d_i)$.
-    /// </summary>
-    /// <param name="curves">The curves to plot.</param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        params Curve[] curves
-    )
-    {
-        return Plot(curves, null);
-    }
-
-    #endregion
-
-    #region Sequences
-
     /// <summary>
     /// Plots a set of sequences.
     /// </summary>
     /// <param name="sequences">The sequences to plot.</param>
     /// <param name="names">The names of the sequences.</param>
     /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this IEnumerable<Sequence> sequences,
-        IEnumerable<string> names
+    public override PlotlyChart Plot(
+        IReadOnlyList<Sequence> sequences,
+        IReadOnlyList<string> names
     )
     {
         var colors = new List<string>
@@ -145,7 +49,6 @@ public static partial class Plotly
         );
 
         return chart;
-
         IEnumerable<Scattergl> GetTrace(Sequence sequence, string name, int index)
         {
             var color = colors[index % colors.Count];
@@ -157,6 +60,12 @@ public static partial class Plotly
                     .Select(p => (x: (decimal)p.Time, y: (decimal)p.Value))
                     .ToList();
 
+                if (sequence.IsLeftOpen)
+                {
+                    var head = (Segment)sequence.Elements.First();
+                    points.Insert(0, (x: (decimal)head.EndTime, y: (decimal)head.LeftLimitAtEndTime));
+                }
+                
                 if (sequence.IsRightOpen)
                 {
                     var tail = (Segment)sequence.Elements.Last();
@@ -295,36 +204,14 @@ public static partial class Plotly
         }
     }
 
-    /// <summary>
-    /// Plots a set of sequences.
-    /// The sequences will be given default names f, g, h and so on.
-    /// </summary>
-    /// <param name="sequences">The sequences to plot.</param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this IReadOnlyCollection<Sequence> sequences
-    )
+    public override string GetHtml(PlotlyChart plot)
     {
-        var names = sequences.Select((_, i) => $"{(char)('f' + i)}");
-        return Plot(sequences, names);
+        return plot.GetHtml();
     }
 
-    /// <summary>
-    /// Plots a sequence.
-    /// </summary>
-    /// <param name="sequence">The sequence to plot.</param>
-    /// <param name="name">
-    /// The name of the sequence.
-    /// By default, it captures the expression used for <paramref name="sequence"/>.
-    /// </param>
-    /// <returns>A <see cref="PlotlyChart"/> object.</returns>
-    public static PlotlyChart Plot(
-        this Sequence sequence,
-        [CallerArgumentExpression("sequence")] string name = "f"
-    )
+    public override byte[] GetImage(PlotlyChart plot)
     {
-        return Plot([sequence], [name]);
+        var html = plot.GetHtml();
+        return HtmlToImage.RenderAsync(html).Result;
     }
-
-    #endregion
 }

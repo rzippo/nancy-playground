@@ -23,7 +23,9 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
-                PlotFormatter = new HtmlPlotFormatter(plotsRoot)
+                // todo: make this configurable
+                PlotFormatter = new ScottPlotFormatter(plotsRoot)
+                // PlotFormatter = new XPlotPlotFormatter(plotsRoot)
             },
             _ => new PlainConsoleStatementFormatter()
         };
