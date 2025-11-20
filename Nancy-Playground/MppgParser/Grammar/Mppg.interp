@@ -59,7 +59,7 @@ null
 '"no"'
 '"yes"'
 'bg'
-'browser'
+'gui'
 'assert'
 '!='
 '<'

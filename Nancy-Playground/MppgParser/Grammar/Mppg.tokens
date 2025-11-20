@@ -133,7 +133,7 @@ INFINITE_NUMBER_LITERAL=76
 '"no"'=57
 '"yes"'=58
 'bg'=59
-'browser'=60
+'gui'=60
 'assert'=61
 '!='=62
 '<'=63

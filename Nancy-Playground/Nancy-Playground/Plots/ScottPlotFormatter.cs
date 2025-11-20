@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using NancyMppg.Nancy.Plots;
 using Spectre.Console;
 using Unipi.MppgParser;
@@ -70,33 +71,37 @@ public class ScottPlotFormatter : IPlotFormatter
                 plot.Title(plotOutput.Title);
             }
 
-            // default behavior: do NOT open a browser tab to show the interactive plot
-            var showInBrowser = plotOutput.Settings.ShowInBrowser ?? false;
+            // default behavior: do NOT open a GUI window or tab to show the interactive plot
+            var showInGui = plotOutput.Settings.ShowInGui ?? true;
 
-            if (showInBrowser)
+            if (showInGui)
             {
-                // todo: implement
+                var imageBytes = plotter.GetImage(plot);
+                var imageTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
+                File.WriteAllBytes(imageTempFileName, imageBytes);
+                AnsiConsole.MarkupLine($"[gray]Image written to: {imageTempFileName}; opening in default app[/]");
+                var psi = new ProcessStartInfo
+                {
+                    FileName = imageTempFileName,
+                    UseShellExecute = true
+                };
+                try {
+                    Process.Start(psi);
+                }
+                catch(System.ComponentModel.Win32Exception)
+                {
+                    AnsiConsole.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
+                }
             }
             else
             {
-                AnsiConsole.MarkupLine($"[gray]In-browser plot skipped.[/]");
+                AnsiConsole.MarkupLine($"[gray]In-gui plot skipped.[/]");
             }
 
             if (!plotOutput.Settings.OutPath.IsNullOrWhiteSpace())
             {
                 var imagePath = Path.Join(PlotsExportRoot, plotOutput.Settings.OutPath);
-                byte[] imageBytes;
-                try
-                {
-                    imageBytes = plotter.GetImage(plot);
-                }
-                catch (Exception e)
-                {
-                    AnsiConsole.MarkupLine("Image rendering failed. May be due to dependencies: try running [yellow]nancy-playground setup[/]");
-                    Console.WriteLine(e.Message);
-                    return;
-                }
-
+                var imageBytes = plotter.GetImage(plot);
                 File.WriteAllBytes(imagePath, imageBytes);
             }
         }

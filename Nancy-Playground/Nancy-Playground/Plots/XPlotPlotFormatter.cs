@@ -51,9 +51,9 @@ public class XPlotPlotFormatter: IPlotFormatter
             // how to move the legend below?
             
             // default behavior: do open a browser tab to show the interactive plot
-            var showInBrowser = plotOutput.Settings.ShowInBrowser ?? true;
+            var showInGui = plotOutput.Settings.ShowInGui ?? true;
             
-            if (showInBrowser)
+            if (showInGui)
             {
                 var html = plotter.GetHtml(plot);
                 var htmlTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".html";
