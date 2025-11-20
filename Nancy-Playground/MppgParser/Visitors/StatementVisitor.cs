@@ -95,13 +95,31 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "xlim":
                 {
-                    // todo
+                    var intervalContext = plotArgContext.GetChild<Grammar.MppgParser.IntervalContext>(0);
+                    var numberVisitor = new NumberLiteralVisitor();
+                    var leftLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimit = numberVisitor.Visit(leftLimitContext);
+                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    settings = settings with
+                    {
+                        XLimit = (leftLimit, rightLimit)
+                    };
                     break;
                 }
 
                 case "ylim":
                 {
-                    // todo
+                    var intervalContext = plotArgContext.GetChild<Grammar.MppgParser.IntervalContext>(0);
+                    var numberVisitor = new NumberLiteralVisitor();
+                    var leftLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimit = numberVisitor.Visit(leftLimitContext);
+                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    settings = settings with
+                    {
+                        YLimit = (leftLimit, rightLimit)
+                    };
                     break;
                 }
 

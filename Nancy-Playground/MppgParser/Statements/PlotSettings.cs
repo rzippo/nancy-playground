@@ -12,12 +12,12 @@ public record PlotSettings
     /// <summary>
     /// Range for the x-axis.
     /// </summary>
-    public (Rational?, Rational?) XLimit { get; init; } = (null, null);
+    public (Rational Left, Rational Right)? XLimit { get; init; } = null;
 
     /// <summary>
     /// Range for the y-axis.
     /// </summary>
-    public (Rational?, Rational?) YLimit { get; init; } = (null, null);
+    public (Rational left, Rational right)? YLimit { get; init; } = null;
 
     /// <summary>
     /// Label for the x-axis.
