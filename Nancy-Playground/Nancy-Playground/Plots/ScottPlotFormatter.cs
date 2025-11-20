@@ -44,13 +44,13 @@ public class ScottPlotFormatter : IPlotFormatter
                 plotter.Plot(curves, names, xLimit.Value.Left, xLimit.Value.Right) :
                 plotter.Plot(curves, names);
 
-            var xlabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
+            var xLabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
                 "x" : plotOutput.XLabel;
-            var ylabel = string.IsNullOrWhiteSpace(plotOutput.YLabel) ?
+            var yLabel = string.IsNullOrWhiteSpace(plotOutput.YLabel) ?
                 "y" : plotOutput.YLabel;
 
-            plot.XLabel(xlabel);
-            plot.YLabel(ylabel);
+            plot.XLabel(xLabel);
+            plot.YLabel(yLabel);
 
             if (xLimit.HasValue)
             {
