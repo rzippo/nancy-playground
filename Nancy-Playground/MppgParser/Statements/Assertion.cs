@@ -117,8 +117,8 @@ public record class Assertion : Statement
             StatementText = Text,
             OutputText = output,
             Result = result ?? false,
-            LeftExpression = LeftExpression.NancyExpression,
-            RightExpression = RightExpression.NancyExpression,
+            LeftExpression = LeftExpression.NancyExpression!,
+            RightExpression = RightExpression.NancyExpression!,
             Time = sw.Elapsed,
         };
     }
