@@ -1,10 +1,13 @@
 ﻿using Antlr4.Runtime;
+using Unipi.MppgParser.Utility;
 using Unipi.MppgParser.Visitors;
 
 namespace Unipi.MppgParser;
 
-public class Program
+public record class Program
 {
+    public string Text { get; init; }
+
     public List<Statement> Statements { get; init; }
 
     public int ProgramCounter { get; private set; } = 0;
@@ -26,7 +29,10 @@ public class Program
     {
         var visitor = new ProgramVisitor();
         var program = visitor.Visit(context);
-        return program;
+        return program with
+        {
+            Text = context.GetJoinedText()
+        };
     }
 
     public static Program FromText(string text)
@@ -37,7 +43,11 @@ public class Program
         var parser = new Grammar.MppgParser(commonTokenStream);
         
         var context = parser.program();
-        return FromTree(context);
+        var program = FromTree(context);
+        return program with
+        {
+            Text = text
+        };
     }
 
     public IEnumerable<string> ExecuteToStringOutput()
@@ -77,5 +87,27 @@ public class Program
             return ProgramContext.ExecuteStatement(
                 statement, formatter, immediateComputeValue);
         }
+    }
+
+    public List<string> ToNancyCode(bool useNancyExpressions = false)
+    {
+        if (Text.IsNullOrWhiteSpace())
+            throw new InvalidOperationException("Program text not available!");
+        
+        return ToNancyCode(Text,  useNancyExpressions);
+    }
+    
+    public static List<string> ToNancyCode(string text, bool useNancyExpressions = false)
+    {
+        var inputStream = CharStreams.fromString(text);
+        var lexer = new Grammar.MppgLexer(inputStream);
+        var commonTokenStream = new CommonTokenStream(lexer);
+        var parser = new Grammar.MppgParser(commonTokenStream);
+
+        var programContext = parser.program();
+        var visitor = new ToNancyCodeVisitor();
+        var code = programContext.Accept(visitor);
+        
+        return code;
     }
 }

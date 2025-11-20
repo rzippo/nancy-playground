@@ -19,13 +19,14 @@ program : statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
 statementLine: statement inlineComment? ;
 statement 
     : assignment 
-    | expression 
+    | expressionCommand
     | plotCommand 
     | assertion
     | printExpressionCommand
     | comment
     | empty;
 assignment : VARIABLE_NAME ASSIGN expression ;
+expressionCommand : expression;
 expression : functionExpression | numberExpression;
 comment
     : INLINABLE_COMMENT

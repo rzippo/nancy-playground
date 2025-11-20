@@ -57,6 +57,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignment([NotNull] MppgParser.AssignmentContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.expressionCommand"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitExpressionCommand([NotNull] MppgParser.ExpressionCommandContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
