@@ -71,15 +71,38 @@ public class ScottPlotFormatter : IPlotFormatter
                 plot.Title(plotOutput.Title);
             }
 
-            // default behavior: do NOT open a GUI window or tab to show the interactive plot
+            // default behavior: open a GUI window or tab to show the plot; it will not be interactive
             var showInGui = plotOutput.Settings.ShowInGui ?? true;
+            var saveToFile = !plotOutput.Settings.OutPath.IsNullOrWhiteSpace();
 
-            if (showInGui)
+            if (saveToFile)
+            {
+                var imagePath = Path.Join(PlotsExportRoot, plotOutput.Settings.OutPath);
+                var imageBytes = plotter.GetImage(plot);
+                File.WriteAllBytes(imagePath, imageBytes);
+
+                if (showInGui)
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = imagePath,
+                        UseShellExecute = true
+                    };
+                    try {
+                        Process.Start(psi);
+                    }
+                    catch(System.ComponentModel.Win32Exception)
+                    {
+                        AnsiConsole.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
+                    }
+                }
+            }
+            else if (showInGui)
             {
                 var imageBytes = plotter.GetImage(plot);
                 var imageTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
                 File.WriteAllBytes(imageTempFileName, imageBytes);
-                AnsiConsole.MarkupLine($"[gray]Image written to: {imageTempFileName}; opening in default app[/]");
+                AnsiConsole.MarkupLine($"[gray]Temp image written to: {imageTempFileName}; opening in default app[/]");
                 var psi = new ProcessStartInfo
                 {
                     FileName = imageTempFileName,
@@ -92,17 +115,6 @@ public class ScottPlotFormatter : IPlotFormatter
                 {
                     AnsiConsole.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
                 }
-            }
-            else
-            {
-                AnsiConsole.MarkupLine($"[gray]In-gui plot skipped.[/]");
-            }
-
-            if (!plotOutput.Settings.OutPath.IsNullOrWhiteSpace())
-            {
-                var imagePath = Path.Join(PlotsExportRoot, plotOutput.Settings.OutPath);
-                var imageBytes = plotter.GetImage(plot);
-                File.WriteAllBytes(imagePath, imageBytes);
             }
         }
     }
