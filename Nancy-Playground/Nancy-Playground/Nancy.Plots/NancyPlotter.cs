@@ -45,6 +45,32 @@ public abstract partial class NancyPlotter<TChart>
     }
 
     /// <summary>
+    /// Plots a set of curves.
+    /// </summary>
+    /// <param name="curves">The curves to plot.</param>
+    /// <param name="names">The names of the curves.</param>
+    /// <param name="leftLimit">
+    /// The x-axis left edge of the plot.
+    /// </param>
+    /// <param name="rightLimit">
+    /// The x-axis right edge of the plot.
+    /// </param>
+    /// <returns>A <see cref="TChart"/> object.</returns>
+    public TChart Plot(
+        IReadOnlyList<Curve> curves,
+        IReadOnlyList<string> names,
+        Rational leftLimit,
+        Rational rightLimit
+    )
+    {
+        var cuts = curves
+            .Select(c => c.Cut(leftLimit, rightLimit, isEndIncluded: true))
+            .ToList();
+
+        return Plot(cuts, names);
+    }
+
+    /// <summary>
     /// Plots a curve.
     /// </summary>
     /// <param name="curve">The curve to plot.</param>

@@ -2,6 +2,7 @@ using NancyMppg.Nancy.Plots;
 using Spectre.Console;
 using Unipi.MppgParser;
 using Unipi.MppgParser.Utility;
+using Unipi.Nancy.Numerics;
 
 namespace NancyMppg;
 
@@ -36,7 +37,12 @@ public class ScottPlotFormatter : IPlotFormatter
                 .Select(pair => pair.Name)
                 .ToList();
 
-            var plot = plotter.Plot(curves, names);
+            var xLimit = plotOutput.Settings.XLimit;
+            var yLimit = plotOutput.Settings.YLimit;
+
+            var plot = xLimit.HasValue ?
+                plotter.Plot(curves, names, xLimit.Value.Left, xLimit.Value.Right) :
+                plotter.Plot(curves, names);
 
             var xlabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
                 "x" : plotOutput.XLabel;
@@ -45,6 +51,18 @@ public class ScottPlotFormatter : IPlotFormatter
 
             plot.XLabel(xlabel);
             plot.YLabel(ylabel);
+
+            if (xLimit.HasValue)
+            {
+                var (left, right) = xLimit.Value;
+                plot.Axes.SetLimitsX((double)left, (double)right);
+            }
+
+            if (yLimit.HasValue)
+            {
+                var (left, right) = yLimit.Value;
+                plot.Axes.SetLimitsY((double)left, (double)right);
+            }
 
             if (!string.IsNullOrWhiteSpace(plotOutput.Title))
             {
