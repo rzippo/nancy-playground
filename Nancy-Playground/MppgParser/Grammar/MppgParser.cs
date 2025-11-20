@@ -91,7 +91,7 @@ public partial class MppgParser : Parser {
 		"'upp'", "'period'", "']'", "'['", "'div'", "'~'", "'hDev'", "'hdev'", 
 		"'vDev'", "'vdev'", "'plot'", "'main'", "'='", "'title'", "'xlim'", "'ylim'", 
 		"'xlab'", "'ylab'", "'out'", "'grid'", "'\"no\"'", "'\"yes\"'", "'bg'", 
-		"'browser'", "'assert'", "'!='", "'<'", "'<='", "'>='", "'printExpression'", 
+		"'gui'", "'assert'", "'!='", "'<'", "'<='", "'>='", "'printExpression'", 
 		null, null, null, "':='"
 	};
 	private static readonly string[] _SymbolicNames = {

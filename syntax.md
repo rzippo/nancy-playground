@@ -258,13 +258,14 @@ Valid `args` are the following.
 | `out` | Name of png file to save plot to. | ✅ |
 | `grid ="no"` | Remove grid from plot. | ❌ |
 | `bg ="no"` | Use white background instead of default grey. | ❌ |
-| `browser ="no"` | Custom option, skips rendering via browser. | ✅ |
+| `gui ="no"` | Custom option, enables or skips rendering via GUI. | ✅ |
 
 Notes: 
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
 of numbers, variables and strings for labels
 - *not documented*: args and function names can appear in any order
+- the `gui` option behaves differently depending on the plot rendering used.
 
 ### Examples
 - `plot(f1)`

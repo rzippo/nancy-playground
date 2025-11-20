@@ -45,7 +45,8 @@ public record PlotSettings
     public bool ShowBackground { get; init; } = true;
 
     /// <summary>
-    /// If false, the plot is NOT shown in the browser.
+    /// If false, the plot is NOT shown in a GUI.
+    /// If true, the GUI used depends on the plot rendering used.
     /// </summary>
-    public bool? ShowInBrowser { get; init; } = null;
+    public bool? ShowInGui { get; init; } = null;
 }

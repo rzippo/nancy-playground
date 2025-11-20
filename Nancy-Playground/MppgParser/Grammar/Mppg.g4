@@ -165,7 +165,7 @@ plotOption
     | 'out' '=' string
     | 'grid' '=' ('"no"'|'"yes"')
     | 'bg' '=' ('"no"'|'"yes"')
-    | 'browser' '=' ('"no"'|'"yes"')
+    | 'gui' '=' ('"no"'|'"yes"')
     ;
 
 string

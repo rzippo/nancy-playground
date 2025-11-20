@@ -184,11 +184,11 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
                     break;
                 }
 
-                case "browser":
+                case "gui":
                 {
                     settings = settings with
                     {
-                        ShowInBrowser = argString switch
+                        ShowInGui = argString switch
                         {
                             "yes" => true,
                             "no" => false,
