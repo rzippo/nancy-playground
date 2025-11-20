@@ -22,12 +22,12 @@ public record PlotSettings
     /// <summary>
     /// Label for the x-axis.
     /// </summary>
-    public string XLabel { get; init; } = string.Empty;
+    public ComputableString XLabel { get; init; } = new();
 
     /// <summary>
     /// Label for the y-axis.
     /// </summary>
-    public string YLabel { get; init; } = string.Empty;
+    public ComputableString YLabel { get; init; } = new();
 
     /// <summary>
     /// Name of the png file to save the plot to.

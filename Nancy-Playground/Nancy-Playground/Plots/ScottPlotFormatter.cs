@@ -38,10 +38,10 @@ public class ScottPlotFormatter : IPlotFormatter
 
             var plot = plotter.Plot(curves, names);
 
-            var xlabel = string.IsNullOrWhiteSpace(plotOutput.Settings.XLabel) ?
-                "x" : plotOutput.Settings.XLabel;
-            var ylabel = string.IsNullOrWhiteSpace(plotOutput.Settings.YLabel) ?
-                "y" : plotOutput.Settings.YLabel;
+            var xlabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
+                "x" : plotOutput.XLabel;
+            var ylabel = string.IsNullOrWhiteSpace(plotOutput.YLabel) ?
+                "y" : plotOutput.YLabel;
 
             plot.XLabel(xlabel);
             plot.YLabel(ylabel);

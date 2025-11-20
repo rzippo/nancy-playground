@@ -107,13 +107,25 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "xlab":
                 {
-                    // todo
+                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var visitor = new ComputableStringVisitor();
+                    var cs = visitor.Visit(stringContext);
+                    settings = settings with
+                    {
+                        XLabel = cs
+                    };
                     break;
                 }
 
                 case "ylab":
                 {
-                    // todo
+                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var visitor = new ComputableStringVisitor();
+                    var cs = visitor.Visit(stringContext);
+                    settings = settings with
+                    {
+                        YLabel = cs
+                    };
                     break;
                 }
 

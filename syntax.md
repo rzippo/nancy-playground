@@ -249,12 +249,12 @@ Valid `args` are the following.
 
 | Arg | Description | Implemented |
 |----|----|----|
-| `main` | The graph title. | ❌ |
-| `title` | Custom option, alias for `main`. | ❌ |
+| `main` | The graph title. | ✅ |
+| `title` | Custom option, alias for `main`. | ✅ |
 | `xlim` | Range for x-axis. | ❌ |
 | `ylim` | Range for y-axis. | ❌ |
-| `xlab` | Label for x axis. | ❌ |
-| `ylab` | Label for y axis. | ❌ |
+| `xlab` | Label for x axis. | ✅ |
+| `ylab` | Label for y axis. | ✅ |
 | `out` | Name of png file to save plot to. | ✅ |
 | `grid ="no"` | Remove grid from plot. | ❌ |
 | `bg ="no"` | Use white background instead of default grey. | ❌ |
