@@ -25,11 +25,15 @@ public record class PlotCommand : Statement
             })
             .ToList();
         var title = Settings.Title.Compute(state);
+        var xlabel = Settings.XLabel.Compute(state);
+        var ylabel = Settings.YLabel.Compute(state);
 
         return new PlotOutput
         {
             FunctionsToPlot = functions,
             Title = title,
+            XLabel = xlabel,
+            YLabel = ylabel,
             Settings = Settings,
             StatementText = Text,
             OutputText = "If you are reading this, the formatter does not implement plots."

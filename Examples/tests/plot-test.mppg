@@ -1,0 +1,2 @@
+f := stair(1, 2, 3)
+plot(f, xlim = [2, 10], ylim = [3, 20], main = "Plot test, n = " + 5, xlab = "time", ylab = "data", out = "test.png")
