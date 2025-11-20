@@ -29,73 +29,45 @@ public class ScottPlotNancyPlotter : NancyPlotter<Plot>
         foreach (var (sequence, idx) in sequences.WithIndex())
         {
             var color = Color.FromHex(colors[idx % colors.Count]);
-            var sequenceTrace = new SequenceTrace(sequence);
+            var sequenceTrace = new SequenceTraces(sequence);
 
-            if (sequence.IsContinuous)
+            if (sequenceTrace.Points.Any())
             {
                 var pointCoordinates = sequenceTrace.Points
                     .Select(p => new Coordinates(p.x, p.y))
-                    .ToList();
-                
-                if (sequence.IsLeftOpen)
-                {
-                    var head = sequenceTrace.Segments.First();
-                    pointCoordinates.Insert(0, new Coordinates(head.a.x, head.a.y));
-                }
-                
-                if (sequence.IsRightOpen)
-                {
-                    var tail = sequenceTrace.Segments.Last();
-                    pointCoordinates.Add(new Coordinates(tail.b.x, tail.b.y));
-                }
-                
-                var lineScatter = plot.Add.ScatterLine(pointCoordinates);
-                lineScatter.Color = color;
-                lineScatter.MarkerShape = MarkerShape.FilledCircle;
-                lineScatter.LegendText = names[idx];
+                    .ToArray();
+                var pointsScatter = plot.Add.ScatterPoints(pointCoordinates);
+                pointsScatter.Color = color;
+                pointsScatter.MarkerShape = MarkerShape.FilledCircle;
+                if (!sequenceTrace.ContinuousLines.Any())
+                    pointsScatter.LegendText = names[idx];
             }
-            else
+
+            if (sequenceTrace.Discontinuities.Any())
             {
-                if (sequenceTrace.Points.Any())
+                var discontinuityCoordinates = sequenceTrace.Discontinuities
+                    .Select(p => new Coordinates(p.x, p.y))
+                    .ToArray();
+                var discontinuityScatter = plot.Add.ScatterPoints(discontinuityCoordinates);
+                discontinuityScatter.Color = color;
+                discontinuityScatter.MarkerShape = MarkerShape.OpenCircle;
+                // discontinuityScatter.LegendText = names[idx];
+            }
+
+            if (sequenceTrace.ContinuousLines.Any())
+            {
+                var legendApplied = false;
+                foreach (var continuousLine in sequenceTrace.ContinuousLines)
                 {
-                    var pointCoordinates = sequenceTrace.Points
+                    var coordinates = continuousLine
                         .Select(p => new Coordinates(p.x, p.y))
                         .ToArray();
-                    var pointsScatter = plot.Add.ScatterPoints(pointCoordinates);
-                    pointsScatter.Color = color;
-                    pointsScatter.MarkerShape = MarkerShape.FilledCircle;
-                    if (!sequenceTrace.Segments.Any())
-                        pointsScatter.LegendText = names[idx];
-                }
-
-                if (sequenceTrace.Discontinuities.Any())
-                {
-                    var discontinuityCoordinates = sequenceTrace.Discontinuities
-                        .Select(p => new Coordinates(p.x, p.y))
-                        .ToArray();
-                    var discontinuityScatter = plot.Add.ScatterPoints(discontinuityCoordinates);
-                    discontinuityScatter.Color = color;
-                    discontinuityScatter.MarkerShape = MarkerShape.OpenCircle;
-                    // discontinuityScatter.LegendText = names[idx];
-                }
-
-                if (sequenceTrace.Segments.Any())
-                {
-                    var legendApplied = false;
-                    foreach (var segment in sequenceTrace.Segments)
+                    var lineScatter = plot.Add.ScatterLine(coordinates);
+                    lineScatter.Color = color;
+                    if (!legendApplied)
                     {
-                        var segmentCoordinates = new Coordinates[]
-                        {
-                            new (segment.a.x, segment.a.y),
-                            new (segment.b.x, segment.b.y),
-                        };
-                        var segmentScatter = plot.Add.ScatterLine(segmentCoordinates);
-                        segmentScatter.Color = color;
-                        if (!legendApplied)
-                        {
-                            segmentScatter.LegendText = names[idx];
-                            legendApplied = true;
-                        }
+                        lineScatter.LegendText = names[idx];
+                        legendApplied = true;
                     }
                 }
             }
@@ -115,50 +87,112 @@ public class ScottPlotNancyPlotter : NancyPlotter<Plot>
         return plot.GetImageBytes(1200, 800, ImageFormat.Png);
     }
 
-    private class SequenceTrace
+    private class SequenceTraces
     {
-        public List<((double x, double y) a, (double x, double y) b)> Segments { get; } = [];
+        public List<List<(double x, double y)>> ContinuousLines { get; } = [];
         
         public List<(double x, double y)> Points { get; } = [];
         
         public List<(double x, double y)> Discontinuities { get; } = [];
         
-        public SequenceTrace(Sequence sequence)
+        public SequenceTraces(Sequence sequence)
         {
+            var currentLine = new List<(double x, double y)>();
+            if (sequence.IsLeftOpen)
+            {
+                var firstSegment = (Segment)sequence.Elements.First();
+                var startCoord = StartCoord(firstSegment);
+                Discontinuities.Add(startCoord);
+                currentLine = [ startCoord ];   
+            }
             var breakpoints = sequence.EnumerateBreakpoints();
             foreach (var (left, center, right) in breakpoints)
             {
-                if( center is not { IsPlusInfinite: true })
-                    Points.Add((x: (double)center.Time, y: (double)center.Value));
-                    
-                if (left is not null and not { IsPlusInfinite: true } && left.LeftLimitAtEndTime != center.Value)
+                if (left is not null and not { IsPlusInfinite: true } &&
+                    right is not null and not { IsPlusInfinite: true } &&
+                    left.LeftLimitAtEndTime == center.Value && center.Value == right.RightLimitAtStartTime
+                   )
                 {
-                    Discontinuities.Add((x: (double)center.Time, y: (double)left.LeftLimitAtEndTime));
+                    // continue the current line
+                    currentLine.Add(Coord(center));
                 }
-
-                if (right is not null and not { IsPlusInfinite: true })
+                else
                 {
-                    Segments.Add((
-                        a: (x: (double)right.StartTime, y: (double)right.RightLimitAtStartTime),
-                        b: (x: (double)right.EndTime, y: (double)right.LeftLimitAtEndTime)
-                    ));
-                    if (right.RightLimitAtStartTime != center.Value)
+                    if (left is null or {IsInfinite: true})
                     {
-                        Discontinuities.Add((x: (double)center.Time, y: (double)right.RightLimitAtStartTime));
+                        // no line is running yet
+                        if (center is not {IsInfinite: true})
+                            Points.Add(Coord(center));
+                        if (right is not null and not { IsInfinite: true })
+                        {
+                            var startCoord = ((double)right.StartTime, (double)right.RightLimitAtStartTime);
+                            if(right.RightLimitAtStartTime != center.Value)
+                                Discontinuities.Add(startCoord);
+                            // start new line
+                            currentLine = [startCoord];
+                        }
+                    }
+                    else
+                    {
+                        // left is finite, and assumed within the sequence
+                        // first, continue the running line
+                        var leftEndCoord = EndCoord(left); 
+                        currentLine.Add(leftEndCoord);
+                        // if any discontinuity occurs, break the line
+                        // by above checks, the discontinuity SHOULD occurr
+                        if (center is { IsInfinite: true } ||
+                            right is null or { IsInfinite: true } ||
+                            left.LeftLimitAtEndTime != center.Value ||
+                            center.Value != right.RightLimitAtStartTime
+                           )
+                        {
+                            ContinuousLines.Add(currentLine);
+                            if (left.LeftLimitAtEndTime != center.Value)
+                                Discontinuities.Add(leftEndCoord);
+                            if (center is not {IsInfinite:true})
+                                Points.Add(Coord(center));
+                            if (right is not null and not { IsInfinite: true })
+                            {
+                                // start new line immediately
+                                var rightStartCoord = StartCoord(right);
+                                currentLine = [rightStartCoord];
+                                if(center.Value != right.RightLimitAtStartTime)
+                                    Discontinuities.Add(rightStartCoord);
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException("Should never get here!");
+                        }
                     }
                 }
             }
 
             if (sequence.IsRightOpen)
             {
-                var tail = (Segment)sequence.Elements.Last();
-                if (tail is not { IsPlusInfinite: true }) {
-                    Segments.Add((
-                        a: (x: (double)tail.StartTime, y: (double)tail.RightLimitAtStartTime),
-                        b: (x: (double)tail.EndTime, y: (double)tail.LeftLimitAtEndTime)
-                    ));
+                var lastSegment = (Segment)sequence.Elements.Last();
+                if (lastSegment is not { IsPlusInfinite: true }) {
+                    var lastCoord = EndCoord(lastSegment);
+                    currentLine.Add(lastCoord);
+                    ContinuousLines.Add(currentLine);
+                    Discontinuities.Add(lastCoord);
                 }
             }
         }
+    }
+
+    private static (double x, double y) StartCoord(Segment segment)
+    {
+        return ((double)segment.StartTime, (double)segment.RightLimitAtStartTime);
+    }
+    
+    private static (double x, double y) EndCoord(Segment segment)
+    {
+        return ((double)segment.EndTime, (double)segment.LeftLimitAtEndTime);
+    }
+
+    private static (double x, double y) Coord(Point point)
+    {
+        return ((double)point.Time, (double)point.Value);
     }
 }
