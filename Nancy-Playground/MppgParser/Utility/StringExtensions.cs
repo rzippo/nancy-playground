@@ -11,11 +11,13 @@ public static class StringExtensions
         return str;
     }
     
+    /// <inheritdoc cref="string.IsNullOrWhiteSpace"/>
     public static bool IsNullOrWhiteSpace(this string str)
     {
         return string.IsNullOrWhiteSpace(str);
     }
-    
+
+    /// <inheritdoc cref="string.IsNullOrEmpty"/>
     public static bool IsNullOrEmpty(this string str)
     {
         return string.IsNullOrEmpty(str);
