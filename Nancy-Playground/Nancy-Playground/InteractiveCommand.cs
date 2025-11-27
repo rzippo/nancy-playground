@@ -38,20 +38,124 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
         };
 
         var totalComputationTime = TimeSpan.Zero;
-        AnsiConsole.MarkupLine("[green]This is Nancy-Playground, interactive mode. Type your commands.[/]");
+        AnsiConsole.MarkupLine("[green]This is Nancy-Playground, interactive mode. Type your commands. Use [blue]!help[/] to read the manual.[/]");
         while (true)
         {
             var line = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(line))
+                AnsiConsole.WriteLine();
+            else if (line.StartsWith("!"))
             {
-                // dumb termination
-                AnsiConsole.MarkupLine("[green]Bye.[/]");
-                break;
+                // interactive mode command
+                if (line.StartsWith("!quit") || line.StartsWith("!exit"))
+                {
+                    AnsiConsole.MarkupLine("[green]Bye.[/]");
+                    break;
+                }
+                else if (line.StartsWith("!help"))
+                {
+                    var args = line.Split(' ').Skip(1).ToArray();
+                    PrintHelp(args);
+                }
             }
-            var statement = Statement.FromLine(line);
-            programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+            else
+            {
+                // MPPG syntax statement
+                var statement = Statement.FromLine(line);
+                programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+            }
         }
 
         return 0;
+    }
+
+    private void PrintHelp(string[] args)
+    {
+        if(args.Length > 0)
+            AnsiConsole.MarkupLine("[yellow]!help args are currently ignored.[/]");
+        
+        PrintShort(NancyPlaygroundDocs.HelpDocument);
+    }
+    
+    /// <summary>
+    /// Prints all sections and items of a HelpDocument in a short, colored form.
+    /// </summary>
+    public static void PrintShort(HelpDocument doc)
+    {
+        if (doc is null)
+        {
+            AnsiConsole.MarkupLine("[red]HelpDocument is null.[/]");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(doc.Preamble))
+        {
+            AnsiConsole.MarkupLine($"[grey]{Escape(doc.Preamble.Trim())}[/]");
+            AnsiConsole.WriteLine();
+        }
+
+        foreach (var section in doc.Sections)
+        {
+            PrintSectionShort(section);
+            AnsiConsole.WriteLine();
+        }
+    }
+
+    private static void PrintSectionShort(HelpSection section)
+    {
+        var tagText = section.Tags is { Count: > 0 }
+            ? $" [grey]({Escape(string.Join(", ", section.Tags))})[/]"
+            : string.Empty;
+
+        // AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]{tagText}");
+        AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
+
+        if (!string.IsNullOrWhiteSpace(section.Description))
+        {
+            AnsiConsole.MarkupLine($"[dim]{Escape(section.Description)}[/]");
+        }
+
+        foreach (var item in section.Items)
+        {
+            PrintItemShort(item);
+        }
+    }
+
+    private static void PrintItemShort(HelpItem item)
+    {
+        var tagText = item.Tags is { Count: > 0 }
+            ? $" [grey]({Escape(string.Join(", ", item.Tags))})[/]"
+            : string.Empty;
+
+        // Item name + optional tags
+        // AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/]{tagText}");
+        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] [green]{Escape(item.Format)}[/]");
+
+        // One-line short description (truncated)
+        if (!string.IsNullOrWhiteSpace(item.Description))
+        {
+            var shortDesc = TruncateSingleLine(item.Description, 80);
+            AnsiConsole.MarkupLine($"    [dim]{Escape(shortDesc)}[/]");
+        }
+    }
+
+    private static string TruncateSingleLine(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text))
+            return string.Empty;
+
+        var oneLine = text.Replace("\r", " ").Replace("\n", " ").Trim();
+        if (oneLine.Length <= maxLength)
+            return oneLine;
+
+        return oneLine[..(maxLength - 3)] + "...";
+    }
+
+    /// <summary>
+    /// Escapes Spectre.Console markup special characters.
+    /// </summary>
+    private static string Escape(string text)
+    {
+        return Markup.Escape(text ?? string.Empty);
     }
 }
