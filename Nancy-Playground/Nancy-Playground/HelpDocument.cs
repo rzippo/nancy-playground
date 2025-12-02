@@ -82,7 +82,7 @@ h := ... # This is a comment as well
             {
                 Name = "Types",
                 Description = "Supported value kinds.",
-                Tags = ["types", "values", "functions", "scalars", "kinds"],
+                Tags = ["types", "kinds"],
                 Items =
                 [
                     new HelpItem
@@ -94,7 +94,7 @@ h := ... # This is a comment as well
 - Functions (also called curves in MPPG) represent piecewise-defined curves, service curves, arrival curves, etc.
 - Scalars are numeric values (rationals, ±infinity).
 """,
-                        Tags = ["types", "functions", "scalars", "values", "curves"]
+                        Tags = ["types", "variables"]
                     }
                 ],
             },
@@ -103,7 +103,7 @@ h := ... # This is a comment as well
             {
                 Name = "Variable declaration",
                 Description = "Naming functions and scalars.",
-                Tags = ["variables", "declaration", "assignment", "names", "binding"],
+                Tags = ["variables", "declaration", "assignment", "names"],
                 Items =
                 [
                     new HelpItem
@@ -134,71 +134,71 @@ x := 3/2
                     {
                         Name = "ratency",
                         Format = "ratency(a, b)",
-                        Description = "Rate-latency service function with rate a ≥ 0 and latency b ≥ 0. ✅",
+                        Description = "Rate-latency service function with rate a ≥ 0 and latency b ≥ 0.",
                         LongDescription = """
 Constructs a rate-latency service curve:
 - Parameter `a`: rate (slope), must be ≥ 0
 - Parameter `b`: latency (horizontal shift), must be ≥ 0
 """,
-                        Tags = ["ratency", "service-curve", "rate-latency", "constructor", "functions"]
+                        Tags = ["ratency", "service-curve", "rate-latency"]
                     },
                     new HelpItem
                     {
                         Name = "bucket",
                         Format = "bucket(a, b)",
-                        Description = "Leaky bucket arrival function with slope a ≥ 0 and constant b ≥ 0. ✅",
+                        Description = "Leaky bucket arrival function with slope a ≥ 0 and constant b ≥ 0.",
                         LongDescription = """
 Constructs a leaky bucket arrival curve:
 - `a` is the sustained arrival rate (slope)
 - `b` is the burst size (vertical offset)
 """,
-                        Tags = ["bucket", "arrival-curve", "leaky-bucket", "constructor", "functions"]
+                        Tags = ["bucket", "arrival-curve", "leaky-bucket"]
                     },
                     new HelpItem
                     {
                         Name = "affine",
                         Format = "affine(a, b)",
-                        Description = "Affine function with slope a and constant b. Right-continuous at x = 0. ✅",
+                        Description = "Affine function with slope a and constant b. Right-continuous at x = 0.",
                         LongDescription = """
 Constructs an affine function f(x) = a·x + b.
 The function is right-continuous at 0: f(0+) = f(0).
 """,
-                        Tags = ["affine", "linear", "constructor", "functions"]
+                        Tags = ["affine", "linear"]
                     },
                     new HelpItem
                     {
                         Name = "step",
                         Format = "step(o, h)",
-                        Description = "Step function with step at time o and height h. ✅",
-                        Tags = ["step", "step-function", "constructor", "functions"]
+                        Description = "Step function with step at time o and height h.",
+                        Tags = ["step", "step-function"]
                     },
                     new HelpItem
                     {
                         Name = "stair",
                         Format = "stair(o, l, h)",
-                        Description = "Staircase function with first step at time o, length l, and step height h. ✅",
-                        Tags = ["stair", "staircase", "piecewise", "constructor", "functions"]
+                        Description = "Staircase function with first step at time o, length l, and step height h.",
+                        Tags = ["stair", "staircase", "piecewise"]
                     },
                     new HelpItem
                     {
                         Name = "delay",
                         Format = "delay(o)",
-                        Description = "Burst-delay function that occurs at time o. ✅",
-                        Tags = ["delay", "burst-delay", "constructor", "functions"]
+                        Description = "Burst-delay function that occurs at time o.",
+                        Tags = ["delay", "burst-delay"]
                     },
                     new HelpItem
                     {
                         Name = "zero",
                         Format = "zero",
-                        Description = "Zero function: f(x) = 0 for x ≥ 0. ✅",
-                        Tags = ["zero", "zero-function", "constant", "functions"]
+                        Description = "Zero function: f(x) = 0 for x ≥ 0.",
+                        Tags = ["zero", "zero-function", "constant"]
                     },
                     new HelpItem
                     {
                         Name = "epsilon",
                         Format = "epsilon",
-                        Description = "Epsilon function: f(x) = +∞ for x ≥ 0. ✅",
-                        Tags = ["epsilon", "infinity", "constant", "functions"]
+                        Description = "Epsilon function: f(x) = +∞ for x ≥ 0.",
+                        Tags = ["epsilon", "infinity", "constant"]
                     }
                 ]
             },
@@ -207,7 +207,7 @@ The function is right-continuous at 0: f(0+) = f(0).
             {
                 Name = "Function constructors: arbitrary shapes",
                 Description = "Ultimately affine and ultimately pseudo-periodic functions built from segments.",
-                Tags = ["functions", "constructors", "segments", "uaf", "upp", "piecewise", "pseudo-periodic"],
+                Tags = ["constructors", "segments", "uaf", "upp", "piecewise", "pseudo-periodic"],
                 Items =
                 [
                     new HelpItem
@@ -219,11 +219,11 @@ The function is right-continuous at 0: f(0+) = f(0).
 Segments describe intervals in the (x, y) plane. Variants control inclusion of endpoints and how the slope is given.
 
 Supported segment forms:
-- `[(x, y)]` — a spot at (x, y). (Not implemented ❌)
-- `[(x1, y1)slope(x2, y2)]` — closed on the right; slope explicitly given. ✅
-- `[(x1, y1)slope(x2, y2)[` — right endpoint excluded. ✅
-- `](x1, y1)slope(x2, y2)]` — left endpoint excluded, right included. ✅
-- `[(x1, y1)(x2, y2)[` — slope is automatically computed from endpoints. ✅
+- `[(x, y)]` — a spot at (x, y). (Not implemented)
+- `[(x1, y1)slope(x2, y2)]` — closed on the right; slope explicitly given.
+- `[(x1, y1)slope(x2, y2)[` — right endpoint excluded.
+- `](x1, y1)slope(x2, y2)]` — left endpoint excluded, right included.
+- `[(x1, y1)(x2, y2)[` — slope is automatically computed from endpoints.
 
 x and y can be any rational number or ±infinity. The end value of a segment is used for consistency checks, even if it is right-open.
 """,
@@ -238,7 +238,7 @@ x and y can be any rational number or ±infinity. The end value of a segment is 
                     {
                         Name = "Ultimately Affine functions",
                         Format = "uaf(SEGMENT+)",
-                        Description = "Ultimately affine function built from one or more segments. ✅",
+                        Description = "Ultimately affine function built from one or more segments.",
                         LongDescription = """
 Syntax:
 - `uaf(SEGMENT+)`
@@ -251,13 +251,13 @@ uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
                         Examples = """
 uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
 """,
-                        Tags = ["uaf", "ultimately-affine", "functions", "segments", "piecewise"]
+                        Tags = ["uaf", "ultimately-affine", "segments", "piecewise"]
                     },
                     new HelpItem
                     {
                         Name = "Ultimately Pseudo-Periodic functions",
                         Format = "upp([finiteSegments,] period(periodicSegments) [, incr[, period]])",
-                        Description = "Ultimately pseudo-periodic function with a finite part and a repeating pseudo-periodic part. ✅",
+                        Description = "Ultimately pseudo-periodic function with a finite part and a repeating pseudo-periodic part.",
                         LongDescription = """
 Syntax:
 - `upp([SEGMENT*], period(SEGMENT*) [, incr[, period]])`
@@ -286,7 +286,7 @@ upp( [(0, +Infinity) 0 (6, +Infinity)],
      0,
      12)
 """,
-                        Tags = ["upp", "ultimately-pseudo-periodic", "periodic", "functions", "segments"]
+                        Tags = ["upp", "ultimately-pseudo-periodic", "periodic", "segments"]
                     }
                 ]
             },
@@ -321,7 +321,7 @@ Implementation ignores any floating-point variant and focuses on rationals.
 +infinity
 -infinity
 """,
-                        Tags = ["scalars", "numbers", "rational", "infinity", "syntax"]
+                        Tags = ["scalars", "numbers", "rational", "infinity"]
                     }
                 ]
             },
@@ -330,131 +330,131 @@ Implementation ignores any floating-point variant and focuses on rationals.
             {
                 Name = "Function-returning operations",
                 Description = "Operations that take functions (and possibly scalars) and return functions.",
-                Tags = ["functions", "operations", "convolution", "deconvolution", "closure", "shift", "composition"],
+                Tags = ["functions", "operations"],
                 Items =
                 [
                     new HelpItem
                     {
                         Name = "Pointwise min/max",
                         Format = "f1 ∧ f2 | f1 ∨ f2",
-                        Description = "Pointwise minimum or maximum of two functions. ✅",
+                        Description = "Pointwise minimum or maximum of two functions.",
                         LongDescription = """
 - `f1 ∧ f2`: pointwise minimum of f1 and f2.
 - `f1 ∨ f2`: pointwise maximum of f1 and f2.
 """,
-                        Tags = ["functions", "min", "max", "pointwise", "operations"]
+                        Tags = ["min", "max"]
                     },
                     new HelpItem
                     {
                         Name = "Addition and subtraction (functions)",
                         Format = "f1 + f2 | f1 - f2",
-                        Description = "Pointwise sum or difference of two functions. ✅",
-                        Tags = ["functions", "addition", "subtraction", "pointwise", "operations"]
+                        Description = "Pointwise sum or difference of two functions.",
+                        Tags = ["addition", "subtraction"]
                     },
                     new HelpItem
                     {
                         Name = "(min,+) convolution",
                         Format = "f1 * f2 | f1 *_ f2",
-                        Description = "(min,+) convolution of f1 and f2. ✅",
+                        Description = "(min,+) convolution of f1 and f2.",
                         LongDescription = """
 Both `*` and `*_` denote the (min,+) convolution. They are aliases.
 """,
-                        Tags = ["functions", "convolution", "min-plus", "operations"]
+                        Tags = ["convolution", "min-plus"]
                     },
                     new HelpItem
                     {
                         Name = "(max,+) convolution",
                         Format = "f1 *^ f2",
-                        Description = "(max,+) convolution of f1 and f2. ✅",
-                        Tags = ["functions", "convolution", "max-plus", "operations"]
+                        Description = "(max,+) convolution of f1 and f2.",
+                        Tags = ["convolution", "max-plus"]
                     },
                     new HelpItem
                     {
                         Name = "(min,+) deconvolution",
                         Format = "f1 / f2 | f1 /_ f2",
-                        Description = "(min,+) deconvolution of f1 by f2. ✅",
-                        Tags = ["functions", "deconvolution", "min-plus", "operations"]
+                        Description = "(min,+) deconvolution of f1 by f2.",
+                        Tags = ["deconvolution", "min-plus"]
                     },
                     new HelpItem
                     {
                         Name = "(max,+) deconvolution",
                         Format = "f1 /^ f2",
-                        Description = "(max,+) deconvolution of f1 by f2. ✅",
-                        Tags = ["functions", "deconvolution", "max-plus", "operations"]
+                        Description = "(max,+) deconvolution of f1 by f2.",
+                        Tags = ["deconvolution", "max-plus"]
                     },
                     new HelpItem
                     {
                         Name = "Subadditive closure",
                         Format = "star(f)",
-                        Description = "Subadditive closure of f. ✅",
-                        Tags = ["functions", "closure", "subadditive", "star", "operations"]
+                        Description = "Subadditive closure of f.",
+                        Tags = ["closure", "subadditive", "star"]
                     },
                     new HelpItem
                     {
                         Name = "Horizontal shift",
                         Format = "hShift(f, n) | hshift(f, n)",
-                        Description = "Function identical to f but shifted horizontally by n. ✅",
+                        Description = "Function identical to f but shifted horizontally by n.",
                         LongDescription = """
 - Positive n: shift to the right.
 - Negative n: shift to the left.
 
 Both `hShift` and `hshift` are accepted spellings.
 """,
-                        Tags = ["functions", "shift", "horizontal", "translation", "operations"]
+                        Tags = ["shift", "horizontal", "traslation"]
                     },
                     new HelpItem
                     {
                         Name = "Vertical shift",
                         Format = "vShift(f, n) | vshift(f, n)",
-                        Description = "Function identical to f but shifted vertically by n. ✅",
-                        Tags = ["functions", "shift", "vertical", "translation", "operations"]
+                        Description = "Function identical to f but shifted vertically by n.",
+                        Tags = ["shift", "vertical", "traslation"]
                     },
                     new HelpItem
                     {
                         Name = "Pseudo-inverse (lower and upper)",
                         Format = "inv(f) | low_inv(f) | up_inv(f)",
-                        Description = "Lower and upper pseudo-inverses of f. ✅",
+                        Description = "Lower and upper pseudo-inverses of f.",
                         LongDescription = """
 - `inv(f)` and `low_inv(f)`: lower pseudo-inverse.
 - `up_inv(f)`: upper pseudo-inverse.
 """,
-                        Tags = ["functions", "pseudo-inverse", "inverse", "lower", "upper", "operations"]
+                        Tags = ["pseudo-inverse", "inverse", "lower", "upper"]
                     },
                     new HelpItem
                     {
                         Name = "Upper closure",
                         Format = "upclosure(f) | nnupclosure(f, n)",
-                        Description = "Upper non-decreasing closure (optionally non-negative). ✅",
+                        Description = "Upper non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `upclosure(f)`: upper non-decreasing closure of f.
 - `nnupclosure(f, n)`: non-negative upper non-decreasing closure, parameterized by n.
 """,
-                        Tags = ["functions", "closure", "non-decreasing", "upper", "operations"]
+                        Tags = ["closure", "non-decreasing", "upper"]
                     },
                     new HelpItem
                     {
                         Name = "Composition",
                         Format = "f comp g",
-                        Description = "Composition of functions: (f ∘ g)(x) = f(g(x)). ✅",
-                        Tags = ["functions", "composition", "operations"]
+                        Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",
+                        Tags = ["composition"]
                     },
                     new HelpItem
                     {
                         Name = "Left/right extensions",
                         Format = "left-ext(f) | right-ext(f)",
-                        Description = "Left- and right-continuous extensions of f. ✅",
+                        Description = "Left- and right-continuous extensions of f.",
                         LongDescription = """
 - `left-ext(f)`: g(x) = f(x⁻)
 - `right-ext(f)`: g(x) = f(x⁺)
 """,
-                        Tags = ["functions", "extensions", "left-continuous", "right-continuous", "operations"]
+                        Tags = ["extensions", "left-continuous", "right-continuous"]
                     },
                     new HelpItem
                     {
                         Name = "Scaling by a scalar",
                         Format = "scalar * f | f * scalar | f / scalar",
-                        Description = "Multiply or divide a function by a scalar. ✅",
-                        Tags = ["functions", "scaling", "multiplication", "division", "operations"]
+                        Description = "Multiply or divide a function by a scalar.",
+                        Tags = ["scaling", "multiplication", "division"]
                     }
                 ]
             },
@@ -470,7 +470,7 @@ Both `hShift` and `hshift` are accepted spellings.
                     {
                         Name = "Evaluation",
                         Format = "f(x) | f(x+) | f(x-) | f(x~+) | f(x~-)",
-                        Description = "Evaluates function f at or around a point x. ✅",
+                        Description = "Evaluates function f at or around a point x.",
                         LongDescription = """
 - `f(x)`: value of f at x.
 - `f(x+)` / `f(x~+)`: right-limit of f at x.
@@ -484,21 +484,21 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     {
                         Name = "Horizontal deviation",
                         Format = "hDev(f, g) | hdev(f, g)",
-                        Description = "Horizontal deviation between f and g. ✅",
+                        Description = "Horizontal deviation between f and g.",
                         Tags = ["functions", "deviation", "horizontal", "hDev", "metrics"]
                     },
                     new HelpItem
                     {
                         Name = "Vertical deviation",
                         Format = "vDev(f, g) | vdev(f, g)",
-                        Description = "Vertical deviation between f and g. ✅",
+                        Description = "Vertical deviation between f and g.",
                         Tags = ["functions", "deviation", "vertical", "vDev", "metrics"]
                     },
                     new HelpItem
                     {
                         Name = "Max backlog period length",
                         Format = "maxBacklogPeriod(f, g)",
-                        Description = "Max backlog period length between f and g. ❌ (not implemented)",
+                        Description = "Max backlog period length between f and g. (Not implemented)",
                         Tags = ["functions", "backlog", "period", "metrics", "not-implemented"]
                     }
                 ]
@@ -515,7 +515,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     {
                         Name = "Min/max",
                         Format = "v1 /\\ v2 | v1 \\/ v2",
-                        Description = "Minimum or maximum of two scalar values. ✅",
+                        Description = "Minimum or maximum of two scalar values.",
                         LongDescription = """
 - `v1 /\\ v2`: minimum of v1 and v2.
 - `v1 \\/ v2`: maximum of v1 and v2.
@@ -526,7 +526,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     {
                         Name = "Arithmetic",
                         Format = "v1 + v2 | v1 - v2 | v1 * v2 | v1 ÷ v2 | v1 div v2",
-                        Description = "Standard scalar arithmetic operations. ✅",
+                        Description = "Standard scalar arithmetic operations.",
                         LongDescription = """
 - `v1 + v2`: addition
 - `v1 - v2`: subtraction
@@ -593,7 +593,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     {
                         Name = "plot",
                         Format = "plot(f1, f2, ..., args)",
-                        Description = "Plots one or more function variables with optional configuration arguments. ✅ (partially)",
+                        Description = "Plots one or more function variables with optional configuration arguments. (partially)",
                         LongDescription = """
 General form:
 - `plot(f1, f2, ..., args)`
@@ -605,16 +605,16 @@ Notes:
 - `gui` behaves differently depending on rendering backend.
 
 Supported args:
-- `main`: graph title. ✅
-- `title`: alias for `main`. ✅
-- `xlim=[min, max]`: x-axis range. ✅
-- `ylim=[min, max]`: y-axis range. ✅
-- `xlab="text"`: label for x-axis. ✅
-- `ylab="text"`: label for y-axis. ✅
-- `out="file.png"`: save to PNG file. ✅
-- `grid="no"`: disable grid. ❌
-- `bg="no"`: white background instead of grey. ❌
-- `gui="no"`: custom flag to enable/skip GUI rendering. ✅
+- `main`: graph title.
+- `title`: alias for `main`.
+- `xlim=[min, max]`: x-axis range.
+- `ylim=[min, max]`: y-axis range.
+- `xlab="text"`: label for x-axis.
+- `ylab="text"`: label for y-axis.
+- `out="file.png"`: save to PNG file.
+- `grid="no"`: disable grid. (Not implemented)
+- `bg="no"`: white background instead of grey. (Not implemented)
+- `gui="no"`: custom flag to enable/skip GUI rendering.
 """,
                         Examples = """
 plot(f1)
@@ -683,7 +683,7 @@ assert(h != zero)
                     {
                         Name = "printExpression",
                         Format = "printExpression(f)",
-                        Description = "Prints out the expression of f, rather than its canonical uaf/upp form. ✅",
+                        Description = "Prints out the expression of f, rather than its canonical uaf/upp form.",
                         LongDescription = """
 Useful to inspect the original expression used to define a function variable, instead of its normalized representation.
 """,
