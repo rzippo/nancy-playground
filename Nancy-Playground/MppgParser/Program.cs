@@ -23,6 +23,9 @@ public record class Program
     public Program(List<Statement> statements)
     {
         Statements = statements;
+        Text = statements
+            .Select(s => s.Text)
+            .JoinText("\n");
     }
 
     public static Program FromTree(Grammar.MppgParser.ProgramContext context)

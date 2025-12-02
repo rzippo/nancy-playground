@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Unipi.MppgParser.Utility;
 
 public static class StringExtensions
@@ -21,5 +23,37 @@ public static class StringExtensions
     public static bool IsNullOrEmpty(this string str)
     {
         return string.IsNullOrEmpty(str);
+    }
+
+    /// <inheritdoc cref="string.Join(string?, IEnumerable{string})"/>
+    public static string JoinText(this IEnumerable<string> strings, string? separator)
+    {
+        var sb = new StringBuilder();
+        var first = true;
+        foreach(var str in strings)
+        {
+            if(first)
+                first = false;
+            else if(separator != null)
+                sb.Append(separator);
+            sb.Append(str);
+        }
+        return sb.ToString();
+    }
+
+    /// <inheritdoc cref="string.Join(char, string?[])"/>
+    public static string JoinText(this IEnumerable<string> strings, char separator = ' ')
+    {
+        var sb = new StringBuilder();
+        var first = true;
+        foreach(var str in strings)
+        {
+            if(first)
+                first = false;
+            else
+                sb.Append(separator);
+            sb.Append(str);
+        }
+        return sb.ToString();
     }
 }
