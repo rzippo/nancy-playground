@@ -52,7 +52,8 @@ if($IsWindows)
     else
     {
         # Build latest code
-        dotnet publish -c $runConfiguration $projectPath;
+        dotnet restore --no-http-cache $projectPath;
+        dotnet publish --configuration $runConfiguration $projectPath;
 
         # Create install folder if not exists, else clear its contents
         if( -not (Test-Path $installFolder) ) {
