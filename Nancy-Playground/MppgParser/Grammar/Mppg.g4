@@ -101,19 +101,20 @@ increment: ',' numberLiteral periodLenght?;
 periodLenght: ',' numberLiteral;
 
 // Segments
-sequence: segment+;
+sequence: element+;
+element: point | segment;
+point: '[' endpoint ']';
 segment
     : segmentLeftOpenRightOpen
     | segmentLeftOpenRightClosed
     | segmentLeftClosedRightOpen
     | segmentLeftClosedRightClosed
     ;
-
-point: '(' numberLiteral ',' numberLiteral ')';
-segmentLeftOpenRightOpen: ']' point numberLiteral point '[';
-segmentLeftOpenRightClosed: ']' point numberLiteral point ']';
-segmentLeftClosedRightOpen: '[' point numberLiteral point '[';
-segmentLeftClosedRightClosed: '[' point numberLiteral point ']';
+endpoint: '(' numberLiteral ',' numberLiteral ')';
+segmentLeftOpenRightOpen: ']' endpoint numberLiteral? endpoint '[';
+segmentLeftOpenRightClosed: ']' endpoint numberLiteral? endpoint ']';
+segmentLeftClosedRightOpen: '[' endpoint numberLiteral? endpoint '[';
+segmentLeftClosedRightClosed: '[' endpoint numberLiteral? endpoint ']';
 
 // Numbers
 numberExpression 

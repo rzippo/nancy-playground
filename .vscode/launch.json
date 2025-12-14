@@ -32,6 +32,16 @@
             "visualParseTree": true
         },
         {
+            "name": "MPPG upp-test",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/tests/upp-test.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
             "name": "MPPG pseudoinverses-example",
             "type": "antlr-debug",
             "request": "launch",
@@ -160,6 +170,47 @@
             "startRule": "program",
             "printParseTree": true,
             "visualParseTree": true
-        }
+        },
+        // NC-files
+        {
+            "name": "NC-files AC.nc",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "NC-files/AC/AC.nc",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "NC-files Case.nc",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "NC-files/Case/Case.nc",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "NC-files ContreExAnne",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "NC-files/ContreExAnne/ContreExAnne.nc",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "NC-files Counter-Example-Conj",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "NC-files/Counter-Example-Conj/Counter-Example-Conj.nc",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
     ]
 }
