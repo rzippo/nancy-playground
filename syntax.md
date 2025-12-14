@@ -75,7 +75,7 @@ Both are built using _segments_.
 
 #### Segments 🟨
 
-> Despite the name, the sound more like _elements_ of Nancy.
+> Despite the name, they sound more like _elements_ of Nancy.
 
 | Expression | Description | Implemented |
 |----|----|----|

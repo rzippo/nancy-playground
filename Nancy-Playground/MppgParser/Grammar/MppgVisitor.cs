@@ -351,17 +351,29 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitSequence([NotNull] MppgParser.SequenceContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.segment"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.element"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitSegment([NotNull] MppgParser.SegmentContext context);
+	Result VisitElement([NotNull] MppgParser.ElementContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.point"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitPoint([NotNull] MppgParser.PointContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.segment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSegment([NotNull] MppgParser.SegmentContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.endpoint"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEndpoint([NotNull] MppgParser.EndpointContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.segmentLeftOpenRightOpen"/>.
 	/// </summary>

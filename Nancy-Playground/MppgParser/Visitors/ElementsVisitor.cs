@@ -16,10 +16,29 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var elements = Enumerable.Empty<Element>();
         for (int i = 0; i < context.ChildCount; i++)
         {
-            var segmentContext = context.GetChild(i);
-            elements = elements.Concat(Visit(segmentContext));
+            var elementContext = context.GetChild(i);
+            var elementsParsed = elementContext.Accept(this);
+            elements = elements.Concat(elementsParsed);
         }
         return elements;
+    }
+
+    public override IEnumerable<Element> VisitElement(Grammar.MppgParser.ElementContext context)
+    {
+        if (context.ChildCount != 1)
+            throw new Exception("Expected 1 child expression");
+
+        var childContext = context.GetChild(0);
+        var elements = childContext.Accept(this);
+        return elements;
+    }
+
+    public override IEnumerable<Element> VisitPoint(Grammar.MppgParser.PointContext context)
+    {
+        var pointVisitor = new PointVisitor();
+        var point = context.Accept(pointVisitor);
+
+        yield return point;
     }
 
     public override IEnumerable<Element> VisitSegment(Grammar.MppgParser.SegmentContext context)
