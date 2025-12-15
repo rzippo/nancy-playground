@@ -6,12 +6,21 @@ namespace Unipi.MppgParser;
 
 public record class Program
 {
+    /// <summary>
+    /// The original text of the program.
+    /// </summary>
     public string Text { get; init; }
-
+    /// <summary>
+    /// The list of statements in the program.
+    /// </summary>
     public List<Statement> Statements { get; init; }
-
+    /// <summary>
+    /// The current program counter.
+    /// </summary>
     public int ProgramCounter { get; private set; } = 0;
-    
+    /// <summary>
+    /// The program execution context.
+    /// </summary>
     public ProgramContext ProgramContext { get; init; } =  new ();
 
     /// <summary>
@@ -28,6 +37,11 @@ public record class Program
             .JoinText("\n");
     }
 
+    /// <summary>
+    /// Parses the MPPG program from its parse tree and returns the corresponding Program object.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     public static Program FromTree(Grammar.MppgParser.ProgramContext context)
     {
         var visitor = new ProgramVisitor();
@@ -38,6 +52,11 @@ public record class Program
         };
     }
 
+    /// <summary>
+    /// Parses MPPG program text and returns the corresponding Program object.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     public static Program FromText(string text)
     {
         var inputStream = CharStreams.fromString(text);
@@ -53,6 +72,10 @@ public record class Program
         };
     }
 
+    /// <summary>
+    /// Executes the entire program and returns its string output.
+    /// </summary>
+    /// <returns></returns>
     public IEnumerable<string> ExecuteToStringOutput()
     {
         while (ProgramCounter < Statements.Count)
@@ -63,6 +86,10 @@ public record class Program
         }
     }
 
+    /// <summary>
+    /// Executes the next statement in the program and returns its string output.
+    /// </summary>
+    /// <returns></returns>
     public IEnumerable<string> ExecuteNextStatementToStringOutput()
     {
         if(IsEndOfProgram)
@@ -74,6 +101,12 @@ public record class Program
         yield return statement.Execute(ProgramContext.State);
     }
 
+    /// <summary>
+    /// Executes the next statement in the program.
+    /// </summary>
+    /// <param name="formatter"></param>
+    /// <param name="immediateComputeValue"></param>
+    /// <returns></returns>
     public StatementOutput? ExecuteNextStatement(
         IStatementFormatter formatter,
         bool immediateComputeValue
@@ -92,6 +125,12 @@ public record class Program
         }
     }
 
+    /// <summary>
+    /// Converts the MPPG program to Nancy code.
+    /// </summary>
+    /// <param name="useNancyExpressions"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public List<string> ToNancyCode(bool useNancyExpressions = false)
     {
         if (Text.IsNullOrWhiteSpace())
@@ -100,7 +139,16 @@ public record class Program
         return ToNancyCode(Text,  useNancyExpressions);
     }
     
-    public static List<string> ToNancyCode(string text, bool useNancyExpressions = false)
+    /// <summary>
+    /// Converts MPPG program text to Nancy code.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="useNancyExpressions"></param>
+    /// <returns></returns>
+    public static List<string> ToNancyCode(
+        string text, 
+        bool useNancyExpressions = false
+    )
     {
         var inputStream = CharStreams.fromString(text);
         var lexer = new Grammar.MppgLexer(inputStream);
