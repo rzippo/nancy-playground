@@ -56,7 +56,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var segmentText = context.GetJoinedText();
         
         var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
@@ -98,7 +98,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var segmentText = context.GetJoinedText();
         
         var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
@@ -164,7 +164,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var segmentText = context.GetJoinedText();
         
         var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
@@ -204,7 +204,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         var segmentText = context.GetJoinedText();
         
         var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
