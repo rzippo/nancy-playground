@@ -1,0 +1,14 @@
+# should plot the equivalent of 
+# new Curve(
+#     new Sequence([
+#         Point.Origin(),
+#         new Segment(0, 1, 1, 1),
+#         new Point(1, 3),
+#         new Segment(1, 2, 3, 1)
+#     ]),
+#     1,
+#     1,
+#     1
+# );
+f := uaf([(0, 0)] ](0, 1) 1 (1, 2)[ [(1, 3)] ](1, 3) 1 (+inf, +inf)[)
+plot(f)

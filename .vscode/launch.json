@@ -32,6 +32,16 @@
             "visualParseTree": true
         },
         {
+            "name": "MPPG ua-test-1",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/tests/ua-test-1.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
             "name": "MPPG upp-test-1",
             "type": "antlr-debug",
             "request": "launch",
