@@ -40,12 +40,7 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
             _ => false
         };
 
-        var lineEditor = new LineEditor([
-            "!help",
-            "!quit",
-            "!exit",
-            "!clear"
-        ]);
+        var lineEditor = new LineEditor(Keywords, ContextualKeywords());
         var totalComputationTime = TimeSpan.Zero;
         AnsiConsole.MarkupLine("[green]This is Nancy-Playground, interactive mode. Type your commands. Use [blue]!help[/] to read the manual.[/]");
         while (true)
@@ -236,4 +231,83 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         return Markup.Escape(text ?? string.Empty);
     }
+
+    private static List<string> Keywords = [
+        // higher-order commands
+        "!help",
+        "!quit",
+        "!exit",
+        "!clear",
+        // curves
+        "ratency",
+        "bucket",
+        "affine",
+        "step",
+        "stair",
+        "delay",
+        "zero",
+        "epsilon",
+        "upp",
+        "uaf",
+        // operations
+        "star",
+        "hShift",
+        "vShift",
+        "inv",
+        "low_inv",
+        "up_inv",
+        "upclosure",
+        "nnupclosure",
+        "comp",
+        "left-ext",
+        "right-ext",
+        "hDev",
+        "vDev",
+        "zDev",
+        // "maxBacklogPeriod", not implemented yet
+        "plot",
+        "assert",
+        "printExpression"
+    ];
+
+    private static List<ContextualKeywords> ContextualKeywords() => [
+        new ContextualKeywords
+        {
+            Enablers = [ "upp" ],
+            Keywords = [
+                "period",
+            ]
+        },
+        new ContextualKeywords
+        {
+            Enablers = [ "plot" ],
+            Keywords = [
+                "main",
+                "title",
+                "xlim",
+                "ylim",
+                "xlab",
+                "ylab",
+                "out",
+                "grid",
+                "bg",
+                "gui",
+            ]
+        },
+        new ContextualKeywords
+        {
+            Enablers = [ "!help" ],
+            Keywords = NancyPlaygroundDocs.HelpDocument
+                .Sections
+                .SelectMany(section => section.Tags)
+                .Concat(
+                    NancyPlaygroundDocs.HelpDocument
+                        .Sections
+                        .SelectMany(section => section.Items)
+                        .SelectMany(item => item.Tags)
+                )
+                .Distinct()
+                .ToList()
+        }
+    ];
 }
