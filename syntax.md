@@ -170,8 +170,8 @@ These operations return a _function_.
 | star(f) | Subadditive closure of $f$. | ✅ |
 | hShift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
 | hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
-| vShift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
-| vshift(f,n ) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
+| vShift(f, n) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
+| vshift(f, n) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
