@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using NancyPlayground;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.MppgParser;
@@ -39,11 +40,12 @@ public class InteractiveCommand : Command<InteractiveCommand.Settings>
             _ => false
         };
 
+        var lineEditor = new LineEditor();
         var totalComputationTime = TimeSpan.Zero;
         AnsiConsole.MarkupLine("[green]This is Nancy-Playground, interactive mode. Type your commands. Use [blue]!help[/] to read the manual.[/]");
         while (true)
         {
-            var line = Console.ReadLine();
+            var line = lineEditor.ReadLine();
             if (string.IsNullOrWhiteSpace(line))
                 AnsiConsole.WriteLine();
             else if (line.StartsWith("!"))
