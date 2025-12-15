@@ -64,7 +64,7 @@ public abstract partial class NancyPlotter<TChart>
     )
     {
         var cuts = curves
-            .Select(c => c.Cut(leftLimit, rightLimit, isEndIncluded: true))
+            .Select(c => c.Cut(Rational.Max(leftLimit, 0), rightLimit, isEndIncluded: true))
             .ToList();
 
         return Plot(cuts, names);
