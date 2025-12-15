@@ -3,6 +3,8 @@
 public class ProgramContext
 {
     public State State { get; init; } =  new ();
+    
+    public List<Statement> StatementHistory { get; init; } =  new ();
 
     public StatementOutput? ExecuteStatement(
         Statement statement,
@@ -13,6 +15,7 @@ public class ProgramContext
         formatter.FormatStatementPreamble(statement);
         try
         {
+            StatementHistory.Add(statement);
             var output = statement switch
             {
                 Assignment assignment => assignment.ExecuteToFormattable(State, immediateComputeValue),
