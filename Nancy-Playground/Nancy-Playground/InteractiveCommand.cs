@@ -61,6 +61,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     var args = line.Split(' ').Skip(1).ToArray();
                     ExportProgram(args, programContext);
                 }
+                else if (line.StartsWith("!convert"))
+                {
+                    var args = line.Split(' ').Skip(1).ToArray();
+                    ConvertProgram(args, programContext);
+                }
                 else if (line.StartsWith("!help"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
@@ -78,6 +83,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         return 0;
     }
 
+    /// <summary>
+    /// Exports the current program to a file.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <param name="programContext"></param>
     private void ExportProgram(string[] args, ProgramContext programContext)
     {
         if (args.Length != 1)
@@ -91,8 +101,43 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         {
             var statementLines = programContext.StatementHistory
                 .Select(s => s.Text);
-            System.IO.File.WriteAllLines(outputPath, statementLines);
+
+            File.WriteAllLines(outputPath, statementLines);
             AnsiConsole.MarkupLine($"[green]Program exported successfully to[/] [blue]{Escape(outputPath)}[/].");
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
+        }
+    }
+
+    /// <summary>
+    /// Converts the current MPPG program to Nancy code and writes it to a file.
+    /// </summary>
+    /// <param name="args"></param>
+    /// <param name="programContext"></param>
+    private void ConvertProgram(string[] args, ProgramContext programContext)
+    {
+        if (args.Length != 1)
+        {
+            AnsiConsole.MarkupLine("[red]Error:[/] !convert requires exactly one argument: the output file path.");
+            return;
+        }
+
+        var outputPath = args[0];
+        try
+        {
+            var statementLines = programContext.StatementHistory
+                .Select(s => s.Text);
+            var programText = string.Join(Environment.NewLine, statementLines);
+            var programNancyCode = Unipi.MppgParser.Program.ToNancyCode(programText);
+            programNancyCode.InsertRange(0,[
+                $"// Program automatically converted from MPPG syntax to a Nancy program",
+                string.Empty
+            ]);
+
+            File.WriteAllLines(outputPath, programNancyCode);
+            AnsiConsole.MarkupLine($"[green]Program converted successfully to[/] [blue]{Escape(outputPath)}[/].");
         }
         catch (Exception e)
         {
