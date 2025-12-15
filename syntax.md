@@ -79,7 +79,7 @@ Both are built using _segments_.
 
 | Expression | Description | Implemented |
 |----|----|----|
-| [(x, y)] | A _spot_ in $(x, y)$ | ❌ |
+| [(x, y)] | A _spot_ in $(x, y)$ | ✅ |
 | [(x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is included. | ✅ |
 | [(x1, y1)slope(x1, y1)[ | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The right spot is not included. | ✅ |
 | ](x1, y1)slope(x1, y1)] | A segment from $(x1, y1)$ to $(x2, y2)$, with the given slope. The left spot is not included, but right one is. | ✅ |
