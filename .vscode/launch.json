@@ -32,10 +32,20 @@
             "visualParseTree": true
         },
         {
-            "name": "MPPG upp-test",
+            "name": "MPPG upp-test-1",
             "type": "antlr-debug",
             "request": "launch",
-            "input": "Examples/tests/upp-test.mppg",
+            "input": "Examples/tests/upp-test-1.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG upp-test-2",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Examples/tests/upp-test-2.mppg",
             "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
             "startRule": "program",
             "printParseTree": true,
