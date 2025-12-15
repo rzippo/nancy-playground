@@ -247,14 +247,49 @@ public partial class ExpressionVisitor
         {
             var lastPoint = (Point)sequence.Elements[^2];
             var lastSegment = (Segment)sequence.Elements[^1];
+            // normalize last segment to be finite
+            if(lastSegment.EndTime.IsInfinite)
+            {
+                lastSegment = new Segment(
+                    lastSegment.StartTime,
+                    lastSegment.StartTime + 1,
+                    lastSegment.RightLimitAtStartTime,
+                    lastSegment.Slope
+                );
+
+                var normalizedElements = sequence.Elements.ToList();
+                normalizedElements[^1] = lastSegment;
+                sequence = new Sequence(normalizedElements);
+            }
+
             t = lastPoint.Time;
             d = lastSegment.Length;
-            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;    
+            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
         }
-        else
+        else // right-closed
         {
             var lastPoint = (Point)sequence.Elements[^1];
             var lastSegment = (Segment)sequence.Elements[^2];
+            // normalize last segment and point to be finite
+            if(lastSegment.EndTime.IsInfinite)
+            {
+                lastSegment = new Segment(
+                    lastSegment.StartTime,
+                    lastSegment.StartTime + 1,
+                    lastSegment.RightLimitAtStartTime,
+                    lastSegment.Slope
+                );
+                lastPoint = new Point(
+                    lastSegment.EndTime,
+                    lastSegment.LeftLimitAtEndTime
+                );
+
+                var normalizedElements = sequence.Elements.ToList();
+                normalizedElements[^2] = lastSegment;
+                normalizedElements[^1] = lastPoint;
+                sequence = new Sequence(normalizedElements);
+            }
+
             t = lastPoint.Time;
             d = lastSegment.Length;
             c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
