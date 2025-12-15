@@ -1,5 +1,5 @@
 ﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Nancy-Playground interactive" type="DotNetProject" factoryName=".NET Project">
+  <configuration default="false" name="np interactive" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Nancy-Playground/bin/Debug/net9.0/nancy-playground.exe" />
     <option name="PROGRAM_PARAMETERS" value="interactive --run-mode ExpressionDriven --on-error Stop --output-mode NancyNew" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Nancy-Playground/" />

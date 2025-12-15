@@ -1,8 +1,8 @@
 ﻿<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Nancy-Playground manual custom per-statement" type="DotNetProject" factoryName=".NET Project">
+  <configuration default="false" name="np run hal plain" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Nancy-Playground/bin/Debug/net9.0/nancy-playground.exe" />
-    <option name="PROGRAM_PARAMETERS" value="run ../../Examples/RTaW-MinplusConsole-UserManual.mppg --run-mode PerStatement --on-error Stop --output-mode NancyNew" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Nancy-Playground/" />
+    <option name="PROGRAM_PARAMETERS" value="run ../../Examples/hal-04513292v1.mppg" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Nancy-Playground/bin/Debug/net9.0" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <option name="USE_MONO" value="0" />
@@ -10,7 +10,7 @@
     <option name="PROJECT_PATH" value="$PROJECT_DIR$/Nancy-Playground/Nancy-Playground.csproj" />
     <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
     <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
-    <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="0" />
+    <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
     <option name="PROJECT_KIND" value="DotNetCore" />
     <option name="PROJECT_TFM" value="net9.0" />
     <method v="2">
