@@ -16,8 +16,8 @@ public class LineEditor
     /// Reads a line from the console with command history support.
     /// Works similarly to Console.ReadLine(), but supports:
     /// - Up/Down arrow to navigate history
-    /// - Left/Right to move cursor
-    /// - Backspace/Delete/Home/End editing
+    /// - Left/Right, Home, End, Backspace, Delete
+    /// - Ctrl+Left / Ctrl+Right to move by word
     /// </summary>
     public string ReadLine()
     {
@@ -51,9 +51,54 @@ public class LineEditor
             Console.SetCursorPosition(startLeft + cursor, startTop);
         }
 
+        int FindPreviousWordStart(int position)
+        {
+            if (position <= 0 || buffer.Length == 0)
+                return 0;
+
+            int i = position - 1;
+
+            // Skip non-word characters immediately to the left
+            while (i >= 0 && !IsWordChar(buffer[i]))
+                i--;
+
+            // Move left until start of word
+            while (i >= 0 && IsWordChar(buffer[i]))
+                i--;
+
+            return Math.Max(i + 1, 0);
+        }
+
+        int FindNextWordEnd(int position)
+        {
+            int len = buffer.Length;
+            if (position >= len || len == 0)
+                return len;
+
+            int i = position;
+
+            // Skip non-word characters immediately to the right
+            while (i < len && !IsWordChar(buffer[i]))
+                i++;
+
+            // Move right until end of word
+            while (i < len && IsWordChar(buffer[i]))
+                i++;
+
+            return i;
+        }
+
+        bool IsWordChar(char c)
+        {
+            char[] punctuation = [ '.', ',', ';', ':', '!', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"' ];
+            return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
+        }
+
         while (true)
         {
             var keyInfo = Console.ReadKey(intercept: true);
+
+            bool ctrl = (keyInfo.Modifiers & ConsoleModifiers.Control) != 0;
 
             switch (keyInfo.Key)
             {
@@ -89,18 +134,42 @@ public class LineEditor
                     break;
 
                 case ConsoleKey.LeftArrow:
-                    if (cursor > 0)
+                    if (ctrl)
                     {
-                        cursor--;
-                        Console.SetCursorPosition(startLeft + cursor, startTop);
+                        int newPos = FindPreviousWordStart(cursor);
+                        if (newPos != cursor)
+                        {
+                            cursor = newPos;
+                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                        }
+                    }
+                    else
+                    {
+                        if (cursor > 0)
+                        {
+                            cursor--;
+                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                        }
                     }
                     break;
 
                 case ConsoleKey.RightArrow:
-                    if (cursor < buffer.Length)
+                    if (ctrl)
                     {
-                        cursor++;
-                        Console.SetCursorPosition(startLeft + cursor, startTop);
+                        int newPos = FindNextWordEnd(cursor);
+                        if (newPos != cursor)
+                        {
+                            cursor = newPos;
+                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                        }
+                    }
+                    else
+                    {
+                        if (cursor < buffer.Length)
+                        {
+                            cursor++;
+                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                        }
                     }
                     break;
 
@@ -161,5 +230,62 @@ public class LineEditor
                     break;
             }
         }
+    }
+
+    /// <summary>
+    /// Removes a history entry at the given index.
+    /// Returns true if removed, false if index was invalid.
+    /// </summary>
+    public bool RemoveHistoryAt(int index)
+    {
+        if (index < 0 || index >= _history.Count)
+            return false;
+
+        _history.RemoveAt(index);
+
+        // Reset history index to "one past the end"
+        _historyIndex = _history.Count;
+        return true;
+    }
+
+    /// <summary>
+    /// Removes a history entry by value.
+    /// If removeAll is false, removes only the first match.
+    /// Returns true if at least one entry was removed.
+    /// </summary>
+    public bool RemoveHistory(string value, bool removeAll = false)
+    {
+        if (value == null)
+            return false;
+
+        bool removed = false;
+
+        if (removeAll)
+        {
+            for (int i = _history.Count - 1; i >= 0; i--)
+            {
+                if (string.Equals(_history[i], value, StringComparison.Ordinal))
+                {
+                    _history.RemoveAt(i);
+                    removed = true;
+                }
+            }
+        }
+        else
+        {
+            int idx = _history.FindIndex(h => string.Equals(h, value, StringComparison.Ordinal));
+            if (idx >= 0)
+            {
+                _history.RemoveAt(idx);
+                removed = true;
+            }
+        }
+
+        if (removed)
+        {
+            _historyIndex = _history.Count;
+        }
+
+        return removed;
     }
 }
