@@ -9,8 +9,61 @@ namespace NancyPlayground;
 /// </summary>
 public class LineEditor
 {
+    /// <summary>
+    /// History of entered commands.
+    /// </summary>
     private readonly List<string> _history = new List<string>();
+    /// <summary>
+    /// Current index in the history for navigation.
+    /// </summary>
     private int _historyIndex = -1;
+
+    /// <summary>
+    /// List of keywords for autocomplete.
+    /// </summary>
+    private readonly List<string> _keywords = new List<string>();
+
+    public LineEditor()
+    {
+    }
+
+    public LineEditor(IEnumerable<string> keywords)
+    {
+        if (keywords != null)
+            _keywords.AddRange(keywords);
+    }
+
+    /// <summary>
+    /// Replace the current keyword list with the given sequence.
+    /// </summary>
+    public void SetKeywords(IEnumerable<string> keywords)
+    {
+        _keywords.Clear();
+        if (keywords != null)
+            _keywords.AddRange(keywords);
+    }
+
+    /// <summary>
+    /// Add a single keyword to the autocomplete list.
+    /// </summary>
+    public void AddKeyword(string keyword)
+    {
+        if (!string.IsNullOrEmpty(keyword))
+            _keywords.Add(keyword);
+    }
+
+    /// <summary>
+    /// Add multiple keywords to the autocomplete list.
+    /// </summary>
+    public void AddKeywords(IEnumerable<string> keywords)
+    {
+        if (keywords == null) return;
+        foreach (var k in keywords)
+        {
+            if (!string.IsNullOrEmpty(k))
+                _keywords.Add(k);
+        }
+    }
 
     /// <summary>
     /// Reads a line from the console with command history support.
@@ -30,75 +83,24 @@ public class LineEditor
 
         int renderedLength = 0;
 
-        void Render()
-        {
-            // Go back to where input starts
-            Console.SetCursorPosition(startLeft, startTop);
-
-            string text = buffer.ToString();
-            Console.Write(text);
-
-            // Clear any leftover characters from previous render
-            int extra = renderedLength - text.Length;
-            if (extra > 0)
-            {
-                Console.Write(new string(' ', extra));
-            }
-
-            renderedLength = text.Length;
-
-            // Put cursor in correct position
-            Console.SetCursorPosition(startLeft + cursor, startTop);
-        }
-
-        int FindPreviousWordStart(int position)
-        {
-            if (position <= 0 || buffer.Length == 0)
-                return 0;
-
-            int i = position - 1;
-
-            // Skip non-word characters immediately to the left
-            while (i >= 0 && !IsWordChar(buffer[i]))
-                i--;
-
-            // Move left until start of word
-            while (i >= 0 && IsWordChar(buffer[i]))
-                i--;
-
-            return Math.Max(i + 1, 0);
-        }
-
-        int FindNextWordEnd(int position)
-        {
-            int len = buffer.Length;
-            if (position >= len || len == 0)
-                return len;
-
-            int i = position;
-
-            // Skip non-word characters immediately to the right
-            while (i < len && !IsWordChar(buffer[i]))
-                i++;
-
-            // Move right until end of word
-            while (i < len && IsWordChar(buffer[i]))
-                i++;
-
-            return i;
-        }
-
-        bool IsWordChar(char c)
-        {
-            char[] punctuation = [ '.', ',', ';', ':', '!', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"' ];
-            return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
-        }
+        List<string> completionMatches = null;
+        int completionIndex = -1;
+        int completionWordStart = 0;
+        int completionWordLength = 0;
 
         while (true)
         {
             var keyInfo = Console.ReadKey(intercept: true);
 
             bool ctrl = (keyInfo.Modifiers & ConsoleModifiers.Control) != 0;
+            bool isTab = keyInfo.Key == ConsoleKey.Tab;
+
+            // Any non-Tab key resets the autocomplete cycling state
+            if (!isTab)
+            {
+                completionMatches = null;
+                completionIndex = -1;
+            }
 
             switch (keyInfo.Key)
             {
@@ -219,6 +221,54 @@ public class LineEditor
                     }
                     break;
 
+                case ConsoleKey.Tab:
+                    {
+                        // If we already have matches, cycle through them
+                        if (completionMatches != null && completionMatches.Count > 0)
+                        {
+                            completionIndex = (completionIndex + 1) % completionMatches.Count;
+                        }
+                        else
+                        {
+                            // First Tab press for this word: compute matches
+                            int wordStart = FindPreviousWordStart(cursor);
+                            int wordLen = cursor - wordStart;
+
+                            if (wordLen <= 0 || _keywords.Count == 0)
+                                break;
+
+                            string currentWord = buffer.ToString(wordStart, wordLen);
+
+                            var matches = new List<string>();
+                            foreach (var kw in _keywords)
+                            {
+                                if (kw.StartsWith(currentWord, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    matches.Add(kw);
+                                }
+                            }
+
+                            if (matches.Count == 0)
+                                break;
+
+                            completionMatches = matches;
+                            completionIndex = 0;
+                            completionWordStart = wordStart;
+                            completionWordLength = wordLen;
+                        }
+
+                        // Apply the current completion
+                        string completion = completionMatches[completionIndex];
+
+                        buffer.Remove(completionWordStart, completionWordLength);
+                        buffer.Insert(completionWordStart, completion);
+                        completionWordLength = completion.Length;
+
+                        cursor = completionWordStart + completionWordLength;
+                        Render();
+                    }
+                    break;
+
                 default:
                     char c = keyInfo.KeyChar;
                     if (c != '\0' && !char.IsControl(c))
@@ -229,6 +279,76 @@ public class LineEditor
                     }
                     break;
             }
+        }
+
+        // local functions
+
+        // Renders the current buffer and positions the cursor correctly
+        void Render()
+        {
+            // Go back to where input starts
+            Console.SetCursorPosition(startLeft, startTop);
+
+            string text = buffer.ToString();
+            Console.Write(text);
+
+            // Clear any leftover characters from previous render
+            int extra = renderedLength - text.Length;
+            if (extra > 0)
+            {
+                Console.Write(new string(' ', extra));
+            }
+
+            renderedLength = text.Length;
+
+            // Put cursor in correct position
+            Console.SetCursorPosition(startLeft + cursor, startTop);
+        }
+
+        // Finds the start index of the previous word before the given position
+        int FindPreviousWordStart(int position)
+        {
+            if (position <= 0 || buffer.Length == 0)
+                return 0;
+
+            int i = position - 1;
+
+            // Skip non-word characters immediately to the left
+            while (i >= 0 && !IsWordChar(buffer[i]))
+                i--;
+
+            // Move left until start of word
+            while (i >= 0 && IsWordChar(buffer[i]))
+                i--;
+
+            return Math.Max(i + 1, 0);
+        }
+
+        // Finds the end index of the next word after the given position
+        int FindNextWordEnd(int position)
+        {
+            int len = buffer.Length;
+            if (position >= len || len == 0)
+                return len;
+
+            int i = position;
+
+            // Skip non-word characters immediately to the right
+            while (i < len && !IsWordChar(buffer[i]))
+                i++;
+
+            // Move right until end of word
+            while (i < len && IsWordChar(buffer[i]))
+                i++;
+
+            return i;
+        }
+
+        // Determines if a character is considered part of a word
+        bool IsWordChar(char c)
+        {
+            char[] punctuation = [ '.', ',', ';', ':', '!', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"' ];
+            return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
         }
     }
 
