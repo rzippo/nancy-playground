@@ -159,20 +159,29 @@ public partial class ExpressionVisitor
 
     public override IExpression VisitUltimatelyPseudoPeriodicFunction(Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {
-        var sequenceElements = Enumerable.Empty<Element>();
+        var uppText = context.GetJoinedText();
+
+        var transientElements = Enumerable.Empty<Element>();
         var elementsVisitor = new ElementsVisitor();
         
         var transientContext = context.GetChild<Grammar.MppgParser.UppTransientPartContext>(0);
         if (transientContext is not null)
         {
             var transientSequenceContext = transientContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
-            var transientElements = transientSequenceContext.Accept(elementsVisitor);
-            sequenceElements = sequenceElements.Concat(transientElements);
+            var parsedTransientElements = transientSequenceContext.Accept(elementsVisitor);
+            transientElements = transientElements.Concat(parsedTransientElements);
         }
+        var transientElementsList = transientElements.ToList();
+        if(transientElementsList.Any(e => e.StartTime.IsInfinite || e.EndTime.IsInfinite))
+            throw new InvalidOperationException($"Elements with infinite time are not supported in UPP functions: {uppText}");
 
         var periodContext = context.GetChild<Grammar.MppgParser.UppPeriodicPartContext>(0);
         var periodSequenceContext = periodContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
         var periodElements = periodSequenceContext.Accept(elementsVisitor);
+        var periodElementsList = periodElements.ToList();
+        if(periodElementsList.Any(e => e.StartTime.IsInfinite || e.EndTime.IsInfinite))
+            throw new InvalidOperationException($"Elements with infinite time are not supported in UPP functions: {uppText}");
+
         var periodSequence = new Sequence(periodElements);
 
         var t = periodSequence.DefinedFrom;
@@ -197,19 +206,20 @@ public partial class ExpressionVisitor
             var firstSegmentShifted = firstSegment
                 .HorizontalShift(d)
                 .VerticalShift(c);
-            allElements = sequenceElements
+            allElements = transientElementsList
                 .Concat(periodSequence.Elements)
                 .Append(firstSegmentShifted);
             t += firstSegment.Length;
         }
         else if (periodSequence is { IsLeftClosed: true, IsRightOpen: true })
         {
-            allElements = sequenceElements.Concat(periodSequence.Elements);
+            allElements = transientElementsList
+                .Concat(periodSequence.Elements);
         }
         else
         {
             // defensive check
-            throw new InvalidOperationException("This period sequence cannot work");
+            throw new InvalidOperationException($"This period sequence cannot work: {uppText}");
         }
 
         var sequence = new Sequence(allElements);
