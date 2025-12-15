@@ -1,11 +1,15 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Numerics;
 
 namespace Unipi.MppgParser.Visitors;
 
-public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
+class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 {
+    private ExpressionTypeVisitor TypeVisitor { get; set; } = new();
+    
     public override List<string> VisitProgram(Grammar.MppgParser.ProgramContext context)
     {
         var statementLineContexts = context.GetRuleContexts<Grammar.MppgParser.StatementLineContext>();
@@ -84,17 +88,22 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var expressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(0);
         
         var expressionCode = expressionContext.Accept(this);
+        var expressionType = expressionContext.Accept(TypeVisitor);
+        var lhs = TypeVisitor.State.ContainsKey(name) ? $"{name}" : $"var {name}";
+        List<string> result;
         if (expressionCode is null || expressionCode.Count == 0)
             // throw new InvalidOperationException("Expression code empty");
-            return [$"// var {name} = ...;"];
+            result = [$"// {lhs} = ...;"];
         else if (expressionCode.Count == 1)
-            // this assumes variable are NOT overwritten
-            return [$"var {name} = {expressionCode.Single()};"];
+            result = [$"{lhs} = {expressionCode.Single()};"];
         else
         {
-            expressionCode[^1] = $"var {name} = {expressionCode[^1]};";
-            return expressionCode;
+            expressionCode[^1] = $"{lhs} = {expressionCode[^1]};";
+            result = expressionCode;
         }
+
+        TypeVisitor.State[name] = expressionType;
+        return result;
     }
 
     public override List<string> VisitExpressionCommand(Grammar.MppgParser.ExpressionCommandContext context)
@@ -139,7 +148,23 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
-        return [number.ToCodeString()];
+        return [ExplicitToCodeString(number)];
+        
+        // todo: include this in Nancy
+        string ExplicitToCodeString(Rational r)
+        {
+            var sb = new StringBuilder();
+            sb.Append("new Rational(");
+            sb.Append(r.Numerator.ToString());
+            if (r.Denominator != 1)
+            {
+                sb.Append(", ");
+                sb.Append(r.Denominator.ToString());
+            }
+            sb.Append(")");
+
+            return sb.ToString();
+        }
     }
 
     public override List<string> VisitFunctionBrackets(Grammar.MppgParser.FunctionBracketsContext context)
@@ -161,7 +186,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Curve.Minimum({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        // todo: add and use a PureConstant of sorts to Nancy
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Minimum({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"Curve.Minimum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Rational.Min({first}, {second})"];
     }
 
     public override List<string> VisitFunctionMaximum(Grammar.MppgParser.FunctionMaximumContext context)
@@ -169,7 +204,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Curve.Maximum({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        // todo: add and use a PureConstant of sorts to Nancy
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Maximum({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"Curve.Maximum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Rational.Max({first}, {second})"];
     }
 
     public override List<string> VisitFunctionMinPlusConvolution(Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
@@ -177,7 +222,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Curve.Convolution({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Convolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} * {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"{second} * {first}"];
+        else
+            return [$"{first} * {second}"];
     }
 
     public override List<string> VisitFunctionMaxPlusConvolution(Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
@@ -193,7 +248,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Curve.Deconvolution({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Deconvolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} / {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
+        else
+            return [$"{first} / {second}"];
     }
 
     public override List<string> VisitFunctionMaxPlusDeconvolution(Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
@@ -217,8 +282,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"{first} * {second}"];
-
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Convolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} * {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"{second} * {first}"];
+        else
+            return [$"{first} * {second}"];
     }
     
     public override List<string> VisitFunctionScalarMultiplicationRight(Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
@@ -226,8 +300,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"{first} * {second}"];
-
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Convolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} * {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"{second} * {first}"];
+        else
+            return [$"{first} * {second}"];
     }
 
     public override List<string> VisitFunctionScalarDivision(Grammar.MppgParser.FunctionScalarDivisionContext context)
@@ -235,7 +318,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"{first} / {second}"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Deconvolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} / {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
+        else
+            return [$"{first} / {second}"];
     }
 
     public override List<string> VisitFunctionSum(Grammar.MppgParser.FunctionSumContext context)
@@ -244,7 +337,6 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var second = context.GetChild(2).Accept(this).Single();
 
         return [$"{first} + {second}"];
-
     }
 
     public override List<string> VisitFunctionSubtraction(Grammar.MppgParser.FunctionSubtractionContext context)
@@ -462,7 +554,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"{first} * {second}"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Convolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} * {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"{second} * {first}"];
+        else
+            return [$"{first} * {second}"];
     }
 
     public override List<string> VisitNumberDivision(Grammar.MppgParser.NumberDivisionContext context)
@@ -470,7 +572,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"{first} / {second}"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Deconvolution({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"{first} / {second}"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
+        else
+            return [$"{first} / {second}"];
     }
 
     public override List<string> VisitNumberSum(Grammar.MppgParser.NumberSumContext context)
@@ -494,7 +606,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Rational.Min({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        // todo: add and use a PureConstant of sorts to Nancy
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Minimum({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"Curve.Minimum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Rational.Min({first}, {second})"];
     }
 
     public override List<string> VisitNumberMaximum(Grammar.MppgParser.NumberMaximumContext context)
@@ -502,7 +624,17 @@ public class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
 
-        return [$"Rational.Max({first}, {second})"];
+        var firstType = context.GetChild(0).Accept(TypeVisitor);
+        var secondType = context.GetChild(2).Accept(TypeVisitor);
+        
+        // todo: add and use a PureConstant of sorts to Nancy
+        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
+            return [$"Curve.Maximum({first}, {second})"];
+        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
+            return [$"Curve.Maximum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
+        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
+            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Rational.Max({first}, {second})"];
     }
 
     #endregion
