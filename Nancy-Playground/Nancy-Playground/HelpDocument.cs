@@ -22,13 +22,15 @@ Expect (and please report) oddities.
                     {
                         Name = "Help",
                         Format = "!help [query]",
-                        Description = "Shows this help text, or a search result."
+                        Description = "Shows this help text, or a search result.",
+                        Tags = ["help", "manual", "documentation"]
                     },
                     new HelpItem
                     {
                         Name = "Quit",
                         Format = "!quit | !exit",
-                        Description = "Terminates the program."
+                        Description = "Terminates the program.",
+                        Tags = ["quit", "exit", "terminate"]
                     }
                 ]
             },
@@ -152,7 +154,7 @@ Constructs a leaky bucket arrival curve:
 - `a` is the sustained arrival rate (slope)
 - `b` is the burst size (vertical offset)
 """,
-                        Tags = ["bucket", "arrival-curve", "leaky-bucket"]
+                        Tags = ["bucket", "arrival-curve", "leaky-bucket", "sigma-rho"]
                     },
                     new HelpItem
                     {
