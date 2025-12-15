@@ -22,15 +22,24 @@ public class LineEditor
     /// List of keywords for autocomplete.
     /// </summary>
     private readonly List<string> _keywords = new List<string>();
+    /// <summary>
+    /// Contextual keywords for autocomplete.
+    /// </summary>
+    private readonly List<ContextualKeywords> _contextualKeywords = new List<ContextualKeywords>();
 
     public LineEditor()
     {
     }
 
-    public LineEditor(IEnumerable<string> keywords)
+    public LineEditor(
+        IEnumerable<string> keywords, 
+        IEnumerable<ContextualKeywords>? contextualKeywords = null
+    )
     {
         if (keywords != null)
             _keywords.AddRange(keywords);
+        if (contextualKeywords != null)
+            _contextualKeywords.AddRange(contextualKeywords);
     }
 
     /// <summary>
@@ -44,12 +53,33 @@ public class LineEditor
     }
 
     /// <summary>
+    /// Replace the current contextual keyword list with the given sequence.
+    /// </summary>
+    /// <param name="contextualKeywords"></param>
+    public void SetContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
+    {
+        _contextualKeywords.Clear();
+        if (contextualKeywords != null)
+            _contextualKeywords.AddRange(contextualKeywords);
+    }
+
+    /// <summary>
     /// Add a single keyword to the autocomplete list.
     /// </summary>
     public void AddKeyword(string keyword)
     {
         if (!string.IsNullOrEmpty(keyword))
             _keywords.Add(keyword);
+    }
+
+    /// <summary>
+    /// Add contextual keywords to the autocomplete list.
+    /// </summary>
+    /// <param name="contextualKeywords"></param>
+    public void AddContextualKeywords(ContextualKeywords contextualKeywords)
+    {
+        if (contextualKeywords != null)
+            _contextualKeywords.Add(contextualKeywords);
     }
 
     /// <summary>
@@ -62,6 +92,20 @@ public class LineEditor
         {
             if (!string.IsNullOrEmpty(k))
                 _keywords.Add(k);
+        }
+    }
+
+    /// <summary>
+    /// Add multiple contextual keywords to the autocomplete list.
+    /// </summary>
+    /// <param name="contextualKeywords"></param>
+    public void AddContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
+    {
+        if (contextualKeywords == null) return;
+        foreach (var ck in contextualKeywords)
+        {
+            if (ck != null)
+                _contextualKeywords.Add(ck);
         }
     }
 
@@ -234,13 +278,17 @@ public class LineEditor
                             int wordStart = FindPreviousWordStart(cursor);
                             int wordLen = cursor - wordStart;
 
-                            if (wordLen <= 0 || _keywords.Count == 0)
+                            if(wordLen <= 0)
+                                break;
+                            var activeKeywords = GetActiveKeywords(buffer.ToString(0, wordStart));
+
+                            if (activeKeywords.Count == 0)
                                 break;
 
                             string currentWord = buffer.ToString(wordStart, wordLen);
 
                             var matches = new List<string>();
-                            foreach (var kw in _keywords)
+                            foreach (var kw in activeKeywords)
                             {
                                 if (kw.StartsWith(currentWord, StringComparison.OrdinalIgnoreCase))
                                 {
@@ -408,4 +456,48 @@ public class LineEditor
 
         return removed;
     }
+
+    /// <summary>
+    /// Gets the list of active keywords for autocomplete, given the current line before the cursor.
+    /// </summary>
+    /// <param name="currentLineBeforeCursor"></param>
+    /// <returns></returns>
+    private List<string> GetActiveKeywords(string currentLineBeforeCursor)
+    {
+        var result = new List<string>();
+        // Always-available keywords
+        result.AddRange(_keywords);
+
+        if (_contextualKeywords.Count == 0 || string.IsNullOrWhiteSpace(currentLineBeforeCursor))
+            return result;
+
+        // For each contextual keyword, check if any enabler token appeared earlier in this line
+        foreach (var ck in _contextualKeywords)
+        {
+            bool enabled = false;
+
+            foreach (var enabler in ck.Enablers)
+            {
+                if (currentLineBeforeCursor.Contains(enabler, StringComparison.OrdinalIgnoreCase))
+                {
+                    enabled = true;
+                    break;
+                }
+                if (enabled) break;
+            }
+
+            if (enabled)
+            {
+                result.AddRange(ck.Keywords);
+            }
+        }
+
+        return result;
+    }
+}
+
+public record ContextualKeywords
+{
+    public List<string> Enablers { get; init; } = [];
+    public List<string> Keywords { get; init; } = [];
 }
