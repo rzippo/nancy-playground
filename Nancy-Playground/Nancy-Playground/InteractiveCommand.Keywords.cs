@@ -10,7 +10,8 @@ public partial class InteractiveCommand
         "!help",
         "!quit",
         "!exit",
-        "!clear",
+        "!export",
+        "!convert",
         // curves
         "ratency",
         "bucket",

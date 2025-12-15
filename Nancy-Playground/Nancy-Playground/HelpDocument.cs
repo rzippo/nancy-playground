@@ -31,6 +31,20 @@ Expect (and please report) oddities.
                         Format = "!quit | !exit",
                         Description = "Terminates the program.",
                         Tags = ["quit", "exit", "terminate"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Export",
+                        Format = "!export <output-file>",
+                        Description = "Exports the current program to a .mppg file.",
+                        Tags = ["export", "save", "file"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Convert",
+                        Format = "!convert <output-file>",
+                        Description = "Converts the current program to a Nancy C# program and saves it to a file.",
+                        Tags = ["convert", "nancy", "csharp", "file"]
                     }
                 ]
             },
