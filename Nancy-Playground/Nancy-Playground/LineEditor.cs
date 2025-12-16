@@ -407,7 +407,7 @@ public class LineEditor
         // Determines if a character is considered part of a word
         bool IsWordChar(char c)
         {
-            char[] punctuation = [ '.', ',', ';', ':', '!', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '=' ];
+            char[] punctuation = [ '.', ',', ';', ':', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '=' ];
             return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
         }
     }
