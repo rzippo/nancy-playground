@@ -7,7 +7,13 @@ namespace NancyMppg;
 
 public class AnsiConsoleStatementFormatter : IStatementFormatter
 {
-    public IPlotFormatter? PlotFormatter { get; set; }
+    public IPlotFormatter? PlotFormatter { get; init; }
+
+    /// <summary>
+    /// If true, the statement text is printed in gray, as confirmation to a prompt above (e.g., in interactive mode).
+    /// If false, it is instead printed in $mainColor (e.g., in run mode). 
+    /// </summary>
+    public bool PrintInputAsConfirmation { get; init; } = false;
     
     public void FormatStatementPreamble(Statement statement)
     {
@@ -27,10 +33,22 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
             default:
             {
-                if (statement.InlineComment.IsNullOrWhiteSpace())
-                    AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                if (PrintInputAsConfirmation)
+                {
+                    // use gray text, to not attract focus
+                    if (statement.InlineComment.IsNullOrWhiteSpace())
+                        AnsiConsole.MarkupLineInterpolated($"[grey]➜ {statement.Text}[/]");
+                    else
+                        AnsiConsole.MarkupLineInterpolated($"[grey]➜ {statement.Text}[/] [green]{statement.InlineComment}[/]");
+                }
                 else
-                    AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
+                {
+                    // use $mainColor text
+                    if (statement.InlineComment.IsNullOrWhiteSpace())
+                        AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                    else
+                        AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
+                }
                 break;
             }
         }

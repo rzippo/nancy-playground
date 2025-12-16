@@ -27,8 +27,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 // todo: make this configurable
-                PlotFormatter = new ScottPlotFormatter(plotsRoot)
-                // PlotFormatter = new XPlotPlotFormatter(plotsRoot)
+                PlotFormatter = new ScottPlotFormatter(plotsRoot),
+                // PlotFormatter = new XPlotPlotFormatter(plotsRoot),
+                PrintInputAsConfirmation = true
             },
             _ => new PlainConsoleStatementFormatter()
         };

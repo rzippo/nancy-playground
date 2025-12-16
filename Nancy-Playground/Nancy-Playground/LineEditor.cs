@@ -119,18 +119,28 @@ public class LineEditor
     public string ReadLine()
     {
         var buffer = new StringBuilder();
+        // Cursor position. Does not count preamble.
         int cursor = 0;
 
+        const string linePreamble = "> ";
+        int linePreambleOffset = linePreamble.Length;
+        int lineLeftBoundary = Console.CursorLeft;
+        int cursorLeftBoundary = Console.CursorLeft + linePreambleOffset;
+        
         // Starting cursor position (after your prompt)
-        int startLeft = Console.CursorLeft;
+        int startLeft = cursorLeftBoundary;
         int startTop = Console.CursorTop;
 
+        // Characters previously printed out. Does not count preamble.
         int renderedLength = 0;
 
         List<string> completionMatches = null;
         int completionIndex = -1;
         int completionWordStart = 0;
         int completionWordLength = 0;
+
+        // first render: empty prompt with preamble
+        Render();
 
         while (true)
         {
@@ -335,12 +345,14 @@ public class LineEditor
         void Render()
         {
             // Go back to where input starts
-            Console.SetCursorPosition(startLeft, startTop);
+            Console.SetCursorPosition(lineLeftBoundary, startTop);
 
+            Console.Write(linePreamble);
             string text = buffer.ToString();
             Console.Write(text);
 
-            // Clear any leftover characters from previous render
+            // Clear any leftover characters from previous render.
+            // Both operands do not count preamble, so diff is coherent.
             int extra = renderedLength - text.Length;
             if (extra > 0)
             {
@@ -395,7 +407,7 @@ public class LineEditor
         // Determines if a character is considered part of a word
         bool IsWordChar(char c)
         {
-            char[] punctuation = [ '.', ',', ';', ':', '!', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '=' ];
+            char[] punctuation = [ '.', ',', ';', ':', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '=' ];
             return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
         }
     }
