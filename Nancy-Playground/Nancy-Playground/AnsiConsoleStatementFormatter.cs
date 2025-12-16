@@ -28,7 +28,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             default:
             {
                 if (statement.InlineComment.IsNullOrWhiteSpace())
-                    AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                    AnsiConsole.MarkupLineInterpolated($"[grey]➜ {statement.Text}[/]");
                 else
                     AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
                 break;
