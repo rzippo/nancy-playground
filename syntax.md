@@ -60,8 +60,8 @@ Here is the information in a markdown table format:
 | ratency(a,b) | Constructs a rate-latency service function with rate $a \geq 0$ and latency $b \geq 0$. | ✅ |
 | bucket(a,b)| Constructs a leaky bucket arrival function with slope $a \geq 0$ and constant $b \geq 0$. | ✅ |
 | affine(a,b)| Constructs an affine function with slope $a$ and constant $b$. The function is right-continuous at $x=0$, i.e., $f(0+)=f(0)$. | ✅ |
-| step(o,h) | Constructs a step function with the step occurring at time $o$ and height $h$. | ✅ |
-| stair(o,l,h)| Constructs a staircase function with the first step at time $o$, length $l$, and height $h$. | ✅ |
+| step(o,h) | Constructs a step function with the step occurring at time $o$ and height $h$. The step is left-continuous. | ✅ |
+| stair(o,l,h)| Constructs a staircase function with the first step at time $o$, length $l$, and height $h$. It is left continuous. | ✅ |
 | delay(o) | Constructs a burst-delay function that occurs at time $o$. | ✅ |
 | zero | Constructs a function that has zero as its value everywhere: $f(x)=0$ for $x \geq 0$. | ✅ |
 | epsilon | Constructs the "epsilon" function: $f(x)=+\infty$ for $x \geq 0$. | ✅ |
