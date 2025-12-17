@@ -1,8 +1,7 @@
-using System.Text;
 using System.Text.RegularExpressions;
 using Unipi.MppgParser.Grammar;
+using Unipi.MppgParser.Utility;
 using Unipi.Nancy.MinPlusAlgebra;
-using Unipi.Nancy.Numerics;
 
 namespace Unipi.MppgParser.Visitors;
 
@@ -148,23 +147,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
-        return [ExplicitToCodeString(number)];
-        
-        // todo: include this in Nancy
-        string ExplicitToCodeString(Rational r)
-        {
-            var sb = new StringBuilder();
-            sb.Append("new Rational(");
-            sb.Append(r.Numerator.ToString());
-            if (r.Denominator != 1)
-            {
-                sb.Append(", ");
-                sb.Append(r.Denominator.ToString());
-            }
-            sb.Append(")");
-
-            return sb.ToString();
-        }
+        return [number.ToExplicitCodeString()];        
     }
 
     public override List<string> VisitFunctionBrackets(Grammar.MppgParser.FunctionBracketsContext context)

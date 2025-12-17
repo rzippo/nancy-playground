@@ -66,7 +66,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                     var expressionValue = expressionOutput.Expression switch
                     {
                         CurveExpression ce => ce.Value.ToCodeString(),
-                        RationalExpression re => re.Value.ToString(),
+                        RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
                     AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionValue}[/]");
@@ -86,7 +86,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                     var expressionValue = assignmentOutput.Expression switch
                     {
                         CurveExpression ce => ce.Value.ToCodeString(),
-                        RationalExpression re => re.Value.ToString(),
+                        RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
                     AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]");
