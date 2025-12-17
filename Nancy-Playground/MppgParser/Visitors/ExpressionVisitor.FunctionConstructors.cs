@@ -247,56 +247,46 @@ public partial class ExpressionVisitor
         {
             var lastPoint = (Point)sequence.Elements[^2];
             var lastSegment = (Segment)sequence.Elements[^1];
-            // normalize last segment to be finite
-            if(lastSegment.EndTime.IsInfinite)
-            {
-                lastSegment = new Segment(
-                    lastSegment.StartTime,
-                    lastSegment.StartTime + 1,
-                    lastSegment.RightLimitAtStartTime,
-                    lastSegment.Slope
-                );
+            var isPointAffine = lastPoint.Value == lastSegment.RightLimitAtStartTime;
 
-                var normalizedElements = sequence.Elements.ToList();
-                normalizedElements[^1] = lastSegment;
-                sequence = new Sequence(normalizedElements);
-            }
+            // normalize last segment length
+            lastSegment = new Segment(
+                lastSegment.StartTime,
+                lastSegment.StartTime + (isPointAffine ? 1 : 2),
+                lastSegment.RightLimitAtStartTime,
+                lastSegment.Slope
+            );
 
-            t = lastPoint.Time;
-            d = lastSegment.Length;
-            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
+            var normalizedElements = sequence.Elements.ToList();
+            normalizedElements[^1] = lastSegment;
+            sequence = new Sequence(normalizedElements);
+            
+            t = isPointAffine ? lastPoint.Time : lastPoint.Time + 1;
+            d = 1;
+            c = lastSegment.IsInfinite ? 0 : lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
         }
         else // right-closed
         {
-            var lastPoint = (Point)sequence.Elements[^1];
+            // the actual last point is ignored because unneeded
             var lastSegment = (Segment)sequence.Elements[^2];
-            // normalize last segment and point to be finite
-            if(lastSegment.EndTime.IsInfinite)
-            {
-                lastSegment = new Segment(
-                    lastSegment.StartTime,
-                    lastSegment.StartTime + 1,
-                    lastSegment.RightLimitAtStartTime,
-                    lastSegment.Slope
-                );
-                lastPoint = new Point(
-                    lastSegment.EndTime,
-                    lastSegment.LeftLimitAtEndTime
-                );
+            var lastPoint = (Point)sequence.Elements[^3];
+            var isPointAffine = lastPoint.Value == lastSegment.RightLimitAtStartTime;
 
-                var normalizedElements = sequence.Elements.ToList();
-                normalizedElements[^2] = lastSegment;
-                normalizedElements[^1] = lastPoint;
-                sequence = new Sequence(normalizedElements);
-            }
+            // normalize last segment length
+            lastSegment = new Segment(
+                lastSegment.StartTime,
+                lastSegment.StartTime + (isPointAffine ? 1 : 2),
+                lastSegment.RightLimitAtStartTime,
+                lastSegment.Slope
+            );
 
-            t = lastPoint.Time;
-            d = lastSegment.Length;
-            c = lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
-            var lastSegmentShifted = lastSegment
-                .HorizontalShift(d)
-                .VerticalShift(c);
-            sequence = new Sequence(sequence.Elements.Append(lastSegmentShifted));
+            var normalizedElements = sequence.Elements.SkipLast(1).ToList();
+            normalizedElements[^1] = lastSegment;
+            sequence = new Sequence(normalizedElements);
+
+            t = isPointAffine ? lastPoint.Time : lastPoint.Time + 1;
+            d = 1;
+            c = lastSegment.IsInfinite ? 0 : lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;
         }
 
         var curve = new Curve(
@@ -304,7 +294,8 @@ public partial class ExpressionVisitor
             t, d, c
         );
 
-        if(curve is not {IsUltimatelyAffine: true})
+        // Nancy does not consider UI curves to be UA as well, but MPPG syntax does.
+        if(curve is {IsUltimatelyInfinite: false} and not {IsUltimatelyAffine: true})
             throw new InvalidOperationException("This curve is not UA");
 
         return curve
