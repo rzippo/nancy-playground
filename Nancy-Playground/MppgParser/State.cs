@@ -43,6 +43,14 @@ public class State
         AddRange(functionVariables);
         AddRange(rationalExpressions);
     }
+
+    public List<string> GetVariableNames()
+    {
+        var names = FunctionVariables.Keys
+            .Concat(NumberVariables.Keys)
+            .ToList();
+        return names;
+    }
     
     /// <summary>
     /// Determines the type of a variable based on the provided key.

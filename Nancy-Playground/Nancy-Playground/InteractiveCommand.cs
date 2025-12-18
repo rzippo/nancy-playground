@@ -78,6 +78,10 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // MPPG syntax statement
                 var statement = Statement.FromLine(line);
                 programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+
+                // update session-based autocomplete
+                // could be optimized to be diff-based
+                lineEditor.SetSessionKeywords(programContext.State.GetVariableNames());
             }
         }
 
