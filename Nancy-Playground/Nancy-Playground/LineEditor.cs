@@ -34,9 +34,9 @@ public class LineEditor
         IEnumerable<ContextualKeywords>? contextualKeywords = null
     )
     {
-        _keywords.AddRange(keywords);
+        _keywords.AddRange(keywords.Distinct());
         if (contextualKeywords != null)
-            _contextualKeywords.AddRange(contextualKeywords);
+            _contextualKeywords.AddRange(contextualKeywords.Distinct());
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class LineEditor
     public void SetKeywords(IEnumerable<string> keywords)
     {
         _keywords.Clear();
-        _keywords.AddRange(keywords);
+        _keywords.AddRange(keywords.Distinct());
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class LineEditor
     public void SetContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
         _contextualKeywords.Clear();
-        _contextualKeywords.AddRange(contextualKeywords);
+        _contextualKeywords.AddRange(contextualKeywords.Distinct());
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ public class LineEditor
     /// </summary>
     public void AddKeyword(string keyword)
     {
-        if (!string.IsNullOrEmpty(keyword))
+        if (!string.IsNullOrEmpty(keyword) && !_keywords.Contains(keyword))
             _keywords.Add(keyword);
     }
 
@@ -73,6 +73,7 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(ContextualKeywords contextualKeywords)
     {
+        // todo: check for duplicates?
         _contextualKeywords.Add(contextualKeywords);
     }
 
@@ -83,7 +84,7 @@ public class LineEditor
     {
         foreach (var k in keywords)
         {
-            if (!string.IsNullOrEmpty(k))
+            if (!string.IsNullOrEmpty(k) && !_keywords.Contains(k))
                 _keywords.Add(k);
         }
     }
@@ -94,6 +95,7 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
+        // todo: check for duplicates?
         foreach (var ck in contextualKeywords)
             _contextualKeywords.Add(ck);
     }
