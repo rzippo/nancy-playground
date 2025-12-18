@@ -116,10 +116,11 @@ public partial class InteractiveCommand
     {
         AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
 
-        var tagText = section.Tags is { Count: > 0 }
-            ? $" [grey]({Escape(string.Join(", ", section.Tags))})[/]"
-            : string.Empty;
-        AnsiConsole.MarkupLine(tagText);
+        // does printing tags make sense? Make it an option?
+        // var tagText = section.Tags is { Count: > 0 }
+        //     ? $" [grey]({Escape(string.Join(", ", section.Tags))})[/]"
+        //     : string.Empty;
+        // AnsiConsole.MarkupLine(tagText);
 
         if (!string.IsNullOrWhiteSpace(section.Description))
             AnsiConsole.MarkupLine($"[dim]{Escape(section.Description)}[/]");
@@ -132,10 +133,12 @@ public partial class InteractiveCommand
     {
         AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] [green]{Escape(item.Format)}[/]");
 
-        var tagText = item.Tags is { Count: > 0 }
-            ? $" [grey]({Escape(string.Join(", ", item.Tags))})[/]"
-            : string.Empty;
-        AnsiConsole.MarkupLine(tagText);
+        // does printing tags make sense? Make it an option?
+
+        // var tagText = item.Tags is { Count: > 0 }
+        //     ? $" [grey]({Escape(string.Join(", ", item.Tags))})[/]"
+        //     : string.Empty;
+        // AnsiConsole.MarkupLine(tagText);
 
         var description = item.LongDescription.IsNullOrWhiteSpace() ? item.Description : item.LongDescription;
         var descriptionLines = description.Split("\n");
