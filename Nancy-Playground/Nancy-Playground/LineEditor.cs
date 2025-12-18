@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace NancyPlayground;
@@ -36,8 +34,7 @@ public class LineEditor
         IEnumerable<ContextualKeywords>? contextualKeywords = null
     )
     {
-        if (keywords != null)
-            _keywords.AddRange(keywords);
+        _keywords.AddRange(keywords);
         if (contextualKeywords != null)
             _contextualKeywords.AddRange(contextualKeywords);
     }
@@ -48,8 +45,7 @@ public class LineEditor
     public void SetKeywords(IEnumerable<string> keywords)
     {
         _keywords.Clear();
-        if (keywords != null)
-            _keywords.AddRange(keywords);
+        _keywords.AddRange(keywords);
     }
 
     /// <summary>
@@ -59,8 +55,7 @@ public class LineEditor
     public void SetContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
         _contextualKeywords.Clear();
-        if (contextualKeywords != null)
-            _contextualKeywords.AddRange(contextualKeywords);
+        _contextualKeywords.AddRange(contextualKeywords);
     }
 
     /// <summary>
@@ -78,8 +73,7 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(ContextualKeywords contextualKeywords)
     {
-        if (contextualKeywords != null)
-            _contextualKeywords.Add(contextualKeywords);
+        _contextualKeywords.Add(contextualKeywords);
     }
 
     /// <summary>
@@ -87,7 +81,6 @@ public class LineEditor
     /// </summary>
     public void AddKeywords(IEnumerable<string> keywords)
     {
-        if (keywords == null) return;
         foreach (var k in keywords)
         {
             if (!string.IsNullOrEmpty(k))
@@ -101,12 +94,8 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
-        if (contextualKeywords == null) return;
         foreach (var ck in contextualKeywords)
-        {
-            if (ck != null)
-                _contextualKeywords.Add(ck);
-        }
+            _contextualKeywords.Add(ck);
     }
 
     /// <summary>
@@ -134,7 +123,7 @@ public class LineEditor
         // Characters previously printed out. Does not count preamble.
         int renderedLength = 0;
 
-        List<string> completionMatches = null;
+        List<string> completionMatches = [];
         int completionIndex = -1;
         int completionWordStart = 0;
         int completionWordLength = 0;
@@ -152,7 +141,7 @@ public class LineEditor
             // Any non-Tab key resets the autocomplete cycling state
             if (!isTab)
             {
-                completionMatches = null;
+                completionMatches = [];
                 completionIndex = -1;
             }
 
@@ -278,7 +267,7 @@ public class LineEditor
                 case ConsoleKey.Tab:
                     {
                         // If we already have matches, cycle through them
-                        if (completionMatches != null && completionMatches.Count > 0)
+                        if (completionMatches is { Count: > 0 })
                         {
                             completionIndex = (completionIndex + 1) % completionMatches.Count;
                         }
@@ -435,11 +424,7 @@ public class LineEditor
     /// </summary>
     public bool RemoveHistory(string value, bool removeAll = false)
     {
-        if (value == null)
-            return false;
-
         bool removed = false;
-
         if (removeAll)
         {
             for (int i = _history.Count - 1; i >= 0; i--)
