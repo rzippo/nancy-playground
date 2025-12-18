@@ -19,11 +19,15 @@ public class LineEditor
     /// <summary>
     /// List of keywords for autocomplete.
     /// </summary>
-    private readonly List<string> _keywords = new List<string>();
+    private readonly List<string> _keywords = [];
     /// <summary>
     /// Contextual keywords for autocomplete.
     /// </summary>
-    private readonly List<ContextualKeywords> _contextualKeywords = new List<ContextualKeywords>();
+    private readonly List<ContextualKeywords> _contextualKeywords = [];
+    /// <summary>
+    /// List of session keywords for autocomplete.
+    /// </summary>
+    private readonly List<string> _sessionKeywords = [];
 
     public LineEditor()
     {
@@ -98,6 +102,15 @@ public class LineEditor
         // todo: check for duplicates?
         foreach (var ck in contextualKeywords)
             _contextualKeywords.Add(ck);
+    }
+
+    /// <summary>
+    /// Replace the current session keyword list with the given sequence.
+    /// </summary>
+    public void SetSessionKeywords(IEnumerable<string> sessionKeywords)
+    {
+        _sessionKeywords.Clear();
+        _sessionKeywords.AddRange(sessionKeywords.Distinct());
     }
 
     /// <summary>
@@ -466,6 +479,7 @@ public class LineEditor
         var result = new List<string>();
         // Always-available keywords
         result.AddRange(_keywords);
+        result.AddRange(_sessionKeywords);
 
         if (_contextualKeywords.Count == 0 || string.IsNullOrWhiteSpace(currentLineBeforeCursor))
             return result;
