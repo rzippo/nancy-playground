@@ -1,9 +1,16 @@
 ﻿
 using System.Globalization;
 using NancyMppg;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
+// CLI welcome message
+AnsiConsole.MarkupLine("[green]This is [blue]nancy-playground[/], version 1.0.0.[/]");
+// todo: add reference to the maintainer somewhere?
+AnsiConsole.MarkupLine("[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.1016/j.softx.2022.101178[/][/]");
+
 var app = new CommandApp<InteractiveCommand>();
 app.Configure(config =>
 {
