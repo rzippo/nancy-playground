@@ -37,9 +37,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 {
                     // use gray text, to not attract focus
                     if (statement.InlineComment.IsNullOrWhiteSpace())
-                        AnsiConsole.MarkupLineInterpolated($"[grey]➜ {statement.Text}[/]");
+                        AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
                     else
-                        AnsiConsole.MarkupLineInterpolated($"[grey]➜ {statement.Text}[/] [green]{statement.InlineComment}[/]");
+                        AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
                 }
                 else
                 {
