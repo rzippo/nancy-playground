@@ -43,7 +43,10 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         var lineEditor = new LineEditor(Keywords, ContextualKeywords());
         var totalComputationTime = TimeSpan.Zero;
-        AnsiConsole.MarkupLine("[green]This is Nancy-Playground, interactive mode. Type your commands. Use [blue]!help[/] to read the manual.[/]");
+        
+        // CLI welcome message
+        AnsiConsole.MarkupLine("[green]Interactive mode: type in your commands. Use [blue]!help[/] to read the manual.[/]");
+
         while (true)
         {
             var line = lineEditor.ReadLine();
