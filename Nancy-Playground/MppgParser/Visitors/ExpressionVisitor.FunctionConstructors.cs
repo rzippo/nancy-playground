@@ -186,8 +186,8 @@ public partial class ExpressionVisitor
 
         var t = periodSequence.DefinedFrom;
         var d = periodSequence.DefinedUntil - periodSequence.DefinedFrom;
+        
         Rational c = 0;
-
         var incrementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.IncrementContext>(0);
         if (incrementContext is not null)
         {
@@ -195,6 +195,12 @@ public partial class ExpressionVisitor
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var increment = incrementLiteralContext.Accept(numberLiteralVisitor);
             c = increment;
+        }
+        else
+        {
+            if (periodSequence.IsFinite)
+                c = periodSequence.LeftLimitAt(periodSequence.DefinedUntil) -
+                    periodSequence.ValueAt(periodSequence.DefinedFrom);
         }
 
         IEnumerable<Element> allElements;
