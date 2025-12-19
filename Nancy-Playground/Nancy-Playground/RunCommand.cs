@@ -22,13 +22,17 @@ public class RunCommand : Command<RunCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings)
     {
+        if(settings.ShowWelcomeMessage)
+            foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
+                AnsiConsole.MarkupLine(cliWelcomeLine);
+
         if (string.IsNullOrWhiteSpace(settings.MppgFile))
         {
             AnsiConsole.MarkupLine($"[red]No input file specified.[/]");
             AnsiConsole.MarkupLine($"[red]Did you want to run the interactive command?[/]");
             return 1;
         }
-        
+
         var mppgFile = new FileInfo(settings.MppgFile);
         if (!mppgFile.Exists)
         {
@@ -46,7 +50,7 @@ public class RunCommand : Command<RunCommand.Settings>
 
         var plotFormatter = settings.Deterministic ? null : new ScottPlotFormatter(plotsRoot);
         // add option to use XPlotPlotFormatter?
-        
+
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),

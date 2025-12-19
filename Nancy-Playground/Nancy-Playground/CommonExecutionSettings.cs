@@ -19,6 +19,11 @@ public class CommonExecutionSettings : CommandSettings
     [Description("Specifies what to do when an error occurs. Available options: Stop (default), Continue.")]
     public OnErrorMode? OnErrorMode { get; init; }
         = Cli.OnErrorMode.Stop;
+
+    [CommandOption("--no-welcome")]
+    [Description("Mutes the welcome message.")]
+    public bool ShowWelcomeMessage { get; init; } 
+        = true;
 }
 
 public enum OutputMode
