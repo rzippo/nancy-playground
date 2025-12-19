@@ -10,4 +10,4 @@ floor := right-ext(stair(1, 1, 1))
 A3 := ( floor comp (D2 / 2) ) * 4
 D3 := C + (A3 + A4 - C)*zero - D4
 hDev(A3 , D3)
-plot(A1, A2, A4, C, D1, D2, D4, floor, A3, D3, out = "test.png", browser = "no")
+plot(out = "test.png", gui = "no", A1, A2, A4, C, D1, D2, D4, floor, A3, D3)
