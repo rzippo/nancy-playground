@@ -29,6 +29,10 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings)
     {
+        if(settings.ShowWelcomeMessage)
+            foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
+                AnsiConsole.MarkupLine(cliWelcomeLine);
+
         if (string.IsNullOrWhiteSpace(settings.MppgFile))
         {
             AnsiConsole.MarkupLine($"[red]No input file specified.[/]");

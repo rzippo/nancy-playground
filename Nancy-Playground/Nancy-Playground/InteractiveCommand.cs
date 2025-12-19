@@ -16,6 +16,10 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings)
     {
+        if(settings.ShowWelcomeMessage)
+            foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
+                AnsiConsole.MarkupLine(cliWelcomeLine);
+
         var programContext = new ProgramContext();
 
         // todo: make this configurable

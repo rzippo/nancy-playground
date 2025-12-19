@@ -19,9 +19,6 @@ internal class Program
         if(Console.IsOutputRedirected)
             AnsiConsole.Profile.Capabilities.Ansi = false;
 
-        foreach (var cliWelcomeLine in CliWelcomeMessage)
-            AnsiConsole.MarkupLine(cliWelcomeLine);
-
         var app = new CommandApp<InteractiveCommand>();
         app.Configure(config =>
         {
