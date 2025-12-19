@@ -49,7 +49,9 @@ public class RunCommandGoldenTests
 
         List<string> args = [
             "run",
-            Path.Combine(caseDir, "input.txt")
+            Path.Combine(caseDir, "input.txt"),
+            "--deterministic",
+            "--no-welcome"
         ];
         args.AddRange(ReadArgs(Path.Combine(caseDir, "args.txt")));
 
