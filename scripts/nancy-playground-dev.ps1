@@ -14,5 +14,5 @@ $programArgs = $args | Where-Object { -not ( $scriptParameters -contains $_ ) } 
 $joinedProgramArgs = $programArgs -join " ";
 
 dotnet restore $projectPath --verbosity $runVerbosity --nologo;
-dotnet build $projectPath --configuration $configuration --verbosity $runVerbosity --no-restore --nologo;
+dotnet build $projectPath --configuration $configuration --framework $tfm --verbosity $runVerbosity --no-restore --nologo;
 Invoke-Expression "dotnet run --configuration $configuration --project $projectPath --framework $tfm --verbosity $runVerbosity --no-restore --no-build -- $joinedProgramArgs";
