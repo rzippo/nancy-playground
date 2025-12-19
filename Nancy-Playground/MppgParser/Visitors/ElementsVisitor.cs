@@ -64,23 +64,31 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
         if(leftPoint.Time.IsInfinite)
             throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-        if(rightPoint.Time.IsPlusInfinite)
-            throw new InvalidOperationException($"Right endpoint, if included, cannot be infinite: {segmentText}");
-
+        
         if(slopeContext == null)
         {
             var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
             var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
             yield return leftPoint;
             yield return segment;
-            yield return rightPoint;
+            if (!rightPoint.Time.IsPlusInfinite)
+                yield return rightPoint;
         }
         else
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
             
-            var computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
+            Rational computedSlope;
+            if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
+            {
+                if(leftPoint.Value == rightPoint.Value)
+                    computedSlope = 0;
+                else
+                    throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
+            }
+            else
+                computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
             if(slope != computedSlope)
                 throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
 
@@ -88,7 +96,8 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
             yield return leftPoint;
             yield return segment;
-            yield return rightPoint;
+            if (!rightPoint.Time.IsPlusInfinite)
+                yield return rightPoint;
         }
     }
 
@@ -147,7 +156,16 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
             }
             else
             {
-                var computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
+                Rational computedSlope;
+                if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
+                {
+                    if(leftPoint.Value == rightPoint.Value)
+                        computedSlope = 0;
+                    else
+                        throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
+                }
+                else
+                    computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
                 if(slope != computedSlope)
                     throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
             }
@@ -172,29 +190,38 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
         if(leftPoint.Time.IsInfinite)
             throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-        if(rightPoint.Time.IsPlusInfinite)
-            throw new InvalidOperationException($"Right endpoint, if included, cannot be infinite: {segmentText}");
 
         if(slopeContext == null)
         {
             var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
             var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
             yield return segment;
-            yield return rightPoint;
+            if (!rightPoint.Time.IsPlusInfinite)
+                yield return rightPoint;
         }
         else
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
             
-            var computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
+            Rational computedSlope;
+            if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
+            {
+                if(leftPoint.Value == rightPoint.Value)
+                    computedSlope = 0;
+                else
+                    throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
+            }
+            else
+                computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
             if(slope != computedSlope)
                 throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
 
             var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
 
             yield return segment;
-            yield return rightPoint;
+            if (!rightPoint.Time.IsPlusInfinite)
+                yield return rightPoint;
         }
     }
 
@@ -250,7 +277,16 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
             }
             else
             {
-                var computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
+                Rational computedSlope;
+                if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
+                {
+                    if(leftPoint.Value == rightPoint.Value)
+                        computedSlope = 0;
+                    else
+                        throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
+                }
+                else
+                    computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
                 if(slope != computedSlope)
                     throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
             }
