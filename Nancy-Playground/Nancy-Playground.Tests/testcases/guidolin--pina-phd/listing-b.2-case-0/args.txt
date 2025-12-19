@@ -1,6 +1,7 @@
 # run
 # input.txt
---deterministic
+# --deterministic
+# --no-welcome
 --output-mode
     NancyNew
 --run-mode
