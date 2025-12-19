@@ -139,17 +139,11 @@ Numbers are rationals.
 
 > There is an implementation using floats, we will ignore that
 
-Examples of valid syntax:
-```
-0
-1
--3
-3/2
-+inf
--inf
-+infinity
--infinity
-```
+They can be written in 4 notations:
+    - as integers (`0`, `1`, `-3`)
+    - as rationals (`3/2`, `-2/3`)
+    - as decimals (`0.25`)
+    - $\pm\infty$ (`+inf`, `-inf`, `+infinity`, `-infinity`)
 
 ## Function-returning operations
 
