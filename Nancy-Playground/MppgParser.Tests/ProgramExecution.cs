@@ -1,6 +1,6 @@
 ﻿using Xunit.Abstractions;
 
-namespace Unipi.MppgParser.Tests;
+namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class ProgramExecution
 {

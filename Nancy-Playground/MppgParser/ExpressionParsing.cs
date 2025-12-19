@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime;
-using Unipi.MppgParser.Visitors;
 using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Playground.MppgParser.Visitors;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser;
 
 public static class ExpressionParsing
 {
@@ -18,9 +18,9 @@ public static class ExpressionParsing
     public static IExpression Parse(string expression, State? state)
     {
         var inputStream = CharStreams.fromString(expression);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
 
         var context = parser.expression();
         var visitor = new ExpressionVisitor(state);

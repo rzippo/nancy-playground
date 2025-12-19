@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics;
 using Unipi.Nancy.Expressions;
-using Unipi.Nancy.MinPlusAlgebra;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// Statements without assignement.

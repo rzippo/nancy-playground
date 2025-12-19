@@ -1,8 +1,10 @@
 ﻿using Antlr4.Runtime;
-using Unipi.MppgParser.Utility;
-using Unipi.MppgParser.Visitors;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
+using Unipi.Nancy.Playground.MppgParser.Utility;
+using Unipi.Nancy.Playground.MppgParser.Visitors;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser;
 
 public record class Program
 {
@@ -42,7 +44,7 @@ public record class Program
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public static Program FromTree(Grammar.MppgParser.ProgramContext context)
+    public static Program FromTree(Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
     {
         var visitor = new ProgramVisitor();
         var program = visitor.Visit(context);
@@ -60,9 +62,9 @@ public record class Program
     public static Program FromText(string text)
     {
         var inputStream = CharStreams.fromString(text);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         
         var context = parser.program();
         var program = FromTree(context);
@@ -151,9 +153,9 @@ public record class Program
     )
     {
         var inputStream = CharStreams.fromString(text);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
 
         var programContext = parser.program();
         var visitor = new ToNancyCodeVisitor();

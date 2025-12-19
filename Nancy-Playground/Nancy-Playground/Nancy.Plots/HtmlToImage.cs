@@ -1,9 +1,7 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Playwright;
-using Spectre.Console;
+
+namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
 public static class HtmlToImage
 {

@@ -2,11 +2,11 @@
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
 {
-    public override Rational VisitNumberLiteral(Grammar.MppgParser.NumberLiteralContext context)
+    public override Rational VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var numberText = context.GetText();
         Rational value;

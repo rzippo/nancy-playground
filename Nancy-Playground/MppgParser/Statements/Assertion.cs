@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
-using Unipi.MppgParser.Visitors;
-using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
+using Unipi.Nancy.Playground.MppgParser.Visitors;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// Assertions, composed of two expressions and a comparison operator.

@@ -1,12 +1,12 @@
-using Antlr4.Runtime.Tree;
 using Unipi.MppgParser.Grammar;
-using Unipi.MppgParser.Utility;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
 {
-    public override ComputableString VisitString(Grammar.MppgParser.StringContext context)
+    public override ComputableString VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
     {
         var cs = new ComputableString();
         for (int i = 0; i < context.ChildCount; i++)
@@ -20,7 +20,7 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
-    public override ComputableString VisitStringLiteral(Grammar.MppgParser.StringLiteralContext context)
+    public override ComputableString VisitStringLiteral(Unipi.MppgParser.Grammar.MppgParser.StringLiteralContext context)
     {
         var cs = new ComputableString();
         var str = context.GetText().TrimQuotes();
@@ -28,7 +28,7 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
-    public override ComputableString VisitStringVariable(Grammar.MppgParser.StringVariableContext context)
+    public override ComputableString VisitStringVariable(Unipi.MppgParser.Grammar.MppgParser.StringVariableContext context)
     {
         var cs = new ComputableString();
         var name = context.GetText();
@@ -37,7 +37,7 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
-    public override ComputableString VisitNumberLiteral(Grammar.MppgParser.NumberLiteralContext context)
+    public override ComputableString VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var cs = new ComputableString();
         var visitor = new NumberLiteralVisitor();

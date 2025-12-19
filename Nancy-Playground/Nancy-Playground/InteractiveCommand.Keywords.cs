@@ -1,6 +1,4 @@
-using NancyPlayground;
-
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public partial class InteractiveCommand
 {

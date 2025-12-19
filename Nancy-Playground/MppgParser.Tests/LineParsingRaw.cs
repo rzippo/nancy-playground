@@ -1,8 +1,7 @@
 using Antlr4.Runtime;
-using Unipi.MppgParser.Grammar;
 using Xunit.Abstractions;
 
-namespace Unipi.MppgParser.Tests;
+namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class LineParsingRaw
 {
@@ -35,9 +34,9 @@ public class LineParsingRaw
     public void FunctionExpression(string expression)
     {
         var inputStream = CharStreams.fromString(expression);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
 
         var context = parser.functionExpression();
         

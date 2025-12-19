@@ -1,7 +1,7 @@
 ﻿using Unipi.Nancy.MinPlusAlgebra;
 using XPlot.Plotly;
 
-namespace NancyMppg.Nancy.Plots;
+namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
 /// <summary>
 /// Plotter for Nancy types using <a href="https://github.com/fslaborg/XPlot">XPlot.Plotly</a>

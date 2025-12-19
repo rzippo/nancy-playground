@@ -1,11 +1,11 @@
 using System.Diagnostics;
-using NancyMppg.Nancy.Plots;
 using Spectre.Console;
-using Unipi.MppgParser;
-using Unipi.MppgParser.Utility;
-using Unipi.Nancy.Numerics;
+using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Playground.Cli.Nancy.Plots;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli.Plots;
 
 /// <summary>
 /// Implements plotting using <a href="https://github.com/ScottPlot/ScottPlot">ScottPlot</a>
@@ -31,11 +31,11 @@ public class ScottPlotFormatter : IPlotFormatter
         {
             var plotter = new ScottPlotNancyPlotter();
             
-            var curves = plotOutput.FunctionsToPlot
-                .Select(pair => pair.Curve)
+            var curves = Enumerable
+                .Select<(string Name, Curve Curve), Curve>(plotOutput.FunctionsToPlot, pair => pair.Curve)
                 .ToList();
-            var names = plotOutput.FunctionsToPlot
-                .Select(pair => pair.Name)
+            var names = Enumerable
+                .Select<(string Name, Curve Curve), string>(plotOutput.FunctionsToPlot, pair => pair.Name)
                 .ToList();
 
             var xLimit = plotOutput.Settings.XLimit;
@@ -77,7 +77,7 @@ public class ScottPlotFormatter : IPlotFormatter
 
             if (saveToFile)
             {
-                var imagePath = Path.Join(PlotsExportRoot, plotOutput.Settings.OutPath);
+                var imagePath = Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath);
                 var imageBytes = plotter.GetImage(plot);
                 File.WriteAllBytes(imagePath, imageBytes);
 

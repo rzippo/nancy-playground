@@ -1,9 +1,8 @@
 ﻿using Unipi.MppgParser.Grammar;
-using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 /// <summary>
 /// In MPPG, each end of a segment may be either inclusive or exclusive.
@@ -11,7 +10,7 @@ namespace Unipi.MppgParser.Visitors;
 /// </summary>
 public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 {
-    public override IEnumerable<Element> VisitSequence(Grammar.MppgParser.SequenceContext context)
+    public override IEnumerable<Element> VisitSequence(Unipi.MppgParser.Grammar.MppgParser.SequenceContext context)
     {
         var elements = Enumerable.Empty<Element>();
         for (int i = 0; i < context.ChildCount; i++)
@@ -23,7 +22,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
-    public override IEnumerable<Element> VisitElement(Grammar.MppgParser.ElementContext context)
+    public override IEnumerable<Element> VisitElement(Unipi.MppgParser.Grammar.MppgParser.ElementContext context)
     {
         if (context.ChildCount != 1)
             throw new Exception("Expected 1 child expression");
@@ -33,7 +32,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
-    public override IEnumerable<Element> VisitPoint(Grammar.MppgParser.PointContext context)
+    public override IEnumerable<Element> VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context)
     {
         var pointVisitor = new PointVisitor();
         var point = context.Accept(pointVisitor);
@@ -41,7 +40,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         yield return point;
     }
 
-    public override IEnumerable<Element> VisitSegment(Grammar.MppgParser.SegmentContext context)
+    public override IEnumerable<Element> VisitSegment(Unipi.MppgParser.Grammar.MppgParser.SegmentContext context)
     {
         if(context.ChildCount != 1)
             throw new Exception("Expected 1 child expression");
@@ -51,13 +50,13 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
+    public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
     {
         var segmentText = context.GetJoinedText();
         
-        var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
+        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
@@ -93,13 +92,13 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         }
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
+    public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
     {
         var segmentText = context.GetJoinedText();
         
-        var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
+        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
@@ -159,13 +158,13 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         }
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
+    public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
     {
         var segmentText = context.GetJoinedText();
         
-        var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
+        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
@@ -199,13 +198,13 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         }
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
+    public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
     {
         var segmentText = context.GetJoinedText();
         
-        var leftPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Grammar.MppgParser.EndpointContext>(1);
+        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
         
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);

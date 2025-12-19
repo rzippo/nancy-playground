@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public class ComputableString
 {

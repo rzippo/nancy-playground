@@ -1,9 +1,12 @@
 ﻿using Spectre.Console;
-using Unipi.MppgParser;
-using Unipi.MppgParser.Utility;
 using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Playground.Cli.Plots;
+using Unipi.Nancy.Playground.MppgParser.Exceptions;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public class AnsiConsoleStatementFormatter : IStatementFormatter
 {

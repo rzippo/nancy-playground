@@ -1,10 +1,10 @@
 ﻿using Antlr4.Runtime;
-using Unipi.MppgParser.Visitors;
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
+using Unipi.Nancy.Playground.MppgParser.Visitors;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public class Expression
 {
@@ -27,7 +27,7 @@ public class Expression
     
     public IExpression? NancyExpression { get; internal set; }
     
-    public Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
+    public Unipi.MppgParser.Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
     
     public string? VariableName { get; private set; }
     
@@ -37,7 +37,7 @@ public class Expression
         SourceType = ExpressionSourceType.NancyExpression;
     }
 
-    public Expression(Grammar.MppgParser.ExpressionContext context)
+    public Expression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
     {
         ExpressionContext = context;
         SourceType = ExpressionSourceType.ExpressionContext;
@@ -49,13 +49,13 @@ public class Expression
         SourceType = ExpressionSourceType.VariableName;
     }
 
-    public static Expression FromTree(Grammar.MppgParser.ExpressionContext context, State? state)
+    public static Expression FromTree(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context, State? state)
     {
         var expression = ParseTree(context, state);
         return new Expression(expression);
     }
     
-    public static IExpression ParseTree(Grammar.MppgParser.ExpressionContext context, State? state)
+    public static IExpression ParseTree(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context, State? state)
     {
         var visitor = new ExpressionVisitor(state);
         var expression = visitor.Visit(context);
@@ -75,9 +75,9 @@ public class Expression
     public static IExpression ParseFromString(string expression, State? state)
     {
         var inputStream = CharStreams.fromString(expression);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
 
         var context = parser.expression();
         var visitor = new ExpressionVisitor(state);

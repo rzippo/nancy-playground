@@ -1,4 +1,4 @@
-﻿namespace NancyMppg;
+﻿namespace Unipi.Nancy.Playground.Cli;
 
 public static class NancyPlaygroundDocs
 {

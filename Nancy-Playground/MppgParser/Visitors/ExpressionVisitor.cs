@@ -1,9 +1,9 @@
-﻿using System.Globalization;
-using Unipi.MppgParser.Grammar;
+﻿using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Expressions;
-using Unipi.Nancy.Numerics;
+using Unipi.Nancy.Playground.MppgParser.Exceptions;
+using Unipi.Nancy.Playground.MppgParser.Statements;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
 {
@@ -26,7 +26,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
             return State.GetNumberVariable(name);
     }
 
-    public override IExpression VisitNumberVariableExp(Grammar.MppgParser.NumberVariableExpContext context)
+    public override IExpression VisitNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.NumberVariableExpContext context)
     {
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
@@ -38,7 +38,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
             return State.GetNumberVariable(name);
     }
     
-    public override IExpression VisitEncNumberVariableExp(Grammar.MppgParser.EncNumberVariableExpContext context)
+    public override IExpression VisitEncNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberVariableExpContext context)
     {
         var name = context.GetText();
         var (isPresent, type) = State.GetVariableType(name);
@@ -50,21 +50,21 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
             return State.GetNumberVariable(name);
     }
 
-    public override IExpression VisitNumberLiteralExp(Grammar.MppgParser.NumberLiteralExpContext context)
+    public override IExpression VisitNumberLiteralExp(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralExpContext context)
     {
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var value = numberLiteralVisitor.Visit(context);
         
-        var valueExp = Expressions.FromRational(value, "");
+        var valueExp = Expressions.Expressions.FromRational(value, "");
         return valueExp;
     }
     
-    public override IExpression VisitEncNumberLiteralExp(Grammar.MppgParser.EncNumberLiteralExpContext context)
+    public override IExpression VisitEncNumberLiteralExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberLiteralExpContext context)
     {
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var value = numberLiteralVisitor.Visit(context);
         
-        var valueExp = Expressions.FromRational(value, "");
+        var valueExp = Expressions.Expressions.FromRational(value, "");
         return valueExp;
     }
 }

@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 
-namespace NancyMppg.Nancy.Plots;
+namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
 /// <summary>
 /// Abstract class for plotters of Nancy types.

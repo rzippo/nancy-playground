@@ -1,17 +1,16 @@
-﻿using System.Text;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Misc;
+﻿using Antlr4.Runtime.Misc;
 using Unipi.MppgParser.Grammar;
-using Unipi.MppgParser.Utility;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public class StatementVisitor : MppgBaseVisitor<Statement>
 {
-    public override Statement VisitStatementLine([NotNull] Grammar.MppgParser.StatementLineContext context)
+    public override Statement VisitStatementLine([NotNull] Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
     {
-        var statementContext = context.GetChild<Grammar.MppgParser.StatementContext>(0);
-        var inlineCommentContext = context.GetChild<Grammar.MppgParser.InlineCommentContext>(0);
+        var statementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0);
+        var inlineCommentContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.InlineCommentContext>(0);
 
         var statement = statementContext.Accept(this);
         if (inlineCommentContext != null)
@@ -32,27 +31,27 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             return statement;
     }
 
-    public override Statement VisitComment(Grammar.MppgParser.CommentContext context)
+    public override Statement VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)
     {
         var text = context.GetJoinedText();
         return new Comment { Text = text };
     }
 
-    public override Statement VisitEmpty([NotNull] Grammar.MppgParser.EmptyContext context)
+    public override Statement VisitEmpty([NotNull] Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
     {
         return new EmptyStatement();
     }
 
-    public override Statement VisitPlotCommand(Grammar.MppgParser.PlotCommandContext context)
+    public override Statement VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
         var text = context.GetJoinedText();
-        var args = context.GetRuleContexts<Grammar.MppgParser.PlotArgContext>();
+        var args = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>();
 
         var functionNameContexts = args
-            .Select(arg => arg.GetChild<Grammar.MppgParser.FunctionNameContext>(0))
+            .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0))
             .Where(ctx => ctx != null);
         var plotOptionContexts = args
-            .Select(arg => arg.GetChild<Grammar.MppgParser.PlotOptionContext>(0))
+            .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext>(0))
             .Where(ctx => ctx != null);
         
         var variableNames = functionNameContexts
@@ -71,7 +70,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             {
                 case "main":
                 {
-                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -83,7 +82,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "title":
                 {
-                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -95,10 +94,10 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "xlim":
                 {
-                    var intervalContext = plotArgContext.GetChild<Grammar.MppgParser.IntervalContext>(0);
+                    var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     settings = settings with
@@ -110,10 +109,10 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "ylim":
                 {
-                    var intervalContext = plotArgContext.GetChild<Grammar.MppgParser.IntervalContext>(0);
+                    var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     settings = settings with
@@ -125,7 +124,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "xlab":
                 {
-                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -137,7 +136,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "ylab":
                 {
-                    var stringContext = plotArgContext.GetChild<Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -212,27 +211,27 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         };
     }
 
-    public override Statement VisitExpression(Grammar.MppgParser.ExpressionContext context)
+    public override Statement VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
     {
         var expression = new Expression(context);
         var text = context.GetJoinedText();
         return new ExpressionCommand(expression) { Text = text };
     }
 
-    public override Statement VisitAssignment(Grammar.MppgParser.AssignmentContext context)
+    public override Statement VisitAssignment(Unipi.MppgParser.Grammar.MppgParser.AssignmentContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
 
         var text = context.GetJoinedText();
         var name = context.GetChild(0).GetText();
-        var expressionContext = (Grammar.MppgParser.ExpressionContext) context.GetChild(2);
+        var expressionContext = (Unipi.MppgParser.Grammar.MppgParser.ExpressionContext) context.GetChild(2);
         var expression = new Expression(expressionContext);
           
         return new Assignment(name, expression) { Text = text };
     }
 
-    public override Statement VisitPrintExpressionCommand(Grammar.MppgParser.PrintExpressionCommandContext context)
+    public override Statement VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -243,11 +242,11 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         return new PrintExpressionCommand(name) { Text = text };
     }
 
-    public override Statement VisitAssertion(Grammar.MppgParser.AssertionContext context)
+    public override Statement VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {
-        var leftExpressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(0);
-        var rightExpressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(1);
-        var operatorContext = context.GetChild<Grammar.MppgParser.AssertionOperatorContext>(0);
+        var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
+        var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
+        var operatorContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.AssertionOperatorContext>(0);
         var text = context.GetJoinedText();
         
         var leftExpression = new Expression(leftExpressionContext);

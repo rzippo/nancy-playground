@@ -1,7 +1,7 @@
 ﻿using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 /// <summary>
 /// $f(t) = K$, including in 0.

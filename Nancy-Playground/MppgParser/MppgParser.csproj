@@ -4,8 +4,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <AssemblyName>Unipi.MppgParser</AssemblyName>
-        <RootNamespace>Unipi.MppgParser</RootNamespace>
+        <AssemblyName>Unipi.Nancy.Playground.MppgParser</AssemblyName>
+        <RootNamespace>Unipi.Nancy.Playground.MppgParser</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

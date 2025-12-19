@@ -1,6 +1,6 @@
 ﻿using Antlr4.Runtime.Tree;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public static class IParseTreeExtensions
 {

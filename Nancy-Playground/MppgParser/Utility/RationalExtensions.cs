@@ -1,8 +1,7 @@
-
 using System.Text;
 using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser.Utility;
+namespace Unipi.Nancy.Playground.MppgParser.Utility;
 
 public static class RationalExtensions
 {

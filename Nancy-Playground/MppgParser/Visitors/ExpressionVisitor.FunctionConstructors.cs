@@ -3,11 +3,11 @@ using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.NetworkCalculus;
 using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override IExpression VisitRateLatency(Grammar.MppgParser.RateLatencyContext context)
+    public override IExpression VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -22,12 +22,12 @@ public partial class ExpressionVisitor
         var latency = latencyExp.Compute();
 
         var curve = new RateLatencyServiceCurve(rate, latency);
-        var curveExp = Expressions.FromCurve(curve, name: $"ratency_{{{rate}, {latency}}}");
+        var curveExp = Expressions.Expressions.FromCurve(curve, name: $"ratency_{{{rate}, {latency}}}");
 
         return curveExp;
     }
 
-    public override IExpression VisitTokenBucket(Grammar.MppgParser.TokenBucketContext context)
+    public override IExpression VisitTokenBucket(Unipi.MppgParser.Grammar.MppgParser.TokenBucketContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -42,13 +42,13 @@ public partial class ExpressionVisitor
         var b = bExp.Compute();
 
         var curve = new SigmaRhoArrivalCurve(b, a);
-        var curveExp = Expressions.FromCurve(curve, name: $"bucket_{{{a}, {b}}}");
+        var curveExp = Expressions.Expressions.FromCurve(curve, name: $"bucket_{{{a}, {b}}}");
 
         return curveExp;
     }
 
     public override IExpression VisitAffineFunction(
-        Grammar.MppgParser.AffineFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.AffineFunctionContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -69,13 +69,13 @@ public partial class ExpressionVisitor
             ]),
             0, 1, slope
         );
-        var curveExp = Expressions.FromCurve(curve, name: $"affine_{{{slope}, {constant}}}");
+        var curveExp = Expressions.Expressions.FromCurve(curve, name: $"affine_{{{slope}, {constant}}}");
 
         return curveExp;
     }
 
     public override IExpression VisitStepFunction(
-        Grammar.MppgParser.StepFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.StepFunctionContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -90,13 +90,13 @@ public partial class ExpressionVisitor
         var h = hExp.Compute();
 
         var curve = new StepCurve(h, o);
-        var curveExp = Expressions.FromCurve(curve, name: $"step_{{{o}, {h}}}");
+        var curveExp = Expressions.Expressions.FromCurve(curve, name: $"step_{{{o}, {h}}}");
 
         return curveExp;
     }
 
     public override IExpression VisitStairFunction(
-        Grammar.MppgParser.StairFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.StairFunctionContext context)
     {
         if (context.ChildCount != 8)
             throw new Exception("Expected 8 child expression");
@@ -119,13 +119,13 @@ public partial class ExpressionVisitor
             ]),
             0, l, h
         ).DelayBy(o);
-        var curveExp = Expressions.FromCurve(curve, name: $"stair_{{{o}, {l}, {h}}}");
+        var curveExp = Expressions.Expressions.FromCurve(curve, name: $"stair_{{{o}, {l}, {h}}}");
 
         return curveExp;
     }
 
     public override IExpression VisitDelayFunction(
-        Grammar.MppgParser.DelayFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.DelayFunctionContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -144,30 +144,30 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitZeroFunction(
-        Grammar.MppgParser.ZeroFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.ZeroFunctionContext context)
     {
-        var curveExp = Expressions.FromCurve(Curve.Zero());
+        var curveExp = Expressions.Expressions.FromCurve(Curve.Zero());
         return curveExp;
     }
 
     public override IExpression VisitEpsilonFunction(
-        Grammar.MppgParser.EpsilonFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.EpsilonFunctionContext context)
     {
-        var curveExp = Expressions.FromCurve(Curve.PlusInfinite());
+        var curveExp = Expressions.Expressions.FromCurve(Curve.PlusInfinite());
         return curveExp;
     }
 
-    public override IExpression VisitUltimatelyPseudoPeriodicFunction(Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
+    public override IExpression VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {
         var uppText = context.GetJoinedText();
 
         var transientElements = Enumerable.Empty<Element>();
         var elementsVisitor = new ElementsVisitor();
         
-        var transientContext = context.GetChild<Grammar.MppgParser.UppTransientPartContext>(0);
+        var transientContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.UppTransientPartContext>(0);
         if (transientContext is not null)
         {
-            var transientSequenceContext = transientContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
+            var transientSequenceContext = transientContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
             var parsedTransientElements = transientSequenceContext.Accept(elementsVisitor);
             transientElements = transientElements.Concat(parsedTransientElements);
         }
@@ -175,8 +175,8 @@ public partial class ExpressionVisitor
         if(transientElementsList.Any(e => e.StartTime.IsInfinite || e.EndTime.IsInfinite))
             throw new InvalidOperationException($"Elements with infinite time are not supported in UPP functions: {uppText}");
 
-        var periodContext = context.GetChild<Grammar.MppgParser.UppPeriodicPartContext>(0);
-        var periodSequenceContext = periodContext.GetChild<Grammar.MppgParser.SequenceContext>(0);
+        var periodContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.UppPeriodicPartContext>(0);
+        var periodSequenceContext = periodContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
         var periodElements = periodSequenceContext.Accept(elementsVisitor);
         var periodElementsList = periodElements.ToList();
         if(periodElementsList.Any(e => e.StartTime.IsInfinite || e.EndTime.IsInfinite))
@@ -188,7 +188,7 @@ public partial class ExpressionVisitor
         var d = periodSequence.DefinedUntil - periodSequence.DefinedFrom;
         Rational c = 0;
 
-        var incrementContext = context.GetChild<Grammar.MppgParser.IncrementContext>(0);
+        var incrementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.IncrementContext>(0);
         if (incrementContext is not null)
         {
             var incrementLiteralContext = incrementContext.GetChild(1);
@@ -231,11 +231,11 @@ public partial class ExpressionVisitor
             .ToExpression("");
     }
 
-    public override IExpression VisitUltimatelyAffineFunction(Grammar.MppgParser.UltimatelyAffineFunctionContext context)
+    public override IExpression VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context)
     {
         var elementsVisitor = new ElementsVisitor();
 
-        var sequenceContext = context.GetChild<Grammar.MppgParser.SequenceContext>(0);
+        var sequenceContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
         var elements = sequenceContext.Accept(elementsVisitor);
         var sequence = new Sequence(elements);
 

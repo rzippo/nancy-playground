@@ -1,24 +1,24 @@
 ﻿using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public class CommonExecutionSettings : CommandSettings
 {
     [CommandOption("-o|--output-mode")] 
     [Description("How the output is formatted. Available options: MppgClassic, NancyNew (default).")]
     public OutputMode? OutputMode { get; init; } 
-        = NancyMppg.OutputMode.NancyNew;
+        = Cli.OutputMode.NancyNew;
     
     [CommandOption("-r|--run-mode")]
     [Description("How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased.")]
     public RunMode? RunMode { get; init; }
-        = NancyMppg.RunMode.PerStatement;
+        = Cli.RunMode.PerStatement;
     
     [CommandOption("-e|--on-error")]
     [Description("Specifies what to do when an error occurs. Available options: Stop (default), Continue.")]
     public OnErrorMode? OnErrorMode { get; init; }
-        = NancyMppg.OnErrorMode.Stop;
+        = Cli.OnErrorMode.Stop;
 }
 
 public enum OutputMode

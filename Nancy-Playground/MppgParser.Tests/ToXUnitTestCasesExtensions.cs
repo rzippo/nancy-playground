@@ -1,4 +1,4 @@
-﻿namespace Unipi.MppgParser.Tests;
+﻿namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 /// <summary>
 /// Helper methods that convert lists of test cases in value tuple form into the object[] form required by xUnit.

@@ -1,7 +1,7 @@
 ﻿using Antlr4.Runtime;
-using Unipi.MppgParser.Visitors;
+using Unipi.Nancy.Playground.MppgParser.Visitors;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public abstract record class Statement
 {
@@ -16,9 +16,9 @@ public abstract record class Statement
     public static Statement FromLine(string line)
     {
         var inputStream = CharStreams.fromString(line);
-        var lexer = new Grammar.MppgLexer(inputStream);
+        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Grammar.MppgParser(commonTokenStream);
+        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         
         var context = parser.statement();
         var visitor = new StatementVisitor();

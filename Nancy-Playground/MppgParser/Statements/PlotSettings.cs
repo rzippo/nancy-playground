@@ -1,6 +1,6 @@
 ﻿using Unipi.Nancy.Numerics;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public record PlotSettings
 {

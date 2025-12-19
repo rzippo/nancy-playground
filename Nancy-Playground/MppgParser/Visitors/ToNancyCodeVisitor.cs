@@ -1,17 +1,18 @@
 using System.Text.RegularExpressions;
 using Unipi.MppgParser.Grammar;
-using Unipi.MppgParser.Utility;
 using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 {
     private ExpressionTypeVisitor TypeVisitor { get; set; } = new();
     
-    public override List<string> VisitProgram(Grammar.MppgParser.ProgramContext context)
+    public override List<string> VisitProgram(Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
     {
-        var statementLineContexts = context.GetRuleContexts<Grammar.MppgParser.StatementLineContext>();
+        var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
             "#:package Unipi.Nancy@1.2.20",
@@ -37,16 +38,16 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return code;
     }
 
-    public override List<string> VisitStatementLine(Grammar.MppgParser.StatementLineContext context)
+    public override List<string> VisitStatementLine(Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
     {
-        var statementContext = context.GetChild<Grammar.MppgParser.StatementContext>(0);
-        var inlineCommentContext = context.GetChild<Grammar.MppgParser.InlineCommentContext>(0);
+        var statementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0);
+        var inlineCommentContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.InlineCommentContext>(0);
 
-        if (statementContext.GetChild<Grammar.MppgParser.EmptyContext>(0) is not null)
+        if (statementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.EmptyContext>(0) is not null)
         {
             return [];
         }
-        if (statementContext.GetChild<Grammar.MppgParser.CommentContext>(0) is not null)
+        if (statementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.CommentContext>(0) is not null)
         {
             var comment = statementContext.Accept(this).Single();
             if (inlineCommentContext != null)
@@ -81,10 +82,10 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         }
     }
 
-    public override List<string> VisitAssignment(Grammar.MppgParser.AssignmentContext context)
+    public override List<string> VisitAssignment(Unipi.MppgParser.Grammar.MppgParser.AssignmentContext context)
     {
         var name = context.GetChild(0).GetText();
-        var expressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(0);
+        var expressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         
         var expressionCode = expressionContext.Accept(this);
         var expressionType = expressionContext.Accept(TypeVisitor);
@@ -105,58 +106,58 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return result;
     }
 
-    public override List<string> VisitExpressionCommand(Grammar.MppgParser.ExpressionCommandContext context)
+    public override List<string> VisitExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.ExpressionCommandContext context)
     {
-        var expressionContext = context.GetChild<Grammar.MppgParser.ExpressionContext>(0);
+        var expressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         var expression = expressionContext.Accept(this).Single();
 
         return [$"Console.WriteLine({expression});"];
     }
 
-    public override List<string> VisitNumberVariableExp(Grammar.MppgParser.NumberVariableExpContext context)
+    public override List<string> VisitNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.NumberVariableExpContext context)
     {
         var name = context.GetChild(0).GetText();
         return [name];
     }
 
-    public override List<string> VisitEncNumberVariableExp(Grammar.MppgParser.EncNumberVariableExpContext context)
+    public override List<string> VisitEncNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberVariableExpContext context)
     {
         var name = context.GetChild(0).GetText();
         return [name];
     }
 
-    public override List<string> VisitComment(Grammar.MppgParser.CommentContext context)
+    public override List<string> VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)
     {
         var text = context.GetJoinedText();
         return [$"// {text}"];
     }
 
-    public override List<string> VisitFunctionVariableExp(Grammar.MppgParser.FunctionVariableExpContext context)
+    public override List<string> VisitFunctionVariableExp(Unipi.MppgParser.Grammar.MppgParser.FunctionVariableExpContext context)
     {
         var name = context.GetChild(0).GetText();
         return [name];
     }
     
-    public override List<string> VisitFunctionName(Grammar.MppgParser.FunctionNameContext context)
+    public override List<string> VisitFunctionName(Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext context)
     {
         var name = context.GetChild(0).GetText();
         return [name];
     }
 
-    public override List<string> VisitNumberLiteral(Grammar.MppgParser.NumberLiteralContext context)
+    public override List<string> VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
         return [number.ToExplicitCodeString()];        
     }
 
-    public override List<string> VisitFunctionBrackets(Grammar.MppgParser.FunctionBracketsContext context)
+    public override List<string> VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context)
     {
         var innerCode = context.GetChild(1).Accept(this).Single();
         return [$"( {innerCode} )"];
     }
 
-    public override List<string> VisitNumberBrackets(Grammar.MppgParser.NumberBracketsContext context)
+    public override List<string> VisitNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.NumberBracketsContext context)
     {
         var innerCode = context.GetChild(1).Accept(this).Single();
         return [$"( {innerCode} )"];
@@ -164,7 +165,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
     #region Function binary operators
 
-    public override List<string> VisitFunctionMinimum(Grammar.MppgParser.FunctionMinimumContext context)
+    public override List<string> VisitFunctionMinimum(Unipi.MppgParser.Grammar.MppgParser.FunctionMinimumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -182,7 +183,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"Rational.Min({first}, {second})"];
     }
 
-    public override List<string> VisitFunctionMaximum(Grammar.MppgParser.FunctionMaximumContext context)
+    public override List<string> VisitFunctionMaximum(Unipi.MppgParser.Grammar.MppgParser.FunctionMaximumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -200,7 +201,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"Rational.Max({first}, {second})"];
     }
 
-    public override List<string> VisitFunctionMinPlusConvolution(Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
+    public override List<string> VisitFunctionMinPlusConvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -218,7 +219,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} * {second}"];
     }
 
-    public override List<string> VisitFunctionMaxPlusConvolution(Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
+    public override List<string> VisitFunctionMaxPlusConvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -226,7 +227,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.MaxPlusConvolution({first}, {second})"];
     }
 
-    public override List<string> VisitFunctionMinPlusDeconvolution(Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
+    public override List<string> VisitFunctionMinPlusDeconvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -244,7 +245,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} / {second}"];
     }
 
-    public override List<string> VisitFunctionMaxPlusDeconvolution(Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
+    public override List<string> VisitFunctionMaxPlusDeconvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -252,7 +253,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.MaxPlusDeconvolution({first}, {second})"];
     }
 
-    public override List<string> VisitFunctionComposition(Grammar.MppgParser.FunctionCompositionContext context)
+    public override List<string> VisitFunctionComposition(Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -260,7 +261,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.Composition({first}, {second})"];
     }
 
-    public override List<string> VisitFunctionScalarMultiplicationLeft(Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
+    public override List<string> VisitFunctionScalarMultiplicationLeft(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -278,7 +279,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} * {second}"];
     }
     
-    public override List<string> VisitFunctionScalarMultiplicationRight(Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
+    public override List<string> VisitFunctionScalarMultiplicationRight(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -296,7 +297,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} * {second}"];
     }
 
-    public override List<string> VisitFunctionScalarDivision(Grammar.MppgParser.FunctionScalarDivisionContext context)
+    public override List<string> VisitFunctionScalarDivision(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivisionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -314,7 +315,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} / {second}"];
     }
 
-    public override List<string> VisitFunctionSum(Grammar.MppgParser.FunctionSumContext context)
+    public override List<string> VisitFunctionSum(Unipi.MppgParser.Grammar.MppgParser.FunctionSumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -322,7 +323,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{first} + {second}"];
     }
 
-    public override List<string> VisitFunctionSubtraction(Grammar.MppgParser.FunctionSubtractionContext context)
+    public override List<string> VisitFunctionSubtraction(Unipi.MppgParser.Grammar.MppgParser.FunctionSubtractionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -334,14 +335,14 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
     #region Function unary operators
 
-    public override List<string> VisitFunctionSubadditiveClosure(Grammar.MppgParser.FunctionSubadditiveClosureContext context)
+    public override List<string> VisitFunctionSubadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
 
         return [$"Curve.SubAdditiveClosure({curve})"];
     }
 
-    public override List<string> VisitFunctionHShift(Grammar.MppgParser.FunctionHShiftContext context)
+    public override List<string> VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         var shift = context.GetChild(4).Accept(this).Single();
@@ -349,7 +350,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"({curve}).HorizontalShift({shift})"];
     }
 
-    public override List<string> VisitFunctionVShift(Grammar.MppgParser.FunctionVShiftContext context)
+    public override List<string> VisitFunctionVShift(Unipi.MppgParser.Grammar.MppgParser.FunctionVShiftContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         var shift = context.GetChild(4).Accept(this).Single();
@@ -357,42 +358,42 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"({curve}).VerticalShift({shift})"];
     }
 
-    public override List<string> VisitFunctionLowerPseudoInverse(Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
+    public override List<string> VisitFunctionLowerPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
 
         return [$"({curve}).LowerPseudoInverse()"];
     }
 
-    public override List<string> VisitFunctionUpperPseudoInverse(Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
+    public override List<string> VisitFunctionUpperPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
 
         return [$"({curve}).UpperPseudoInverse()"];
     }
 
-    public override List<string> VisitFunctionUpNonDecreasingClosure(Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
+    public override List<string> VisitFunctionUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         
         return [$"({curve}).ToUpperNonDecreasing()"];
     }
 
-    public override List<string> VisitFunctionNonNegativeUpNonDecreasingClosure(Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
+    public override List<string> VisitFunctionNonNegativeUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         
         return [$"({curve}).ToNonNegative().ToUpperNonDecreasing()"];
     }
 
-    public override List<string> VisitFunctionLeftExt(Grammar.MppgParser.FunctionLeftExtContext context)
+    public override List<string> VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         
         return [$"({curve}).ToLeftContinuous()"];
     }
 
-    public override List<string> VisitFunctionRightExt(Grammar.MppgParser.FunctionRightExtContext context)
+    public override List<string> VisitFunctionRightExt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightExtContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();
         
@@ -403,7 +404,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     
     #region Function constructors
 
-    public override List<string> VisitRateLatency(Grammar.MppgParser.RateLatencyContext context)
+    public override List<string> VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -414,7 +415,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"new RateLatencyServiceCurve({rate}, {latency})"];
     }
 
-    public override List<string> VisitTokenBucket(Grammar.MppgParser.TokenBucketContext context)
+    public override List<string> VisitTokenBucket(Unipi.MppgParser.Grammar.MppgParser.TokenBucketContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -426,7 +427,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     }
 
     public override List<string> VisitAffineFunction(
-        Grammar.MppgParser.AffineFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.AffineFunctionContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -438,7 +439,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     }
     
     public override List<string> VisitStepFunction(
-        Grammar.MppgParser.StepFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.StepFunctionContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -449,7 +450,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"new StepCurve({h}, {o})"];
     }
 
-    public override List<string> VisitStairFunction(Grammar.MppgParser.StairFunctionContext context)
+    public override List<string> VisitStairFunction(Unipi.MppgParser.Grammar.MppgParser.StairFunctionContext context)
     {
         if (context.ChildCount != 8)
             throw new Exception("Expected 8 child expression");
@@ -462,7 +463,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     }
     
     public override List<string> VisitDelayFunction(
-        Grammar.MppgParser.DelayFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.DelayFunctionContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -473,13 +474,13 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     }
 
     public override List<string> VisitZeroFunction(
-        Grammar.MppgParser.ZeroFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.ZeroFunctionContext context)
     {
         return ["Curve.Zero()"];
     }
 
     public override List<string> VisitEpsilonFunction(
-        Grammar.MppgParser.EpsilonFunctionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.EpsilonFunctionContext context)
     {
         return ["Curve.PlusInfinite()"];
     }
@@ -488,7 +489,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
     #region Number-returning function operators
 
-    public override List<string> VisitFunctionValueAt(Grammar.MppgParser.FunctionValueAtContext context)
+    public override List<string> VisitFunctionValueAt(Unipi.MppgParser.Grammar.MppgParser.FunctionValueAtContext context)
     {
         var curve = context.GetChild(0).Accept(this).Single();
         var time = context.GetChild(2).Accept(this).Single();
@@ -496,7 +497,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{curve}.ValueAt({time})"];
     }
 
-    public override List<string> VisitFunctionLeftLimitAt(Grammar.MppgParser.FunctionLeftLimitAtContext context)
+    public override List<string> VisitFunctionLeftLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftLimitAtContext context)
     {
         var curve = context.GetChild(0).Accept(this).Single();
         var time = context.GetChild(2).Accept(this).Single();
@@ -504,7 +505,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{curve}.LeftLimitAt({time})"];
     }
 
-    public override List<string> VisitFunctionRightLimitAt(Grammar.MppgParser.FunctionRightLimitAtContext context)
+    public override List<string> VisitFunctionRightLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightLimitAtContext context)
     {
         var curve = context.GetChild(0).Accept(this).Single();
         var time = context.GetChild(2).Accept(this).Single();
@@ -512,7 +513,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{curve}.RightLimitAt({time})"];
     }
 
-    public override List<string> VisitFunctionHorizontalDeviation(Grammar.MppgParser.FunctionHorizontalDeviationContext context)
+    public override List<string> VisitFunctionHorizontalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
         var l = context.GetChild(2).Accept(this).Single();
         var r = context.GetChild(4).Accept(this).Single();
@@ -520,7 +521,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.HorizontalDeviation({l}, {r})"];
     }
 
-    public override List<string> VisitFunctionVerticalDeviation(Grammar.MppgParser.FunctionVerticalDeviationContext context)
+    public override List<string> VisitFunctionVerticalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context)
     {
         var l = context.GetChild(2).Accept(this).Single();
         var r = context.GetChild(4).Accept(this).Single();
@@ -532,7 +533,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     
     #region Number binary operators
 
-    public override List<string> VisitNumberMultiplication(Grammar.MppgParser.NumberMultiplicationContext context)
+    public override List<string> VisitNumberMultiplication(Unipi.MppgParser.Grammar.MppgParser.NumberMultiplicationContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -550,7 +551,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} * {second}"];
     }
 
-    public override List<string> VisitNumberDivision(Grammar.MppgParser.NumberDivisionContext context)
+    public override List<string> VisitNumberDivision(Unipi.MppgParser.Grammar.MppgParser.NumberDivisionContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -568,7 +569,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"{first} / {second}"];
     }
 
-    public override List<string> VisitNumberSum(Grammar.MppgParser.NumberSumContext context)
+    public override List<string> VisitNumberSum(Unipi.MppgParser.Grammar.MppgParser.NumberSumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -576,7 +577,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{first} + {second}"];
     }
 
-    public override List<string> VisitNumberSub(Grammar.MppgParser.NumberSubContext context)
+    public override List<string> VisitNumberSub(Unipi.MppgParser.Grammar.MppgParser.NumberSubContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -584,7 +585,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"{first} - {second}"];
     }
 
-    public override List<string> VisitNumberMinimum(Grammar.MppgParser.NumberMinimumContext context)
+    public override List<string> VisitNumberMinimum(Unipi.MppgParser.Grammar.MppgParser.NumberMinimumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();
@@ -602,7 +603,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             return [$"Rational.Min({first}, {second})"];
     }
 
-    public override List<string> VisitNumberMaximum(Grammar.MppgParser.NumberMaximumContext context)
+    public override List<string> VisitNumberMaximum(Unipi.MppgParser.Grammar.MppgParser.NumberMaximumContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
         var second = context.GetChild(2).Accept(this).Single();

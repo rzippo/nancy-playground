@@ -1,7 +1,7 @@
 ﻿using Unipi.Nancy.Expressions;
-using Unipi.Nancy.Expressions.Internals;
+using Unipi.Nancy.Playground.MppgParser.Statements;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser;
 
 public class State
 {

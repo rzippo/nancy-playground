@@ -6,8 +6,8 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <AssemblyName>Unipi.MppgParser.Tests</AssemblyName>
-        <RootNamespace>Unipi.MppgParser.Tests</RootNamespace>
+        <AssemblyName>Unipi.Nancy.Playground.MppgParser.Tests</AssemblyName>
+        <RootNamespace>Unipi.Nancy.Playground.MppgParser.Tests</RootNamespace>
         <TargetFrameworks>net8.0;net10.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 

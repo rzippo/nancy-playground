@@ -1,6 +1,6 @@
 ﻿using Unipi.Nancy.MinPlusAlgebra;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public class PlotOutput : StatementOutput
 {

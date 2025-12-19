@@ -1,7 +1,7 @@
 using ScottPlot;
 using Unipi.Nancy.MinPlusAlgebra;
 
-namespace NancyMppg.Nancy.Plots;
+namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
 public class ScottPlotNancyPlotter : NancyPlotter<Plot>
 {
