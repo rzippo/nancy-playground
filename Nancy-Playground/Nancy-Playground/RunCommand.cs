@@ -14,6 +14,10 @@ public class RunCommand : Command<RunCommand.Settings>
         [Description("Path to the .mppg file to run")]
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
+        
+        [Description("If enabled, makes the output deterministic, removing preamble and time measurements. Useful to implement tests.")]
+        [CommandOption("--deterministic")]
+        public bool Deterministic { get; init; } = false;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -34,18 +38,22 @@ public class RunCommand : Command<RunCommand.Settings>
 
         // todo: make this configurable
         var plotsRoot = mppgFile.Directory?.FullName;
-        AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
+        if(!settings.Deterministic)
+            AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
-        var program = Unipi.Nancy.Playground.MppgParser.Program.FromText(programText);
+        var program = MppgParser.Program.FromText(programText);
+
+        var plotFormatter = settings.Deterministic ? null : new ScottPlotFormatter(plotsRoot);
+        // add option to use XPlotPlotFormatter?
+        
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
-                // todo: make this configurable
-                PlotFormatter = new ScottPlotFormatter(plotsRoot)
-                // PlotFormatter = new XPlotPlotFormatter(plotsRoot)
+                PlotFormatter = plotFormatter,
+                PrintTimePerStatement = !settings.Deterministic,
             },
             _ => new PlainConsoleStatementFormatter()
         };
@@ -56,7 +64,7 @@ public class RunCommand : Command<RunCommand.Settings>
             RunMode.PerStatement => true,
             _ => false
         };
-            
+
         var totalComputationTime = TimeSpan.Zero;
         while (!program.IsEndOfProgram)
         {
@@ -69,7 +77,8 @@ public class RunCommand : Command<RunCommand.Settings>
         }
 
         // use formatter?
-        Console.WriteLine($"Total computation time: {totalComputationTime}");
+        if(!settings.Deterministic)
+            Console.WriteLine($"Total computation time: {totalComputationTime}");
         return 0;
     }
 }
