@@ -53,7 +53,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         while (true)
         {
-            var line = lineEditor.ReadLine();
+            var line = lineEditor.ReadLine().Trim();
             if (string.IsNullOrWhiteSpace(line))
                 AnsiConsole.WriteLine();
             else if (line.StartsWith("!"))
