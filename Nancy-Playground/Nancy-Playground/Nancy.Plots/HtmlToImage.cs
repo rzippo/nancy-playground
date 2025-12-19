@@ -1,5 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+
+#if USE_PLAYWRIGHT
 using Microsoft.Playwright;
+#endif
 
 namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
@@ -24,6 +27,7 @@ public static class HtmlToImage
         int? quality = null,
         bool background = true)
     {
+#if USE_PLAYWRIGHT
         using var playwright = await Playwright.CreateAsync();
         await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
         {
@@ -53,6 +57,9 @@ public static class HtmlToImage
             screenshotOptions.Quality = quality;
 
         return await page.ScreenshotAsync(screenshotOptions);
+#else
+        throw new NotSupportedException("Playwright is not enabled in this build.");
+#endif
     }
 
     /// <summary>
@@ -60,10 +67,14 @@ public static class HtmlToImage
     /// </summary>
     public static void InstallBrowser()
     {
+#if USE_PLAYWRIGHT
         int exitCode = Microsoft.Playwright.Program.Main(["install", "chromium"]);
         if (exitCode != 0)
         {
             throw new Exception($"Failed to install Playwright with exit code {exitCode}.");
         }
+#else
+        throw new NotSupportedException("Playwright is not enabled in this build.");
+#endif
     }
 }

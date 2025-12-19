@@ -1,4 +1,5 @@
-﻿using Unipi.Nancy.MinPlusAlgebra;
+﻿#if USE_XPLOT
+using Unipi.Nancy.MinPlusAlgebra;
 using XPlot.Plotly;
 
 namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
@@ -215,3 +216,4 @@ public partial class PlotlyNancyPlotter : NancyPlotter<PlotlyChart>
         return HtmlToImage.RenderAsync(html).Result;
     }
 }
+#endif

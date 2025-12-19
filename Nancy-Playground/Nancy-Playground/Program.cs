@@ -36,8 +36,10 @@ public class Program
 
             config.AddCommand<ConvertCommand>("convert");
     
+#if USE_PLAYWRIGHT
             config.AddCommand<SetupCommand>("setup")
                 .WithDescription("Initializes dependencies. Required to enable exporting plots to images.");
+#endif
 
 #if DEBUG
             config.PropagateExceptions();

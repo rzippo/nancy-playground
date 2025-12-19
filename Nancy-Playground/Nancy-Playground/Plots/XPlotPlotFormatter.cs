@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿#if USE_XPLOT
+using System.Diagnostics;
 using Spectre.Console;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Playground.Cli.Nancy.Plots;
@@ -98,3 +99,4 @@ public class XPlotPlotFormatter: IPlotFormatter
         }
     }
 }
+#endif
