@@ -22,7 +22,7 @@ public class RunCommand : Command<RunCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings)
     {
-        if(settings.ShowWelcomeMessage)
+        if (!settings.MuteWelcomeMessage)
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
                 AnsiConsole.MarkupLine(cliWelcomeLine);
 

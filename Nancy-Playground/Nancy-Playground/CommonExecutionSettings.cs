@@ -22,8 +22,7 @@ public class CommonExecutionSettings : CommandSettings
 
     [CommandOption("--no-welcome")]
     [Description("Mutes the welcome message.")]
-    public bool ShowWelcomeMessage { get; init; } 
-        = true;
+    public bool MuteWelcomeMessage { get; init; } = false;
 }
 
 public enum OutputMode
