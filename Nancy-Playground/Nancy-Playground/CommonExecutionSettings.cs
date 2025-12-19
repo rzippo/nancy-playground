@@ -11,7 +11,7 @@ public class CommonExecutionSettings : CommandSettings
         = Cli.OutputMode.NancyNew;
     
     [CommandOption("-r|--run-mode")]
-    [Description("How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased.")]
+    [Description("How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: PerStatement.")]
     public RunMode? RunMode { get; init; }
         = Cli.RunMode.PerStatement;
     
