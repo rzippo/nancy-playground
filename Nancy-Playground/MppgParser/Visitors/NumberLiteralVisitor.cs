@@ -26,13 +26,6 @@ public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
         {
             value = decimal.Parse(numberText, CultureInfo.InvariantCulture);
         }
-        else if(numberText.Contains('/'))
-        {
-            var split = numberText.Split("/");
-            var numerator = int.Parse(split[0], CultureInfo.InvariantCulture);
-            var denominator = int.Parse(split[1], CultureInfo.InvariantCulture);
-            value = new Rational(numerator, denominator);
-        }
         else if (int.TryParse(numberText, NumberStyles.Number, CultureInfo.InvariantCulture, out var numerator))
         {
             value = numerator;

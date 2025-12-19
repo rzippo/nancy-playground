@@ -47,7 +47,7 @@ public partial class MppgParser : Parser {
 		T__52=53, T__53=54, T__54=55, T__55=56, T__56=57, T__57=58, T__58=59, 
 		T__59=60, T__60=61, T__61=62, T__62=63, T__63=64, T__64=65, T__65=66, 
 		NEW_LINE=67, WHITE_SPACE=68, VARIABLE_NAME=69, ASSIGN=70, STRING_LITERAL=71, 
-		INLINABLE_COMMENT=72, NUMBER_LITERAL=73, RATIONAL_NUMBER_LITERAL=74, DECIMAL_NUMBER_LITERAL=75, 
+		INLINABLE_COMMENT=72, NUMBER_LITERAL=73, INTEGER_LITERAL=74, DECIMAL_NUMBER_LITERAL=75, 
 		INFINITE_NUMBER_LITERAL=76;
 	public const int
 		RULE_program = 0, RULE_statementLine = 1, RULE_statement = 2, RULE_assignment = 3, 
@@ -103,7 +103,7 @@ public partial class MppgParser : Parser {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, "NEW_LINE", "WHITE_SPACE", "VARIABLE_NAME", 
-		"ASSIGN", "STRING_LITERAL", "INLINABLE_COMMENT", "NUMBER_LITERAL", "RATIONAL_NUMBER_LITERAL", 
+		"ASSIGN", "STRING_LITERAL", "INLINABLE_COMMENT", "NUMBER_LITERAL", "INTEGER_LITERAL", 
 		"DECIMAL_NUMBER_LITERAL", "INFINITE_NUMBER_LITERAL"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
