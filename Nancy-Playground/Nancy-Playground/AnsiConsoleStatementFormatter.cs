@@ -1,6 +1,7 @@
 ﻿using Spectre.Console;
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.Playground.Cli.Plots;
+using Unipi.Nancy.Playground.Cli.Utility;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
@@ -17,6 +18,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     /// If false, it is instead printed in $mainColor (e.g., in run mode). 
     /// </summary>
     public bool PrintInputAsConfirmation { get; init; } = false;
+
+    /// <summary>
+    /// If true, prints the time taken to execute each statement.
+    /// </summary>
+    public bool PrintTimePerStatement { get; init; } = true;
     
     public void FormatStatementPreamble(Statement statement)
     {
@@ -64,6 +70,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case ExpressionCommand expression:
             {
                 var expressionOutput = (ExpressionOutput) output;
+                var formattedTime = FormatStatementTime(expressionOutput.Time);
                 if (expressionOutput.Expression.IsComputed)
                 {
                     var expressionValue = expressionOutput.Expression switch
@@ -72,11 +79,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                         RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
-                    AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionValue}[/]");
+                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionValue}[/]"));
                 }
                 else
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[blue][[{expressionOutput.Time}]][/] [magenta]{expressionOutput.OutputText}[/]");
+                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionOutput.OutputText}[/]"));
                 }
                 break;
             }
@@ -84,6 +91,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case Assignment assignment:
             {
                 var assignmentOutput = (AssignmentOutput) output;
+                var formattedTime = FormatStatementTime(assignmentOutput.Time);
                 if (assignmentOutput.Expression.IsComputed)
                 {
                     var expressionValue = assignmentOutput.Expression switch
@@ -92,11 +100,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                         RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
-                    AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]");
+                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]"));
                 }
                 else
                 {
-                    AnsiConsole.MarkupLineInterpolated($"[blue][[{assignmentOutput.Time}]][/] {assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]");
+                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]"));
                 }
                 break;
             }
@@ -104,7 +112,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case Assertion assertion:
             {
                 var assertionOutput = (AssertionOutput) output;
-                AnsiConsole.MarkupLineInterpolated($"[blue][[{assertionOutput.Time}]][/] [magenta]{output.OutputText}[/]");
+                AnsiConsole.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
                 break;
             }
             
@@ -125,7 +133,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 if(PlotFormatter is not null)
                     PlotFormatter.FormatPlot((PlotOutput) output);
                 else
-                    AnsiConsole.MarkupLineInterpolated($"[yellow]Plots not supported.[/]");
+                    AnsiConsole.MarkupLineInterpolated($"[yellow]Plots disabled.[/]");
                 break;
             }
 
@@ -135,6 +143,20 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 break;
             }
         }
+    }
+
+    /// <summary>
+    /// If <see cref="PrintTimePerStatement"/> is true, formats the given timespan with markup.
+    /// As it returns a FormattableString, the interpolation is not resolved.
+    ///
+    /// If <see cref="PrintTimePerStatement"/> is false, it returns an empty string intead.
+    /// </summary>
+    private FormattableString FormatStatementTime(TimeSpan time)
+    {
+        if (PrintTimePerStatement)
+            return $"[blue][[{time}]][/] ";
+        else
+            return $"";
     }
 
     public void FormatError(Statement statement, ErrorOutput error)
