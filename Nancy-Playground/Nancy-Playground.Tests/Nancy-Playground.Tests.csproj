@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <AssemblyName>Unipi.Nancy.Playground.Cli.Tests</AssemblyName>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Unipi.Nancy.Playground.Cli.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Nancy-Playground\Nancy-Playground.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CliWrap" Version="3.10.0" />
+        <PackageReference Include="xunit" Version="2.9.3"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.4"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Xunit"/>
+    </ItemGroup>
+
+    <!-- Ensure testcases get copied to output so AppContext.BaseDirectory works -->
+    <ItemGroup>
+        <None Include="testcases\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="testcases\" />
+    </ItemGroup>
+
+</Project>

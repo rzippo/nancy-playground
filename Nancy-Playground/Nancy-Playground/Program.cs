@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 
 namespace Unipi.Nancy.Playground.Cli;
 
-internal class Program
+public class Program
 {
     public static List<string> CliWelcomeMessage =
     [
@@ -16,8 +16,11 @@ internal class Program
     public static int Main(string[] args)
     {
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        if(Console.IsOutputRedirected)
+        if (Console.IsOutputRedirected)
+        {
             AnsiConsole.Profile.Capabilities.Ansi = false;
+            AnsiConsole.Profile.Width = int.MaxValue;
+        }
 
         var app = new CommandApp<InteractiveCommand>();
         app.Configure(config =>
