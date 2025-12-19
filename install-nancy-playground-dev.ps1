@@ -12,7 +12,7 @@ if($IsWindows)
     $runConfiguration = $DebugConfig ? "Debug" : "Release";
 
     $projectName = "Nancy-Playground";
-    $projectNameLc = $projectName.ToLowerInvariant();
+    $projectNameLc = "nancy-playground-dev";
     $projectRootPath = "./Nancy-Playground/$projectName";
     $projectPath = "$projectRootPath/$projectName.csproj";
     $scriptsFolder = "./scripts";
@@ -83,7 +83,7 @@ elseif($IsLinux)
     $runConfiguration = $DebugConfig ? "Debug" : "Release";
 
     $projectName = "Nancy-Playground";
-    $projectNameLc = $projectName.ToLowerInvariant();
+    $projectNameLc = "nancy-playground-dev";
     $projectRootPath = "./Nancy-Playground/$projectName";
     $projectPath = "$projectRootPath/$projectName.csproj";
     $scriptsFolder = "./scripts";
