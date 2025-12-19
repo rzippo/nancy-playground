@@ -1,4 +1,4 @@
-﻿namespace Unipi.MppgParser;
+﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public class ErrorOutput : StatementOutput
 {

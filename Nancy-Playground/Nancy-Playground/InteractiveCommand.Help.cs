@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
 using Spectre.Console;
-using Unipi.MppgParser.Utility;
 
-namespace NancyMppg;
+using Unipi.Nancy.Playground.MppgParser.Utility;
+
+namespace Unipi.Nancy.Playground.Cli;
 
 public partial class InteractiveCommand
 {

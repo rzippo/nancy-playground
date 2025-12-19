@@ -1,11 +1,8 @@
-using Antlr4.Runtime;
-using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
-using Unipi.Nancy.Numerics;
 using Xunit.Abstractions;
 
-namespace Unipi.MppgParser.Tests;
+namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class LineParsing
 {
@@ -31,7 +28,7 @@ public class LineParsing
         (
             "stair (0, T4, 12)",
             [],
-            [("T4", Expressions.FromRational(60, "T4"))]
+            [("T4", Expressions.Expressions.FromRational(60, "T4"))]
         ),
         (
             "affine (1 ,0)",
@@ -41,26 +38,26 @@ public class LineParsing
         (
             "C + (A1 - C)*zero",
             [
-                ("C", Expressions.FromCurve(Curve.Zero(), "C")), 
-                ("A1", Expressions.FromCurve(Curve.Zero(), "A1"))
+                ("C", Expressions.Expressions.FromCurve(Curve.Zero(), "C")), 
+                ("A1", Expressions.Expressions.FromCurve(Curve.Zero(), "A1"))
             ],
             []
         ),
         (
             "C + (A1 + A2 - C)*zero - D1",
             [
-                ("C", Expressions.FromCurve(Curve.Zero(), "C")), 
-                ("A1", Expressions.FromCurve(Curve.Zero(), "A1")),
-                ("A2", Expressions.FromCurve(Curve.Zero(), "A2")),
-                ("D1", Expressions.FromCurve(Curve.Zero(), "D1"))
+                ("C", Expressions.Expressions.FromCurve(Curve.Zero(), "C")), 
+                ("A1", Expressions.Expressions.FromCurve(Curve.Zero(), "A1")),
+                ("A2", Expressions.Expressions.FromCurve(Curve.Zero(), "A2")),
+                ("D1", Expressions.Expressions.FromCurve(Curve.Zero(), "D1"))
             ],
             []
         ),
         (
             "C + (A4 - C)*zero",
             [
-                ("C", Expressions.FromCurve(Curve.Zero(), "C")), 
-                ("A4", Expressions.FromCurve(Curve.Zero(), "A4"))
+                ("C", Expressions.Expressions.FromCurve(Curve.Zero(), "C")), 
+                ("A4", Expressions.Expressions.FromCurve(Curve.Zero(), "A4"))
             ],
             []
         ),
@@ -72,18 +69,18 @@ public class LineParsing
         (
             "( floor comp (D2 / 2) ) * 4",
             [
-                ("floor", Expressions.FromCurve(Curve.Zero(), "floor")), 
-                ("D2", Expressions.FromCurve(Curve.Zero(), "D2"))
+                ("floor", Expressions.Expressions.FromCurve(Curve.Zero(), "floor")), 
+                ("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))
             ],
             []
         ),
         (
             "C + (A3 + A4 - C)*zero - D4",
             [
-                ("C", Expressions.FromCurve(Curve.Zero(), "C")), 
-                ("A3", Expressions.FromCurve(Curve.Zero(), "A3")),
-                ("A4", Expressions.FromCurve(Curve.Zero(), "A4")),
-                ("D4", Expressions.FromCurve(Curve.Zero(), "D4"))
+                ("C", Expressions.Expressions.FromCurve(Curve.Zero(), "C")), 
+                ("A3", Expressions.Expressions.FromCurve(Curve.Zero(), "A3")),
+                ("A4", Expressions.Expressions.FromCurve(Curve.Zero(), "A4")),
+                ("D4", Expressions.Expressions.FromCurve(Curve.Zero(), "D4"))
             ],
             []
         )

@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using Unipi.MppgParser;
-using Unipi.MppgParser.Grammar;
-using Unipi.MppgParser.Utility;
 
-namespace NancyMppg;
+using Unipi.Nancy.Playground.MppgParser.Utility;
+
+namespace Unipi.Nancy.Playground.Cli;
 
 public class ConvertCommand : Command<ConvertCommand.Settings>
 {
@@ -57,14 +56,14 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         AnsiConsole.MarkupLine($"[yellow]Output program will be saved in: {nancyFile.FullName}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
-        var code = Unipi.MppgParser.Program.ToNancyCode(programText);
+        var code = MppgParser.Program.ToNancyCode(programText);
         code.InsertRange(0,[
             $"// Program automatically converted from MPPG syntax to a Nancy program",
             $"// Original source was in {mppgFile.FullName}",
             string.Empty
         ]);
         
-        File.WriteAllLines(nancyFile.FullName, code);
+        File.WriteAllLines(nancyFile.FullName, (IEnumerable<string>)code);
         
         AnsiConsole.MarkupLine($"[yellow]Conversion complete.[/]");
         

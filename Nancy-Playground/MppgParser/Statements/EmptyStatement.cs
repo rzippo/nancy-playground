@@ -1,4 +1,4 @@
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// Empty statement are supported for compatibility, but should be effectively ignored.

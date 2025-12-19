@@ -1,11 +1,11 @@
-﻿using System.Text.RegularExpressions;
-using NancyPlayground;
-using Spectre.Console;
+﻿using Spectre.Console;
 using Spectre.Console.Cli;
-using Unipi.MppgParser;
-using Unipi.MppgParser.Utility;
+using Unipi.Nancy.Playground.Cli.Plots;
+using Unipi.Nancy.Playground.MppgParser;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 {
@@ -107,8 +107,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var outputPath = args[0];
         try
         {
-            var statementLines = programContext.StatementHistory
-                .Select(s => s.Text);
+            var statementLines = Enumerable.Select(programContext.StatementHistory, s => s.Text);
 
             File.WriteAllLines(outputPath, statementLines);
             AnsiConsole.MarkupLine($"[green]Program exported successfully to[/] [blue]{Escape(outputPath)}[/].");
@@ -135,16 +134,15 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var outputPath = args[0];
         try
         {
-            var statementLines = programContext.StatementHistory
-                .Select(s => s.Text);
+            var statementLines = Enumerable.Select(programContext.StatementHistory, s => s.Text);
             var programText = string.Join(Environment.NewLine, statementLines);
-            var programNancyCode = Unipi.MppgParser.Program.ToNancyCode(programText);
+            var programNancyCode = Unipi.Nancy.Playground.MppgParser.Program.ToNancyCode(programText);
             programNancyCode.InsertRange(0,[
                 $"// Program automatically converted from MPPG syntax to a Nancy program",
                 string.Empty
             ]);
 
-            File.WriteAllLines(outputPath, programNancyCode);
+            File.WriteAllLines(outputPath, (IEnumerable<string>)programNancyCode);
             AnsiConsole.MarkupLine($"[green]Program converted successfully to[/] [blue]{Escape(outputPath)}[/].");
         }
         catch (Exception e)

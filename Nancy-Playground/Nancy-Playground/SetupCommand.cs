@@ -1,6 +1,7 @@
 using Spectre.Console.Cli;
+using Unipi.Nancy.Playground.Cli.Nancy.Plots;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public class SetupCommand : Command<SetupCommand.Settings>
 {

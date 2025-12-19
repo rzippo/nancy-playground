@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace NancyPlayground;
+namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
 /// Handles user input, with a navigable history of previous commands.

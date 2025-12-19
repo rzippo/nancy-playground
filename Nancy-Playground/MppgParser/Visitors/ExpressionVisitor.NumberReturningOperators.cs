@@ -1,19 +1,19 @@
 ﻿using Unipi.Nancy.Expressions;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override IExpression VisitFunctionValueAt(Grammar.MppgParser.FunctionValueAtContext context)
+    public override IExpression VisitFunctionValueAt(Unipi.MppgParser.Grammar.MppgParser.FunctionValueAtContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
         
-        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
         
-        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
         {
@@ -26,16 +26,16 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionLeftLimitAt(Grammar.MppgParser.FunctionLeftLimitAtContext context)
+    public override IExpression VisitFunctionLeftLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftLimitAtContext context)
     {
         // if (context.ChildCount != 5)
         //     throw new Exception("Expected 5 child expression");
         
-        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
         
-        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
         {
@@ -48,16 +48,16 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionRightLimitAt(Grammar.MppgParser.FunctionRightLimitAtContext context)
+    public override IExpression VisitFunctionRightLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightLimitAtContext context)
     {
         // if (context.ChildCount != 5)
         //     throw new Exception("Expected 5 child expression");
         
-        var functionNameContext = context.GetChild<Grammar.MppgParser.FunctionNameContext>(0);
+        var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
         
-        var timeExpression = context.GetChild<Grammar.MppgParser.NumberExpressionContext>(0);
+        var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
         {
@@ -71,7 +71,7 @@ public partial class ExpressionVisitor
     }
 
     public override IExpression VisitFunctionHorizontalDeviation(
-        Grammar.MppgParser.FunctionHorizontalDeviationContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -81,7 +81,7 @@ public partial class ExpressionVisitor
         
         if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
-            var rationalExp = Expressions.HorizontalDeviation(lCE, rCE);
+            var rationalExp = Expressions.Expressions.HorizontalDeviation(lCE, rCE);
             return rationalExp;
         }
         else
@@ -91,7 +91,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionVerticalDeviation(
-        Grammar.MppgParser.FunctionVerticalDeviationContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -101,7 +101,7 @@ public partial class ExpressionVisitor
         
         if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
-            var rationalExp = Expressions.VerticalDeviation(lCE, rCE);
+            var rationalExp = Expressions.Expressions.VerticalDeviation(lCE, rCE);
             return rationalExp;
         }
         else

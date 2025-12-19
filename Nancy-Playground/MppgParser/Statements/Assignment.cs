@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using Unipi.Nancy.Expressions;
 
-namespace Unipi.MppgParser;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public record class Assignment : Statement
 {

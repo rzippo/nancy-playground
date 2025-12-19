@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using Unipi.MppgParser;
-using Unipi.MppgParser.Grammar;
+using Unipi.Nancy.Playground.Cli.Plots;
+using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli;
 
 public class RunCommand : Command<RunCommand.Settings>
 {
@@ -36,7 +37,7 @@ public class RunCommand : Command<RunCommand.Settings>
         AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
-        var program = Unipi.MppgParser.Program.FromText(programText);
+        var program = Unipi.Nancy.Playground.MppgParser.Program.FromText(programText);
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),

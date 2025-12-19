@@ -1,6 +1,6 @@
-﻿using Unipi.MppgParser;
+﻿using Unipi.Nancy.Playground.MppgParser.Statements;
 
-namespace NancyMppg;
+namespace Unipi.Nancy.Playground.Cli.Plots;
 
 public interface IPlotFormatter
 {

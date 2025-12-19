@@ -1,10 +1,10 @@
 ﻿using Unipi.Nancy.Expressions;
 
-namespace Unipi.MppgParser.Visitors;
+namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override IExpression VisitFunctionBrackets(Grammar.MppgParser.FunctionBracketsContext context)
+    public override IExpression VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -12,7 +12,7 @@ public partial class ExpressionVisitor
         return context.GetChild(1).Accept(this);
     }
 
-    public override IExpression VisitNumberBrackets(Grammar.MppgParser.NumberBracketsContext context)
+    public override IExpression VisitNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.NumberBracketsContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -20,7 +20,7 @@ public partial class ExpressionVisitor
         return context.GetChild(1).Accept(this);
     }
     
-    public override IExpression VisitEncNumberBrackets(Grammar.MppgParser.EncNumberBracketsContext context)
+    public override IExpression VisitEncNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -29,7 +29,7 @@ public partial class ExpressionVisitor
     }
 
     public override IExpression VisitFunctionMinPlusConvolution(
-        Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -42,7 +42,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Convolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE) when isNotationAmbiguous:
@@ -71,7 +71,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionMaxPlusConvolution(
-        Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -83,7 +83,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.MaxPlusConvolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.MaxPlusConvolution(lCE, rCE);
                 return curveExp;
             }
             default:
@@ -94,7 +94,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionMinPlusDeconvolution(
-        Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -107,7 +107,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Deconvolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.Deconvolution(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE) when isNotationAmbiguous:
@@ -130,7 +130,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionMaxPlusDeconvolution(
-        Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -142,7 +142,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.MaxPlusDeconvolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.MaxPlusDeconvolution(lCE, rCE);
                 return curveExp;
             }
             default:
@@ -153,7 +153,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionComposition(
-        Grammar.MppgParser.FunctionCompositionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -165,7 +165,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Composition(lCE, rCE);
+                var curveExp = Expressions.Expressions.Composition(lCE, rCE);
                 return curveExp;
             }
             default:
@@ -176,7 +176,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionScalarMultiplicationLeft(
-        Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -194,7 +194,7 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, CurveExpression rCE):
             {
                 // this was mis-parsed: function min-plus convolution
-                var curveExp = Expressions.Convolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -217,7 +217,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionScalarMultiplicationRight(
-        Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -235,7 +235,7 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, CurveExpression rCE):
             {
                 // this was mis-parsed: function min-plus convolution
-                var curveExp = Expressions.Convolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -258,7 +258,7 @@ public partial class ExpressionVisitor
     }
     
     public override IExpression VisitFunctionScalarDivision(
-        Grammar.MppgParser.FunctionScalarDivisionContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivisionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -282,7 +282,7 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, CurveExpression rCE):
             {
                 // this was mis-parsed: function min-plus deconvolution
-                var curveExp = Expressions.Deconvolution(lCE, rCE);
+                var curveExp = Expressions.Expressions.Deconvolution(lCE, rCE);
                 return curveExp;
             }
             default:
@@ -292,7 +292,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionMinimum(Grammar.MppgParser.FunctionMinimumContext context)
+    public override IExpression VisitFunctionMinimum(Unipi.MppgParser.Grammar.MppgParser.FunctionMinimumContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -304,7 +304,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Minimum(lCE, rCE);
+                var curveExp = Expressions.Expressions.Minimum(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -316,13 +316,13 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 var constantCurve = new PureConstantCurve(rRE.Compute());
-                var curveExp = Expressions.Minimum(lCE, constantCurve);
+                var curveExp = Expressions.Expressions.Minimum(lCE, constantCurve);
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 var constantCurve = new PureConstantCurve(lRE.Compute());
-                var curveExp = Expressions.Minimum(rCE, constantCurve);
+                var curveExp = Expressions.Expressions.Minimum(rCE, constantCurve);
                 return curveExp;
             }
             default:
@@ -332,7 +332,7 @@ public partial class ExpressionVisitor
         }
     }
     
-    public override IExpression VisitFunctionMaximum(Grammar.MppgParser.FunctionMaximumContext context)
+    public override IExpression VisitFunctionMaximum(Unipi.MppgParser.Grammar.MppgParser.FunctionMaximumContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -344,7 +344,7 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Maximum(lCE, rCE);
+                var curveExp = Expressions.Expressions.Maximum(lCE, rCE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -356,13 +356,13 @@ public partial class ExpressionVisitor
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 var constantCurve = new PureConstantCurve(rRE.Compute());
-                var curveExp = Expressions.Maximum(lCE, constantCurve);
+                var curveExp = Expressions.Expressions.Maximum(lCE, constantCurve);
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 var constantCurve = new PureConstantCurve(lRE.Compute());
-                var curveExp = Expressions.Maximum(rCE, constantCurve);
+                var curveExp = Expressions.Expressions.Maximum(rCE, constantCurve);
                 return curveExp;
             }
             default:
@@ -372,7 +372,7 @@ public partial class ExpressionVisitor
         }
     }
     
-    public override IExpression VisitFunctionSum(Grammar.MppgParser.FunctionSumContext context)
+    public override IExpression VisitFunctionSum(Unipi.MppgParser.Grammar.MppgParser.FunctionSumContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -384,19 +384,19 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Addition(lCE, rCE);
+                var curveExp = Expressions.Expressions.Addition(lCE, rCE);
                 return curveExp;
             }
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.VerticalShift(lCE, rRE);
+                var curveExp = Expressions.Expressions.VerticalShift(lCE, rRE);
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.VerticalShift(rCE, lRE);
+                var curveExp = Expressions.Expressions.VerticalShift(rCE, lRE);
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -412,7 +412,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionSubtraction(Grammar.MppgParser.FunctionSubtractionContext context)
+    public override IExpression VisitFunctionSubtraction(Unipi.MppgParser.Grammar.MppgParser.FunctionSubtractionContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -424,19 +424,19 @@ public partial class ExpressionVisitor
         {
             case (CurveExpression lCE, CurveExpression rCE):
             {
-                var curveExp = Expressions.Subtraction(lCE, rCE);
+                var curveExp = Expressions.Expressions.Subtraction(lCE, rCE);
                 return curveExp;
             }
             case (CurveExpression lCE, RationalExpression rRE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.VerticalShift(lCE, rRE.Negate());
+                var curveExp = Expressions.Expressions.VerticalShift(lCE, rRE.Negate());
                 return curveExp;
             }
             case (RationalExpression lRE, CurveExpression rCE):
             {
                 // this was mis-parsed
-                var curveExp = Expressions.VerticalShift(rCE, lRE.Negate());
+                var curveExp = Expressions.Expressions.VerticalShift(rCE, lRE.Negate());
                 return curveExp;
             }
             case (RationalExpression lRE, RationalExpression rRE):
@@ -453,7 +453,7 @@ public partial class ExpressionVisitor
     }
 
     public override IExpression VisitFunctionSubadditiveClosure(
-        Grammar.MppgParser.FunctionSubadditiveClosureContext context)
+        Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -461,7 +461,7 @@ public partial class ExpressionVisitor
         var ilCE = context.GetChild(2).Accept(this);
         if (ilCE is CurveExpression lCE)
         {
-            var curveExp = Expressions.SubAdditiveClosure(lCE);
+            var curveExp = Expressions.Expressions.SubAdditiveClosure(lCE);
             return curveExp;
         }
         else
@@ -470,7 +470,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionHShift(Grammar.MppgParser.FunctionHShiftContext context)
+    public override IExpression VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -485,7 +485,7 @@ public partial class ExpressionVisitor
         return curveExp;
     }
 
-    public override IExpression VisitFunctionVShift(Grammar.MppgParser.FunctionVShiftContext context)
+    public override IExpression VisitFunctionVShift(Unipi.MppgParser.Grammar.MppgParser.FunctionVShiftContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
@@ -500,7 +500,7 @@ public partial class ExpressionVisitor
         return curveExp;
     }
 
-    public override IExpression VisitFunctionLowerPseudoInverse(Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
+    public override IExpression VisitFunctionLowerPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -508,7 +508,7 @@ public partial class ExpressionVisitor
         var ilCE = context.GetChild(2).Accept(this);
         if (ilCE is CurveExpression lCE)
         {
-            var curveExp = Expressions.LowerPseudoInverse(lCE);
+            var curveExp = Expressions.Expressions.LowerPseudoInverse(lCE);
             return curveExp;
         }
         else
@@ -517,7 +517,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionUpperPseudoInverse(Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
+    public override IExpression VisitFunctionUpperPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -525,7 +525,7 @@ public partial class ExpressionVisitor
         var ilCE = context.GetChild(2).Accept(this);
         if (ilCE is CurveExpression lCE)
         {
-            var curveExp = Expressions.UpperPseudoInverse(lCE);
+            var curveExp = Expressions.Expressions.UpperPseudoInverse(lCE);
             return curveExp;
         }
         else
@@ -534,7 +534,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionUpNonDecreasingClosure(Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
+    public override IExpression VisitFunctionUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -551,7 +551,7 @@ public partial class ExpressionVisitor
         }
     }
     
-    public override IExpression VisitFunctionNonNegativeUpNonDecreasingClosure(Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
+    public override IExpression VisitFunctionNonNegativeUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -570,7 +570,7 @@ public partial class ExpressionVisitor
         }
     }
     
-    public override IExpression VisitFunctionLeftExt(Grammar.MppgParser.FunctionLeftExtContext context)
+    public override IExpression VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -587,7 +587,7 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitFunctionRightExt(Grammar.MppgParser.FunctionRightExtContext context)
+    public override IExpression VisitFunctionRightExt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightExtContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
