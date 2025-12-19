@@ -1,0 +1,9 @@
+# run
+# input.txt
+--deterministic
+--output-mode
+    NancyNew
+--run-mode
+    PerStatement
+--on-error
+    Stop
