@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -6,9 +7,24 @@ namespace Unipi.Nancy.Playground.Cli;
 
 public class Program
 {
-    public static List<string> CliWelcomeMessage =
+    public static string Version => Assembly
+        .GetExecutingAssembly()
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .FirstOrDefault(a => a.Key == "PackageVersion")?.Value
+        ?? "NA";
+    
+    public static string GitCommit => Assembly
+            .GetExecutingAssembly()
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "GitCommit")?.Value
+        ?? "NA";
+
+    public static string GitCommitShort => 
+        GitCommit.Length >= 7 ? GitCommit[..7] : GitCommit;
+
+    public static List<string> CliWelcomeMessage =>
     [
-        "[green]This is [blue]nancy-playground[/], version 1.0.0.[/]",
+        $"[green]This is [blue]nancy-playground[/], version {Version} ({GitCommitShort}).[/]",
         // todo: add reference to the maintainer somewhere?
         "[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.1016/j.softx.2022.101178[/][/]"
     ];

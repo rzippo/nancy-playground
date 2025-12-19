@@ -34,8 +34,14 @@
     <!-- <PackageReference Include="Microsoft.Playwright" Version="1.55.0" /> -->
     <PackageReference Include="ScottPlot" Version="5.1.57" />
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.77" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <!-- <PackageReference Include="XPlot.Plotly" Version="4.1.0" /> -->
   </ItemGroup>
+
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>false</EmbedUntrackedSources>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="nancy.png">
@@ -48,4 +54,15 @@
     </None>
   </ItemGroup>
 
+  <!-- Collect metadata for this build, shown in welcome message -->
+  <Target Name="AddSourceRevisionToAssemblyMetadata"
+        BeforeTargets="AddSourceRevisionToInformationalVersion">
+    <ItemGroup>
+      <AssemblyMetadata Include="GitCommit" Value="$(SourceRevisionId)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="PackageVersion" Value="$(PackageVersion)" />
+  </ItemGroup>
 </Project>
