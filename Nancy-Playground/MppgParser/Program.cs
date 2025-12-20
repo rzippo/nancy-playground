@@ -45,6 +45,7 @@ public record class Program
         Text = statements
             .Select(s => s.Text)
             .JoinText("\n");
+        Errors = [];
     }
 
     /// <summary>
