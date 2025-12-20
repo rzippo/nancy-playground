@@ -1,0 +1,51 @@
+name: Nancy-Playground-pack-release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
+
+jobs:
+  Nancy-Playground-pack-release:
+    runs-on: ubuntu-latest
+        
+    env:
+      BUILD_CONFIG: "Release"
+      SOLUTION: "Nancy-Playground/Nancy-Playground.sln"
+      NANCY_PLAYGROUND: "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
+      NANCY_PLAYGROUND_TESTS: "Nancy-Playground/Nancy-Playground.Tests/Nancy-Playground.Tests.csproj"
+      NANCY_PLAYGROUND_PACKS: "Nancy-Playground/Nancy-Playground/nupkg/*.nupkg"
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Build Nancy-Playground
+        run: dotnet build $NANCY_PLAYGROUND --configuration $BUILD_CONFIG
+
+      - name: Build Nancy-Playground.Tests
+        run: dotnet build $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
+
+      - name: Test Nancy-Playground
+        run: dotnet test $NANCY_PLAYGROUND_TESTS /p:Configuration=$BUILD_CONFIG
+
+      - name: Pack
+        run: dotnet pack $NANCY_PLAYGROUND --configuration $BUILD_CONFIG --no-restore --no-build
+
+      - name: Publish
+        run: dotnet nuget push $NANCY_PLAYGROUND_PACKS --source 'https://api.nuget.org/v3/index.json' --api-key ${{secrets.NUGET_API_KEY}}

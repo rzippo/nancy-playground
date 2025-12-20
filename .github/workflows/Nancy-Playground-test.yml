@@ -1,0 +1,46 @@
+name: Nancy-Playground-test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - "Nancy-Playground/Nancy-Playground/*"
+      - "Nancy-Playground/Nancy-Playground.Tests/*"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "Nancy-Playground/Nancy-Playground/*"
+      - "Nancy-Playground/Nancy-Playground.Tests/*"
+
+jobs:
+  Nancy-Playground-test:
+    runs-on: ubuntu-latest
+        
+    env:
+      BUILD_CONFIG: "Release"
+      SOLUTION: "Nancy-Playground/Nancy-Playground.sln"
+      NANCY_PLAYGROUND: "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
+      NANCY_PLAYGROUND_TESTS: "Nancy-Playground/Nancy-Playground.Tests/Nancy-Playground.Tests.csproj"
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Build Nancy-Playground
+        run: dotnet build $NANCY_PLAYGROUND --configuration $BUILD_CONFIG
+
+      - name: Build Nancy-Playground.Tests
+        run: dotnet build $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
+
+      - name: Test Nancy-Playground
+        run: dotnet test $NANCY_PLAYGROUND_TESTS /p:Configuration=$BUILD_CONFIG
