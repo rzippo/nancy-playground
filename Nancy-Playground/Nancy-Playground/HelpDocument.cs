@@ -22,8 +22,15 @@ Expect (and please report) oddities.
                     {
                         Name = "Help",
                         Format = "!help [query]",
-                        Description = "Shows this help text, or a search result.",
+                        Description = "Shows this help text, or a search result. Useful reference for the syntax to use in scripts.",
                         Tags = ["help", "manual", "documentation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "CLI Help",
+                        Format = "!clihelp",
+                        Description = "Shows the CLI help text. Useful reference for commands and options of this app.",
+                        Tags = ["cli", "help", "manual", "documentation"]
                     },
                     new HelpItem
                     {

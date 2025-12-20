@@ -38,6 +38,12 @@ public class Program
             AnsiConsole.Profile.Width = int.MaxValue;
         }
 
+        var app = BuildNancyPlaygroundApp();
+        return app.Run(args);
+    }
+
+    public static CommandApp<InteractiveCommand> BuildNancyPlaygroundApp()
+    {
         var app = new CommandApp<InteractiveCommand>();
         app.Configure(config =>
         {
@@ -61,6 +67,6 @@ public class Program
             config.PropagateExceptions();
 #endif
         });
-        return app.Run(args);
+        return app;
     }
 }

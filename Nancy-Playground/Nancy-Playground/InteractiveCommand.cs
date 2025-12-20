@@ -79,6 +79,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     var args = line.Split(' ').Skip(1).ToArray();
                     PrintHelp(args);
                 }
+                else if (line.StartsWith("!clihelp"))
+                {
+                    var app = Program.BuildNancyPlaygroundApp();
+                    app.Run(["--help"]);
+                }
             }
             else
             {
