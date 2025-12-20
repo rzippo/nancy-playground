@@ -6,6 +6,7 @@ public partial class InteractiveCommand
     [
         // higher-order commands
         "!help",
+        "!clihelp",
         "!quit",
         "!exit",
         "!export",
