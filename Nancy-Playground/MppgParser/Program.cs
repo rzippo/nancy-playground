@@ -12,14 +12,22 @@ public record class Program
     /// The original text of the program.
     /// </summary>
     public string Text { get; init; }
+
     /// <summary>
     /// The list of statements in the program.
     /// </summary>
     public List<Statement> Statements { get; init; }
+
+    /// <summary>
+    /// Errors collected by ANTLR during parsing of this program.
+    /// </summary>
+    public List<SyntaxErrorInfo> Errors { get; init; }
+
     /// <summary>
     /// The current program counter.
     /// </summary>
     public int ProgramCounter { get; private set; } = 0;
+
     /// <summary>
     /// The program execution context.
     /// </summary>
@@ -61,16 +69,26 @@ public record class Program
     /// <returns></returns>
     public static Program FromText(string text)
     {
+        var errors = new List<SyntaxErrorInfo>();
+        
         var inputStream = CharStreams.fromString(text);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
+        var lexerListener = new DiagnosticLexerErrorListener(errors, inputStream);
+        lexer.RemoveErrorListeners();
+        lexer.AddErrorListener(lexerListener);
+        
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
+        var parserListener = new DiagnosticParserErrorListener(errors);
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(parserListener);
         
         var context = parser.program();
         var program = FromTree(context);
         return program with
         {
-            Text = text
+            Text = text,
+            Errors = errors
         };
     }
 
