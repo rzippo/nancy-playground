@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CliWrap;
 using CliWrap.Buffered;
 using Xunit.Abstractions;
 
@@ -71,6 +72,7 @@ public class RunCommandGoldenTests
 
             result = await CliWrap.Cli.Wrap("dotnet")
                 .WithArguments(dotnetArgs)
+                .WithValidation(CommandResultValidation.None)
                 .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
         }
         catch (OperationCanceledException)
