@@ -27,10 +27,7 @@
 
     <!-- Ensure testcases get copied to output so AppContext.BaseDirectory works -->
     <ItemGroup>
-        <None Include="testcases\**\*.*" CopyToOutputDirectory="PreserveNewest" />
-    </ItemGroup>
-    <ItemGroup>
-      <Folder Include="testcases\" />
+        <None Include="testcases\**\*.*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
