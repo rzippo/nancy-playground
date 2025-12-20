@@ -48,6 +48,23 @@ public class RunCommand : Command<RunCommand.Settings>
         var programText = File.ReadAllText(mppgFile.FullName);
         var program = MppgParser.Program.FromText(programText);
 
+        if (program.Errors.Count > 0)
+        {
+            if (settings.OnErrorMode == OnErrorMode.Stop)
+            {
+                AnsiConsole.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
+                foreach(var error in program.Errors)
+                    AnsiConsole.MarkupLineInterpolated($"[red]\t - {error.ToString()}[/]");
+                return 1;
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
+                foreach(var error in program.Errors)
+                    AnsiConsole.MarkupLineInterpolated($"[darkorange]\t - {error.ToString()}[/]");
+            }
+        }
+
         var plotFormatter = settings.Deterministic ? null : new ScottPlotFormatter(plotsRoot);
         // add option to use XPlotPlotFormatter?
 
