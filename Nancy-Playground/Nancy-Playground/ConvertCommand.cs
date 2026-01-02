@@ -64,6 +64,10 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         code.InsertRange(0,[
             $"// Program automatically converted from MPPG syntax to a Nancy program",
             $"// Original source was in {mppgFile.FullName}",
+            string.Empty,
+            $"// This is a file-based app: to run it, use the command `dotnet run file.cs`",
+            $"// To extend it, it is recommended to convert it to a C# project with the command `dotnet project convert file.cs`",
+            $"// Docs: https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps",
             string.Empty
         ]);
         
