@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.MinPlusAlgebra;
@@ -15,11 +16,14 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
-            "#:package Unipi.Nancy@1.2.20",
+            "#:package Unipi.Nancy@1.2.27",
+            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.1",
             string.Empty,
+            "using System.IO;",
             "using Unipi.Nancy.NetworkCalculus;",
             "using Unipi.Nancy.MinPlusAlgebra;",
-            "using Unipi.Nancy.Numerics;"
+            "using Unipi.Nancy.Numerics;",
+            "using Unipi.Nancy.Plots.ScottPlot;"
         ];
         
         foreach (var statementLineContext in statementLineContexts)
@@ -112,6 +116,160 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var expression = expressionContext.Accept(this).Single();
 
         return [$"Console.WriteLine({expression});"];
+    }
+
+    public override List<string> VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
+    {
+        var text = context.GetJoinedText();
+        var args = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>();
+
+        var functionNameContexts = args
+            .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0))
+            .Where(ctx => ctx != null);
+        var plotOptionContexts = args
+            .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext>(0))
+            .Where(ctx => ctx != null);
+        
+        var functionsToPlot = functionNameContexts
+            .Select(ctx => ctx.GetText())
+            .ToList();
+        
+        var lines = new List<string>();
+        lines.Add("var plotBytes = ScottPlots.ToScottPlotImage(");
+        lines.Add($"\t[{functionsToPlot.JoinText(", ")}],");
+        lines.Add("\tsettings: new ScottPlotSettings(){");
+        
+        var outPath = string.Empty;
+        
+        foreach (var plotArgContext in plotOptionContexts)
+        {
+            var argName = plotArgContext.GetChild(0).GetText();
+            var argString = plotArgContext.GetChild(2).GetText()
+                .TrimQuotes();
+
+            switch (argName)
+            {
+                case "main":
+                case "title":
+                {
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var formattableString = stringContext.Accept(this);
+                    if (formattableString is not null && formattableString.Count == 1)
+                        lines.Add($"\t\tTitle = {formattableString.Single()},");   
+                    break;
+                }
+
+                case "xlim":
+                {
+                    var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
+                    var numberVisitor = new NumberLiteralVisitor();
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimit = numberVisitor.Visit(leftLimitContext);
+                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    lines.Add($"\t\tXLimit = new Interval({leftLimit}, {rightLimit}),");
+                    break;
+                }
+
+                case "ylim":
+                {
+                    var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
+                    var numberVisitor = new NumberLiteralVisitor();
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimit = numberVisitor.Visit(leftLimitContext);
+                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    lines.Add($"\t\tYLimit = new Interval({leftLimit}, {rightLimit}),");
+                    break;
+                }
+
+                case "xlab":
+                {
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var formattableString = stringContext.Accept(this);
+                    if (formattableString is not null && formattableString.Count == 1)
+                        lines.Add($"\t\tXLabel = {formattableString.Single()},");   
+                    break;
+                }
+
+                case "ylab":
+                {
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var formattableString = stringContext.Accept(this);
+                    if (formattableString is not null && formattableString.Count == 1)
+                        lines.Add($"\t\tYLabel = {formattableString.Single()},");   
+                    break;
+                }
+
+                case "out":
+                {
+                    outPath = argString;
+                    break;
+                }
+
+                case "grid":
+                {
+                    // option not implemented in Nancy.Plots.ScottPlot
+                    break;
+                }
+
+                case "bg":
+                {
+                    // option not implemented in Nancy.Plots.ScottPlot
+                    break;
+                }
+
+                case "gui":
+                {
+                    // option not meaningful in convert
+                    break;
+                }
+                
+                default:
+                    // do nothing
+                    break;
+            }
+        }
+        
+        lines.Add("\t}");
+        lines.Add(");");
+
+        if (!string.IsNullOrWhiteSpace(outPath))
+        {
+            lines.Add($"Console.WriteLine(Path.GetFullPath(\"{outPath}\"));");
+            lines.Add($"File.WriteAllBytes(\"{outPath}\", plotBytes);");
+        }
+        else
+        {
+            lines.Add($"var plotTmpPath = Path.GetTempPath() + Guid.NewGuid().ToString() + \".png\";");
+            lines.Add($"Console.WriteLine(plotTmpPath);");
+            lines.Add($"File.WriteAllBytes(plotTmpPath, plotBytes);");
+        }
+
+        return lines;
+    }
+
+    public override List<string> VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
+    {
+        var visitor = new ComputableStringVisitor();
+        var cs = context.Accept(visitor);
+        if (cs is null)
+            return [];
+        else
+        {
+            var sb = new StringBuilder("$\"");
+            foreach (var piece in cs.Pieces)
+            {
+                if (piece is string s)
+                    sb.Append(s);
+                else if (piece is Expression e)
+                    sb.Append($"{{{e.VariableName}}}");
+                else
+                    sb.Append($"{{{piece}}}");
+            }
+            sb.Append("\"");
+            return [sb.ToString()];
+        }
     }
 
     public override List<string> VisitNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.NumberVariableExpContext context)

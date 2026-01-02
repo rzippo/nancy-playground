@@ -4,7 +4,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public class ComputableString
 {
-    private List<object> Pieces { get; } = [];
+    internal List<object> Pieces { get; } = [];
 
     public void Append(string s)
     {
