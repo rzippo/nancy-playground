@@ -17,7 +17,7 @@ public record PlotSettings
     /// <summary>
     /// Range for the y-axis.
     /// </summary>
-    public (Rational left, Rational right)? YLimit { get; init; } = null;
+    public (Rational Left, Rational Right)? YLimit { get; init; } = null;
 
     /// <summary>
     /// Label for the x-axis.
