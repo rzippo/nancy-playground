@@ -1,9 +1,11 @@
 using System.Diagnostics;
 using Spectre.Console;
 using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Numerics;
 using Unipi.Nancy.Playground.Cli.Nancy.Plots;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Utility;
+using Unipi.Nancy.Plots.ScottPlot;
 
 namespace Unipi.Nancy.Playground.Cli.Plots;
 
@@ -29,47 +31,27 @@ public class ScottPlotFormatter : IPlotFormatter
             AnsiConsole.MarkupLine("[red]No functions to plot.[/]");
         else
         {
-            var plotter = new ScottPlotNancyPlotter();
+            var plotSettings = new ScottPlotSettings()
+            {
+                Title = plotOutput.Title,
+                XLabel = plotOutput.XLabel,
+                YLabel = plotOutput.YLabel,
+                XLimit = plotOutput.Settings.XLimit.HasValue ?
+                    new Interval(plotOutput.Settings.XLimit.Value.Left, plotOutput.Settings.XLimit.Value.Right, true, true) :
+                    null,
+                YLimit = plotOutput.Settings.YLimit.HasValue ?
+                    new Interval(plotOutput.Settings.YLimit.Value.Left, plotOutput.Settings.YLimit.Value.Right, true, true) :
+                    null,
+            };
             
+            var plotRenderer = new ScottNancyPlotRenderer() { PlotSettings = plotSettings };
             var curves = Enumerable
                 .Select<(string Name, Curve Curve), Curve>(plotOutput.FunctionsToPlot, pair => pair.Curve)
                 .ToList();
             var names = Enumerable
                 .Select<(string Name, Curve Curve), string>(plotOutput.FunctionsToPlot, pair => pair.Name)
                 .ToList();
-
-            var xLimit = plotOutput.Settings.XLimit;
-            var yLimit = plotOutput.Settings.YLimit;
-
-            var plot = xLimit.HasValue ?
-                plotter.Plot(curves, names, xLimit.Value.Left, xLimit.Value.Right) :
-                plotter.Plot(curves, names);
-
-            var xLabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
-                "x" : plotOutput.XLabel;
-            var yLabel = string.IsNullOrWhiteSpace(plotOutput.YLabel) ?
-                "y" : plotOutput.YLabel;
-
-            plot.XLabel(xLabel);
-            plot.YLabel(yLabel);
-
-            if (xLimit.HasValue)
-            {
-                var (left, right) = xLimit.Value;
-                plot.Axes.SetLimitsX((double)left, (double)right);
-            }
-
-            if (yLimit.HasValue)
-            {
-                var (left, right) = yLimit.Value;
-                plot.Axes.SetLimitsY((double)left, (double)right);
-            }
-
-            if (!string.IsNullOrWhiteSpace(plotOutput.Title))
-            {
-                // AnsiConsole.MarkupLine($"[red]Setting title: {plotOutput.Title}[/]");
-                plot.Title(plotOutput.Title);
-            }
+            var imageBytes = plotRenderer.Plot(curves, names);
 
             // default behavior: open a GUI window or tab to show the plot; it will not be interactive
             var showInGui = plotOutput.Settings.ShowInGui ?? true;
@@ -78,7 +60,6 @@ public class ScottPlotFormatter : IPlotFormatter
             if (saveToFile)
             {
                 var imagePath = Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath);
-                var imageBytes = plotter.GetImage(plot);
                 File.WriteAllBytes(imagePath, imageBytes);
 
                 if (showInGui)
@@ -99,7 +80,6 @@ public class ScottPlotFormatter : IPlotFormatter
             }
             else if (showInGui)
             {
-                var imageBytes = plotter.GetImage(plot);
                 var imageTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
                 File.WriteAllBytes(imageTempFileName, imageBytes);
                 AnsiConsole.MarkupLine($"[gray]Temp image written to: {imageTempFileName}; opening in default app[/]");
