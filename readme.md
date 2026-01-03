@@ -58,7 +58,7 @@ COMMANDS:
 Make sure `dotnet` is installed (see [here](https://dotnet.microsoft.com/en-us/download)), then run
 
 ```
-dotnet tool install --global --prerelease unipi.nancy.playground.cli
+dotnet tool install --global unipi.nancy.playground.cli
 ```
 
 After it completes (and possibly after opening a new terminal) you should see the tool available as `nancy-playground`.
