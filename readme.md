@@ -29,42 +29,46 @@ nancy-playground interactive
 nancy-playground run ./Examples/hal-04513292v1.mppg
 ```
 
+The interactive mode is the default, in case no argument is provided.
+
 `--help` is also available.
 ```
 USAGE:
     nancy-playground [OPTIONS] [COMMAND]
 
 OPTIONS:
-    -h, --help           Prints help information                                                                                                                                                                                                      
-    -o, --output-mode    How the output is formatted. Available options: MppgClassic, NancyNew (default)                                                                                                                                              
-    -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased
-    -e, --on-error       Specifies what to do when an error occurs. Available options: Stop (default), Continue                                                                                                                                       
+    -h, --help           Prints help information
+    -o, --output-mode    How the output is formatted. Available options: ExplicitPrintsOnly, MppgClassic, NancyNew (default)
+    -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: PerStatement
+    -e, --on-error       Specifies what to do when an error occurs. Available options: Stop (default), Continue
+        --no-welcome     Mutes the welcome message
+        --version        If used, the program prints out the version and immediately terminates
 
 COMMANDS:
-    run <file>     Runs a .mppg script                                                   
-    interactive    Interactive mode, where the user can input MPPG lines one by one      
-    setup          Initializes dependencies. Required to enable exporting plots to images
+    run <file>        Runs a .mppg script
+    interactive       Interactive mode, where the user can input MPPG lines one by one
+    convert <file>
 ```
 
-## Plot exporting setup
+# Installation
 
-One of rough spots, as of now, is plotting and export of plots to files.
+## For users
 
-To provide interactive plots, the current setup uses `Plotly` and your default browser.
-To export such a plot to image, `nancy-playground` will run an embedded browser to render the plot and screenshot it.
+`nancy-playground` is available as a [dotnet tool](https://learn.microsoft.com/en-us/dotnet/core/tools/global-tools).
+Make sure `dotnet` is installed (see [here](https://dotnet.microsoft.com/en-us/download)), then run
 
-> Not the best ergonomics - but it works.
+```
+dotnet tool install --global --prerelease unipi.nancy.playground.cli
+```
 
-To do this, you need to run at least once `nancy-playground setup`, which will download the embedded browser to use.
+After it completes (and possibly after opening a new terminal) you should see the tool available as `nancy-playground`.
 
-# Requirements
-
-## As a user
+## For devs
 
 `Nancy-Playground` is a .NET 9.0 application, written in C# 12. 
 Both SDK and runtime for .NET are cross-platform, and can be downloaded from [here](https://dotnet.microsoft.com/en-us/download).
 
-A PowerShell script is available to "install" `nancy-playground` to be run from a terminal, which currently support only Windows and Linux.
+A PowerShell script is available to "compile and install" `nancy-playground-dev` to be run from a terminal, which currently support only Windows and Linux.
 You will need [PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7.5) to run it.
 
 ```
@@ -78,7 +82,10 @@ The optional `-Dev` argument will, instead, make it so that the program is recom
 > ./install-nancy-playground.ps1 -Dev
 ``` 
 
-## As a dev
+The application can then be launched as `nancy-playground-dev`. 
+The suffix `-dev` is there to avoid conflict with the published version.
+
+### To work on the grammar
 
 The MPPG grammar and its parser is written using `ANTLR`.
 The `ANTLR` grammar is used to *build* the parser code, which you can find [here](./Nancy-Playground/MppgParser/Grammar/).
