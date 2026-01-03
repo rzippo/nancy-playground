@@ -76,6 +76,10 @@ public class RunCommand : Command<RunCommand.Settings>
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
+            OutputMode.ExplicitPrintsOnly => new OutputOnlyFormatter()
+            {
+                PlotFormatter = plotFormatter,
+            },
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {

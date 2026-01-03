@@ -6,7 +6,7 @@ namespace Unipi.Nancy.Playground.Cli;
 public class CommonExecutionSettings : CommandSettings
 {
     [CommandOption("-o|--output-mode")] 
-    [Description("How the output is formatted. Available options: MppgClassic, NancyNew (default).")]
+    [Description("How the output is formatted. Available options: ExplicitPrintsOnly, MppgClassic, NancyNew (default).")]
     public OutputMode? OutputMode { get; init; } 
         = Cli.OutputMode.NancyNew;
     
@@ -31,6 +31,10 @@ public class CommonExecutionSettings : CommandSettings
 
 public enum OutputMode
 {
+    /// <summary>
+    /// Only prints when explicitly asked with a non-assignment expression.
+    /// </summary>
+    ExplicitPrintsOnly,
     /// <summary>
     /// Follows the output style of RTaW Min-Plus Playground.
     /// </summary>
