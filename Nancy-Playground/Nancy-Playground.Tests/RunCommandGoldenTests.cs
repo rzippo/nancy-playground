@@ -34,7 +34,7 @@ public class RunCommandGoldenTests
 
     [Theory]
     [MemberData(nameof(GoldenTestCases))]
-    public async Task Golden_case_matches_for_current_TFM(string caseDir)
+    public async Task GoldenTestEquivalence(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
