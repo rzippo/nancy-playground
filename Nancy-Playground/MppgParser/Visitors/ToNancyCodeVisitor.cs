@@ -169,7 +169,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    lines.Add($"\t\tXLimit = new Interval({leftLimit}, {rightLimit}),");
+                    lines.Add($"\t\tXLimit = new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()}),");
                     break;
                 }
 
@@ -181,7 +181,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    lines.Add($"\t\tYLimit = new Interval({leftLimit}, {rightLimit}),");
+                    lines.Add($"\t\tYLimit = new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()}),");
                     break;
                 }
 
