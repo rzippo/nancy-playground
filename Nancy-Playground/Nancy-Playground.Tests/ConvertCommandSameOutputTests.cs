@@ -1,0 +1,191 @@
+using System.Text;
+using CliWrap;
+using CliWrap.Buffered;
+using Xunit.Abstractions;
+
+namespace Unipi.Nancy.Playground.Cli.Tests;
+
+using CliMarker = Cli.Program;
+public class ConvertCommandSameOutputTests
+{
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public ConvertCommandSameOutputTests(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
+    public static IEnumerable<string> TestDirs()
+    {
+        var root = Path.Combine(AppContext.BaseDirectory, "convert-testcases");
+        if (!Directory.Exists(root))
+            throw new DirectoryNotFoundException($"Missing testcases folder: {root}");
+
+        var caseDirs = Directory
+            .EnumerateDirectories(root, "*", SearchOption.AllDirectories)
+            .Where(IsCaseDirectory)
+            .OrderBy(d => d, StringComparer.OrdinalIgnoreCase);
+
+        return caseDirs;
+    }
+    
+    public static IEnumerable<object[]> TestCases() 
+        => TestDirs().Select(dir => (object[])[dir]);
+    
+    private static bool IsCaseDirectory(string dir) =>
+        File.Exists(Path.Combine(dir, "script.mppg"));
+
+    private static string GetCurrentTfmFromPath(string assemblyPath)
+    {
+        // Typical path contains .../bin/Release/<tfm>/...
+        // We'll grab the first segment that looks like netX.Y
+        var parts = assemblyPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .ToArray();
+
+        var tfm = parts.FirstOrDefault(p => p.StartsWith("net", StringComparison.OrdinalIgnoreCase));
+        return tfm ?? "unknown-tfm";
+    }
+    
+    /// <summary>
+    /// Returns the last non-empty line, if it exists.
+    /// If none exists, returns null.
+    /// </summary>
+    /// <param name="stdout"></param>
+    /// <returns></returns>
+    private static string? LastNonEmptyLine(string stdout)
+    {
+        return stdout
+           .Replace("\r\n", "\n")
+           .Split('\n')
+           .Select(l => l.TrimEnd())
+           .LastOrDefault(l => !string.IsNullOrWhiteSpace(l));
+    }
+    
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async Task ConvertCommandSameOutput(string caseDir)
+    {
+        // Arrange: locate the CLI dll built for *this* test run's TFM.
+        // Because this test project is multi-targeted, dotnet test runs it per TFM.
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+
+        _testOutputHelper.WriteLine($"cliDllPath: {cliDllPath}");
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        if (string.IsNullOrWhiteSpace(cliDllPath) || !File.Exists(cliDllPath))
+            throw new FileNotFoundException($"CLI assembly not found at: {cliDllPath}");
+
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--deterministic",
+            "--no-welcome"
+        ];
+        
+        // Act: run command, obtain the script output
+
+        string runCommandFinalResult;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult runCommandResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetRunCommandArgs = new List<string> { cliDllPath };
+                dotnetRunCommandArgs.AddRange(runCommandArgs);
+
+                runCommandResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetRunCommandArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stdout.txt"), runCommandResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString(), cts.Token);
+            
+            Assert.Equal(0, runCommandResult.ExitCode);
+            runCommandFinalResult = LastNonEmptyLine(runCommandResult.StandardOutput) ?? 
+                                    throw new InvalidOperationException("No result from the run command!");
+        }
+
+        // Arrange: convert the script to a C# file-based app
+        var programPath = Path.Combine(caseDir, "program.cs"); 
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file",
+            programPath,
+            "--overwrite"
+        ];
+
+        // Act: convert command, obtain the C# program
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult convertCommandResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetConvertCommandArgs = new List<string> { cliDllPath };
+                dotnetConvertCommandArgs.AddRange(convertCommandArgs);
+
+                convertCommandResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetConvertCommandArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+            
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString(), cts.Token);
+            
+            Assert.True(File.Exists(programPath));
+            Assert.Equal(0, convertCommandResult.ExitCode);
+        }
+        
+        // Arrange: run the converted program
+        string programFinalResult;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+            
+            Assert.Equal(0, programResult.ExitCode);
+            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                    throw new InvalidOperationException("No result from the run command!");
+        }
+
+        // Finally: check that both results are the same
+        Assert.Equal(runCommandFinalResult, programFinalResult);
+    }
+}
