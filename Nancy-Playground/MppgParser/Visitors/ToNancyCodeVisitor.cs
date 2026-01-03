@@ -18,8 +18,8 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
-            "#:package Unipi.Nancy@1.2.27",
-            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.1",
+            "#:package Unipi.Nancy@1.2.28",
+            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.3",
             string.Empty,
             "using System.IO;",
             "using Unipi.Nancy.NetworkCalculus;",
