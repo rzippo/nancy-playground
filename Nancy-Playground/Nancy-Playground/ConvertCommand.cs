@@ -29,6 +29,12 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
 
     public override int Execute(CommandContext context, Settings settings)
     {
+        if (settings.Version)
+        {
+            AnsiConsole.MarkupLine(Program.CliVersionLine);
+            return 0;
+        }
+
         if (!settings.MuteWelcomeMessage)
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
                 AnsiConsole.MarkupLine(cliWelcomeLine);

@@ -23,6 +23,10 @@ public class CommonExecutionSettings : CommandSettings
     [CommandOption("--no-welcome")]
     [Description("Mutes the welcome message.")]
     public bool MuteWelcomeMessage { get; init; } = false;
+
+    [Description("If used, the program prints out the version and immediately terminates.")]
+    [CommandOption("--version")]
+    public bool Version { get; init; } = false;
 }
 
 public enum OutputMode
