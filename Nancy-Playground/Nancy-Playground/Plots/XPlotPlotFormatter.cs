@@ -32,7 +32,7 @@ public class XPlotPlotFormatter: IPlotFormatter
         else
         {
             var plotter = new PlotlyNancyPlotter();
-            
+
             var curves = Enumerable
                 .Select<(string Name, Curve Curve), Curve>(plotOutput.FunctionsToPlot, pair => pair.Curve)
                 .ToList();
@@ -41,20 +41,20 @@ public class XPlotPlotFormatter: IPlotFormatter
                 .ToList();
 
             var plot = plotter.Plot(curves, names);
-            
+
             var xlabel = string.IsNullOrWhiteSpace(plotOutput.XLabel) ?
                 "x" : plotOutput.XLabel;
             var ylabel = string.IsNullOrWhiteSpace(plotOutput.YLabel) ?
                 "y" : plotOutput.YLabel;
-            
+
             plot.WithXTitle(xlabel);
             plot.WithYTitle(ylabel);
 
             // how to move the legend below?
-            
+
             // default behavior: do open a browser tab to show the interactive plot
             var showInGui = plotOutput.Settings.ShowInGui ?? true;
-            
+
             if (showInGui)
             {
                 var html = plotter.GetHtml(plot);

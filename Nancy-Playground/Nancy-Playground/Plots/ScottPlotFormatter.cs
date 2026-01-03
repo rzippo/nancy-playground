@@ -43,7 +43,7 @@ public class ScottPlotFormatter : IPlotFormatter
                     new Interval(plotOutput.Settings.YLimit.Value.Left, plotOutput.Settings.YLimit.Value.Right, true, true) :
                     null,
             };
-            
+
             var plotRenderer = new ScottNancyPlotRenderer() { PlotSettings = plotSettings };
             var curves = Enumerable
                 .Select<(string Name, Curve Curve), Curve>(plotOutput.FunctionsToPlot, pair => pair.Curve)

@@ -20,11 +20,11 @@ public record class Assertion : Statement
         Greater,
         GreaterOrEqual
     }
-    
+
     public Expression LeftExpression { get; set; }
-    
+
     public Expression RightExpression { get; set; }
-    
+
     public AssertionOperator Operator { get; set; }
     public Assertion(Expression leftExpression, Expression rightExpression, AssertionOperator @operator)
     {
@@ -32,12 +32,12 @@ public record class Assertion : Statement
         RightExpression = rightExpression;
         Operator = @operator;
     }
-    
+
     public override string Execute(State state)
     {
         LeftExpression.ParseTree(state);
         var (lc, lr) = LeftExpression.Compute();
-        
+
         RightExpression.ParseTree(state);
         var (rc, rr) = RightExpression.Compute();
 
@@ -71,7 +71,7 @@ public record class Assertion : Statement
         };
         return result;
     }
-    
+
     private bool CompareRationals(Rational left, Rational right)
     {
         var result = Operator switch
@@ -92,7 +92,7 @@ public record class Assertion : Statement
         var sw = Stopwatch.StartNew();
         LeftExpression.ParseTree(state);
         var (lc, lr) = LeftExpression.Compute();
-        
+
         RightExpression.ParseTree(state);
         var (rc, rr) = RightExpression.Compute();
 
@@ -110,7 +110,7 @@ public record class Assertion : Statement
         var output = (result is not null) 
             ? ((result ?? false) ? "true" : "false")
             : "Invalid?";
-        
+
         return new AssertionOutput
         {
             StatementText = Text,

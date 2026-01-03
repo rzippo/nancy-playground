@@ -38,7 +38,7 @@ public record class Program
     /// </summary>
     public bool IsEndOfProgram 
         => ProgramCounter >= Statements.Count;
-    
+
     public Program(List<Statement> statements)
     {
         Statements = statements;
@@ -71,19 +71,19 @@ public record class Program
     public static Program FromText(string text)
     {
         var errors = new List<SyntaxErrorInfo>();
-        
+
         var inputStream = CharStreams.fromString(text);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var lexerListener = new DiagnosticLexerErrorListener(errors, inputStream);
         lexer.RemoveErrorListeners();
         lexer.AddErrorListener(lexerListener);
-        
+
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         var parserListener = new DiagnosticParserErrorListener(errors);
         parser.RemoveErrorListeners();
         parser.AddErrorListener(parserListener);
-        
+
         var context = parser.program();
         var program = FromTree(context);
         return program with
@@ -115,7 +115,7 @@ public record class Program
     {
         if(IsEndOfProgram)
             yield return $">> end of program";
-        
+
         var statement = Statements[ProgramCounter++];
         if (statement is not Comment)
             yield return $">> {statement.Text}";
@@ -156,10 +156,10 @@ public record class Program
     {
         if (Text.IsNullOrWhiteSpace())
             throw new InvalidOperationException("Program text not available!");
-        
+
         return ToNancyCode(Text,  useNancyExpressions);
     }
-    
+
     /// <summary>
     /// Converts MPPG program text to Nancy code.
     /// </summary>
@@ -179,7 +179,7 @@ public record class Program
         var programContext = parser.program();
         var visitor = new ToNancyCodeVisitor();
         var code = programContext.Accept(visitor);
-        
+
         return code;
     }
 }

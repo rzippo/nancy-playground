@@ -672,7 +672,7 @@ public partial class MppgParser : Parser {
 		{
 		}
 		public override int RuleIndex { get { return RULE_functionExpression; } }
-	 
+
 		public FunctionExpressionContext() { }
 		public virtual void CopyFrom(FunctionExpressionContext context) {
 			base.CopyFrom(context);
@@ -2825,7 +2825,7 @@ public partial class MppgParser : Parser {
 		{
 		}
 		public override int RuleIndex { get { return RULE_numberExpression; } }
-	 
+
 		public NumberExpressionContext() { }
 		public virtual void CopyFrom(NumberExpressionContext context) {
 			base.CopyFrom(context);
@@ -3152,7 +3152,7 @@ public partial class MppgParser : Parser {
 		{
 		}
 		public override int RuleIndex { get { return RULE_numberEnclosedExpression; } }
-	 
+
 		public NumberEnclosedExpressionContext() { }
 		public virtual void CopyFrom(NumberEnclosedExpressionContext context) {
 			base.CopyFrom(context);
@@ -4639,7 +4639,6 @@ public partial class MppgParser : Parser {
 
 	public static readonly ATN _ATN =
 		new ATNDeserializer().Deserialize(_serializedATN);
-
 
 }
 } // namespace Unipi.MppgParser.Grammar

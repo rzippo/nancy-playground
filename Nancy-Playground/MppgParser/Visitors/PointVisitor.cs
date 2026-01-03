@@ -16,11 +16,11 @@ public class PointVisitor : MppgBaseVisitor<Point>
 
         var timeContext = context.GetChild(1);
         var valueContext = context.GetChild(3);
-        
+
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var time = numberLiteralVisitor.Visit(timeContext);
         var value = numberLiteralVisitor.Visit(valueContext);
-        
+
         return new Point(time, value);
     }
 
@@ -31,7 +31,7 @@ public class PointVisitor : MppgBaseVisitor<Point>
 
         var endpointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
         var point = endpointContext.Accept(this);
-        
+
         return point;
     }
 }

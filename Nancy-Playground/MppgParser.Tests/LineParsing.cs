@@ -88,7 +88,7 @@ public class LineParsing
 
     public static IEnumerable<object[]> FunctionExpressionsTestCases() =>
         FunctionExpressions.ToXUnitTestCases();
-    
+
     [Theory]
     [MemberData(nameof(FunctionExpressionsTestCases))]
     public void FunctionExpression(
@@ -98,7 +98,7 @@ public class LineParsing
     )
     {
         var state = new State(functionVariables, rationalVariables);
-        
+
         var ie = ExpressionParsing.Parse(expression, state);
 
         switch (ie)

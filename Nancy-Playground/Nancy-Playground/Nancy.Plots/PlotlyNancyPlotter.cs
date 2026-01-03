@@ -66,7 +66,7 @@ public partial class PlotlyNancyPlotter : NancyPlotter<PlotlyChart>
                     var head = (Segment)sequence.Elements.First();
                     points.Insert(0, (x: (decimal)head.EndTime, y: (decimal)head.LeftLimitAtEndTime));
                 }
-                
+
                 if (sequence.IsRightOpen)
                 {
                     var tail = (Segment)sequence.Elements.Last();
@@ -103,7 +103,7 @@ public partial class PlotlyNancyPlotter : NancyPlotter<PlotlyChart>
                 {
                     if( center is not { IsPlusInfinite: true })
                         points.Add((x: (decimal)center.Time, y: (decimal)center.Value));
-                    
+
                     if (left is not null and not { IsPlusInfinite: true } && left.LeftLimitAtEndTime != center.Value)
                     {
                         discontinuities.Add((x: (decimal)center.Time, y: (decimal)left.LeftLimitAtEndTime));

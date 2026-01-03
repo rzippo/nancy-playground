@@ -130,7 +130,7 @@ public class LineEditor
         int linePreambleOffset = linePreamble.Length;
         int lineLeftBoundary = Console.CursorLeft;
         int cursorLeftBoundary = Console.CursorLeft + linePreambleOffset;
-        
+
         // Starting cursor position (after your prompt)
         int startLeft = cursorLeftBoundary;
         int startTop = Console.CursorTop;

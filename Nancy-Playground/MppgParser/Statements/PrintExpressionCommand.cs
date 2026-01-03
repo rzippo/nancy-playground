@@ -8,7 +8,7 @@ public record class PrintExpressionCommand : Statement
     {
         VariableName = variableName;
     }
-    
+
     public override string Execute(State state)
     {
         var (exists, type) = state.GetVariableType(VariableName);

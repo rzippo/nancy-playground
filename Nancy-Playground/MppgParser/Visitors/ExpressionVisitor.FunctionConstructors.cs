@@ -142,7 +142,7 @@ public partial class ExpressionVisitor
 
         return curveExp;
     }
-    
+
     public override IExpression VisitZeroFunction(
         Unipi.MppgParser.Grammar.MppgParser.ZeroFunctionContext context)
     {
@@ -163,7 +163,7 @@ public partial class ExpressionVisitor
 
         var transientElements = Enumerable.Empty<Element>();
         var elementsVisitor = new ElementsVisitor();
-        
+
         var transientContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.UppTransientPartContext>(0);
         if (transientContext is not null)
         {
@@ -186,7 +186,7 @@ public partial class ExpressionVisitor
 
         var t = periodSequence.DefinedFrom;
         var d = periodSequence.DefinedUntil - periodSequence.DefinedFrom;
-        
+
         Rational c = 0;
         var incrementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.IncrementContext>(0);
         if (incrementContext is not null)
@@ -266,7 +266,7 @@ public partial class ExpressionVisitor
             var normalizedElements = sequence.Elements.ToList();
             normalizedElements[^1] = lastSegment;
             sequence = new Sequence(normalizedElements);
-            
+
             t = isPointAffine ? lastPoint.Time : lastPoint.Time + 1;
             d = 1;
             c = lastSegment.IsInfinite ? 0 : lastSegment.LeftLimitAtEndTime - lastSegment.RightLimitAtStartTime;

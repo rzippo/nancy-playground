@@ -37,7 +37,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         else
             return State.GetNumberVariable(name);
     }
-    
+
     public override IExpression VisitEncNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberVariableExpContext context)
     {
         var name = context.GetText();
@@ -54,16 +54,16 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
     {
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var value = numberLiteralVisitor.Visit(context);
-        
+
         var valueExp = Expressions.Expressions.FromRational(value, "");
         return valueExp;
     }
-    
+
     public override IExpression VisitEncNumberLiteralExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberLiteralExpContext context)
     {
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var value = numberLiteralVisitor.Visit(context);
-        
+
         var valueExp = Expressions.Expressions.FromRational(value, "");
         return valueExp;
     }

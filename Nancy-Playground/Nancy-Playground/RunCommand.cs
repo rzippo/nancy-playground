@@ -14,7 +14,7 @@ public class RunCommand : Command<RunCommand.Settings>
         [Description("Path to the .mppg file to run")]
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
-        
+
         [Description("If enabled, makes the output deterministic, removing preamble and time measurements. Useful to implement tests.")]
         [CommandOption("--deterministic")]
         public bool Deterministic { get; init; } = false;

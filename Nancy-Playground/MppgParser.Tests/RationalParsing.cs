@@ -28,10 +28,10 @@ public class RationalParsing
         ( "+infinity", Rational.PlusInfinity ),
         ( "-infinity", Rational.MinusInfinity ),
     ];
-    
+
     public static IEnumerable<object[]> KnownMppgRationalTestCases =>
         KnownMppgRationalPairs.ToXUnitTestCases();
-    
+
     [Theory]
     [MemberData(nameof(KnownMppgRationalTestCases))]
     public void MppgRationalParsingEquivalence(string mppg, Rational expected)

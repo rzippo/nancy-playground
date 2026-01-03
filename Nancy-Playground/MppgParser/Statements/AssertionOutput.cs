@@ -8,12 +8,12 @@ public class AssertionOutput : StatementOutput
     /// The left expression.
     /// </summary>
     public required IExpression LeftExpression { get; init; }
-    
+
     /// <summary>
     /// The right expression.
     /// </summary>
     public required IExpression RightExpression { get; init; }
-    
+
     /// <summary>
     /// The time it took to compute the results to be compared.
     /// </summary>

@@ -28,10 +28,10 @@ public class ConvertCommandSameOutputTests
 
         return caseDirs;
     }
-    
+
     public static IEnumerable<object[]> TestCases() 
         => TestDirs().Select(dir => (object[])[dir]);
-    
+
     private static bool IsCaseDirectory(string dir) =>
         File.Exists(Path.Combine(dir, "script.mppg"));
 
@@ -46,7 +46,7 @@ public class ConvertCommandSameOutputTests
         var tfm = parts.FirstOrDefault(p => p.StartsWith("net", StringComparison.OrdinalIgnoreCase));
         return tfm ?? "unknown-tfm";
     }
-    
+
     /// <summary>
     /// Returns the last non-empty line, if it exists.
     /// If none exists, returns null.
@@ -61,7 +61,7 @@ public class ConvertCommandSameOutputTests
            .Select(l => l.TrimEnd())
            .LastOrDefault(l => !string.IsNullOrWhiteSpace(l));
     }
-    
+
     [Theory]
     [MemberData(nameof(TestCases))]
     public async Task ConvertCommandSameOutput(string caseDir)
@@ -85,7 +85,7 @@ public class ConvertCommandSameOutputTests
             "--deterministic",
             "--no-welcome"
         ];
-        
+
         // Act: run command, obtain the script output
 
         string runCommandFinalResult;
@@ -111,7 +111,7 @@ public class ConvertCommandSameOutputTests
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stdout.txt"), runCommandResult.StandardOutput, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString(), cts.Token);
-            
+
             Assert.Equal(0, runCommandResult.ExitCode);
             runCommandFinalResult = LastNonEmptyLine(runCommandResult.StandardOutput) ?? 
                                     throw new InvalidOperationException("No result from the run command!");
@@ -147,15 +147,15 @@ public class ConvertCommandSameOutputTests
             {
                 throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
             }
-            
+
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.StandardOutput, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString(), cts.Token);
-            
+
             Assert.True(File.Exists(programPath));
             Assert.Equal(0, convertCommandResult.ExitCode);
         }
-        
+
         // Arrange: run the converted program
         string programFinalResult;
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
@@ -179,7 +179,7 @@ public class ConvertCommandSameOutputTests
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
             await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-            
+
             Assert.Equal(0, programResult.ExitCode);
             programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
                                     throw new InvalidOperationException("No result from the run command!");

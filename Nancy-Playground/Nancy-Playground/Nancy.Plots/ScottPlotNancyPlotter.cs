@@ -75,7 +75,7 @@ public class ScottPlotNancyPlotter : NancyPlotter<Plot>
 
         return plot;
     }
-    
+
     public override string GetHtml(Plot plot)
     {
         throw new NotImplementedException();
@@ -90,11 +90,11 @@ public class ScottPlotNancyPlotter : NancyPlotter<Plot>
     private class SequenceTraces
     {
         public List<List<(double x, double y)>> ContinuousLines { get; } = [];
-        
+
         public List<(double x, double y)> Points { get; } = [];
-        
+
         public List<(double x, double y)> Discontinuities { get; } = [];
-        
+
         public SequenceTraces(Sequence sequence)
         {
             var currentLine = new List<(double x, double y)>();
@@ -185,7 +185,7 @@ public class ScottPlotNancyPlotter : NancyPlotter<Plot>
     {
         return ((double)segment.StartTime, (double)segment.RightLimitAtStartTime);
     }
-    
+
     private static (double x, double y) EndCoord(Segment segment)
     {
         return ((double)segment.EndTime, (double)segment.LeftLimitAtEndTime);

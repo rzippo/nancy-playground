@@ -15,12 +15,12 @@ public record class ExpressionCommand : Statement
     {
         Expression = expression;
     }
-    
+
     public override string Execute(State state)
     {
         Expression.ParseTree(state);
         var (c, r) = Expression.Compute();
-        
+
         if (c is not null)
             return c.ToCodeString();
         if (r is not null)
@@ -56,7 +56,7 @@ public record class ExpressionCommand : Statement
             RationalExpression re => re.Value.ToCodeString(),
             _ => throw new Exception($"Expression could not be parsed")
         };
-        
+
         return new ExpressionOutput()
         {
             StatementText = Text,
