@@ -32,10 +32,20 @@
             "visualParseTree": true
         },
         {
-            "name": "MPPG comments-test",
+            "name": "MPPG comments-test-1",
             "type": "antlr-debug",
             "request": "launch",
             "input": "Examples/grammar-tests/comments-test.mppg",
+            "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
+            "startRule": "program",
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "MPPG comments-test-2",
+            "type": "antlr-debug",
+            "request": "launch",
+            "input": "Nancy-Playground/Nancy-Playground.Tests/run-testcases/grammar/comments-2/input.txt",
             "grammar": "Nancy-Playground/MppgParser/Grammar/Mppg.g4",
             "startRule": "program",
             "printParseTree": true,
