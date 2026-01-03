@@ -17,7 +17,7 @@ public class RunCommandGoldenTests
 
     public static IEnumerable<string> GoldenTestDirs()
     {
-        var root = Path.Combine(AppContext.BaseDirectory, "testcases");
+        var root = Path.Combine(AppContext.BaseDirectory, "run-testcases");
         if (!Directory.Exists(root))
             throw new DirectoryNotFoundException($"Missing testcases folder: {root}");
 
