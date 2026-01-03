@@ -27,7 +27,7 @@
 
     <!-- Ensure testcases get copied to output so AppContext.BaseDirectory works -->
     <ItemGroup>
-        <None Include="testcases\**\*.*" CopyToOutputDirectory="Always" />
+        <None Include="run-testcases\**\*.*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
