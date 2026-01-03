@@ -22,9 +22,12 @@ public class Program
     public static string GitCommitShort => 
         GitCommit.Length >= 7 ? GitCommit[..7] : GitCommit;
 
+    public static string CliVersionLine =>
+        $"[green]This is [blue]nancy-playground[/], version {Version} ({GitCommitShort}).[/]";
+    
     public static List<string> CliWelcomeMessage =>
     [
-        $"[green]This is [blue]nancy-playground[/], version {Version} ({GitCommitShort}).[/]",
+        CliVersionLine,
         // todo: add reference to the maintainer somewhere?
         "[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.1016/j.softx.2022.101178[/][/]"
     ];
