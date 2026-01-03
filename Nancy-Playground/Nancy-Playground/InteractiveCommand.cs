@@ -11,7 +11,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 {
     public sealed class Settings : CommonExecutionSettings
     {
-        
+
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -43,7 +43,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             },
             _ => new PlainConsoleStatementFormatter()
         };
-        
+
         var immediateComputeValue = settings.RunMode switch
         {
             RunMode.ExpressionDriven => false,
@@ -53,7 +53,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         var lineEditor = new LineEditor(Keywords, ContextualKeywords());
         var totalComputationTime = TimeSpan.Zero;
-        
+
         // CLI welcome message
         AnsiConsole.MarkupLine("[green]Interactive mode: type in your commands. Use [blue]!help[/] to read the manual.[/]");
 

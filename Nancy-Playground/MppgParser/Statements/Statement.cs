@@ -10,7 +10,7 @@ public abstract record class Statement
     public string InlineComment { get; init; } = string.Empty;
 
     public abstract string Execute(State state);
-    
+
     public abstract StatementOutput ExecuteToFormattable(State state);
 
     public static Statement FromLine(string line)
@@ -19,7 +19,7 @@ public abstract record class Statement
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
-        
+
         var context = parser.statement();
         var visitor = new StatementVisitor();
         var statement = visitor.Visit(context);

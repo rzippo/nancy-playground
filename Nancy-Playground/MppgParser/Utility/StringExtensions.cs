@@ -12,7 +12,7 @@ public static class StringExtensions
             str = str[0..^1];
         return str;
     }
-    
+
     /// <inheritdoc cref="string.IsNullOrWhiteSpace"/>
     public static bool IsNullOrWhiteSpace(this string str)
     {

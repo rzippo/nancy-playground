@@ -6,7 +6,7 @@ namespace Unipi.Nancy.Playground.MppgParser;
 public class ProgramContext
 {
     public State State { get; init; } =  new ();
-    
+
     public List<Statement> StatementHistory { get; init; } =  new ();
 
     public StatementOutput? ExecuteStatement(

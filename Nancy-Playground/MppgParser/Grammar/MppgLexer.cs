@@ -68,7 +68,6 @@ public partial class MppgLexer : Lexer {
 		"INFINITE_NUMBER_LITERAL"
 	};
 
-
 	public MppgLexer(ICharStream input)
 	: this(input, Console.Out, Console.Error) { }
 
@@ -449,7 +448,6 @@ public partial class MppgLexer : Lexer {
 
 	public static readonly ATN _ATN =
 		new ATNDeserializer().Deserialize(_serializedATN);
-
 
 }
 } // namespace Unipi.MppgParser.Grammar

@@ -12,7 +12,7 @@ public static class ToXUnitTestCasesExtensions
     {
         return list.Select(t1 => new object[] { t1! });
     }
-    
+
     /// <summary>
     /// Helper method that converts the list of tuples into a list of object[], as required by xUnit. 
     /// </summary>
@@ -23,7 +23,7 @@ public static class ToXUnitTestCasesExtensions
             yield return new object[] { t1!, t2! };
         }
     }
-    
+
     /// <summary>
     /// Helper method that converts the list of tuples into a list of object[], as required by xUnit. 
     /// </summary>
@@ -34,7 +34,7 @@ public static class ToXUnitTestCasesExtensions
             yield return new object[] { t1!, t2!, t3! };
         }
     }
-    
+
     /// <summary>
     /// Helper method that converts the list of tuples into a list of object[], as required by xUnit. 
     /// </summary>
@@ -45,7 +45,7 @@ public static class ToXUnitTestCasesExtensions
             yield return new object[] { t1!, t2!, t3!, t4! };
         }
     }
-    
+
     /// <summary>
     /// Helper method that converts the list of tuples into a list of object[], as required by xUnit. 
     /// </summary>
@@ -78,7 +78,7 @@ public static class ToXUnitTestCasesExtensions
             yield return new object[] { t1!, t2!, t3!, t4!, t5!, t6!, t7! };
         }
     }
-    
+
     /// <summary>
     /// Helper method that converts the list of tuples into a list of object[], as required by xUnit. 
     /// </summary>

@@ -15,7 +15,7 @@ public abstract partial class NancyPlotter<TChart>
     /// This method is, in the default implementation, used internally by all PlotToHtml overloads.
     /// </remarks>
     public abstract string GetHtml(TChart plot);
-    
+
     #region Curves
 
     /// <summary>
@@ -151,6 +151,6 @@ public abstract partial class NancyPlotter<TChart>
         var plot = Plot([sequence], [name]);
         return GetHtml(plot);
     }
-    
+
     #endregion
 }

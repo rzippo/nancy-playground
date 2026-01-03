@@ -28,7 +28,7 @@ public class RunCommandGoldenTests
 
         return caseDirs;
     }
-    
+
     public static IEnumerable<object[]> GoldenTestCases() 
         => GoldenTestDirs().Select(dir => (object[])[dir]);
 
@@ -42,7 +42,7 @@ public class RunCommandGoldenTests
 
         _testOutputHelper.WriteLine($"cliDllPath: {cliDllPath}");
         _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
-        
+
         if (string.IsNullOrWhiteSpace(cliDllPath) || !File.Exists(cliDllPath))
             throw new FileNotFoundException($"CLI assembly not found at: {cliDllPath}");
 

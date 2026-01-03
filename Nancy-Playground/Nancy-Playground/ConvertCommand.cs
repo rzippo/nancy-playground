@@ -13,7 +13,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         [Description("Path to the .mppg file to convert to a Nancy program.")]
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
-        
+
         [Description("Path to the .mppg file to convert to a Nancy program.")]
         [CommandOption("--output-file")]
         public string NancyCsFile { get; init; } = string.Empty;
@@ -21,7 +21,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         [Description("If true, the Nancy program will use Nancy.Expressions syntax.")]
         [CommandOption("--use-expressions")]
         public bool UseNancyExpressions { get; init; } = false;
-        
+
         [Description("If true, the Nancy program will be overwritten if already exists.")]
         [CommandOption("--overwrite")]
         public bool Overwrite { get; init; } = false;
@@ -45,14 +45,14 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             AnsiConsole.MarkupLine($"[red]Did you want to run the interactive command?[/]");
             return 1;
         }
-        
+
         var mppgFile = new FileInfo(settings.MppgFile);
         if (!mppgFile.Exists)
         {
             AnsiConsole.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
             return 1;
         }
-        
+
         var nancyFilePath = settings.NancyCsFile.IsNullOrWhiteSpace() ?
             Path.Join(mppgFile.Directory!.FullName, $"{mppgFile.Name}.cs") :
             settings.NancyCsFile;
@@ -76,11 +76,11 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             $"// Docs: https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps",
             string.Empty
         ]);
-        
+
         File.WriteAllLines(nancyFile.FullName, (IEnumerable<string>)code);
-        
+
         AnsiConsole.MarkupLine($"[yellow]Conversion complete.[/]");
-        
+
         return 0;
     }
 }

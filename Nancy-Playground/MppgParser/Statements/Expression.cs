@@ -14,9 +14,9 @@ public class Expression
         NancyExpression,
         VariableName
     }
-    
+
     private ExpressionSourceType SourceType { get; init; }
-    
+
     public ExpressionType ExpressionType =>
         NancyExpression switch
         {
@@ -24,13 +24,13 @@ public class Expression
             RationalExpression => ExpressionType.Number,
             _ => ExpressionType.Undetermined
         };
-    
+
     public IExpression? NancyExpression { get; internal set; }
-    
+
     public Unipi.MppgParser.Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
-    
+
     public string? VariableName { get; private set; }
-    
+
     public Expression(IExpression expression)
     {
         NancyExpression = expression;
@@ -54,7 +54,7 @@ public class Expression
         var expression = ParseTree(context, state);
         return new Expression(expression);
     }
-    
+
     public static IExpression ParseTree(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context, State? state)
     {
         var visitor = new ExpressionVisitor(state);
@@ -81,7 +81,7 @@ public class Expression
 
         var context = parser.expression();
         var visitor = new ExpressionVisitor(state);
-     
+
         return context.Accept(visitor);
     }
 

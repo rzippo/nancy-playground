@@ -8,11 +8,11 @@ public partial class ExpressionVisitor
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
-        
+
         var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
-        
+
         var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
@@ -30,11 +30,11 @@ public partial class ExpressionVisitor
     {
         // if (context.ChildCount != 5)
         //     throw new Exception("Expected 5 child expression");
-        
+
         var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
-        
+
         var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
@@ -52,11 +52,11 @@ public partial class ExpressionVisitor
     {
         // if (context.ChildCount != 5)
         //     throw new Exception("Expected 5 child expression");
-        
+
         var functionNameContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0);
         var functionName = functionNameContext.GetText();
         var curveExpr = State.GetFunctionVariable(functionName);
-        
+
         var timeExpression = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var iRE = timeExpression.Accept(this);
         if (iRE is RationalExpression re)
@@ -78,7 +78,7 @@ public partial class ExpressionVisitor
 
         var ilE = context.GetChild(2).Accept(this);
         var irE = context.GetChild(4).Accept(this);
-        
+
         if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
             var rationalExp = Expressions.Expressions.HorizontalDeviation(lCE, rCE);
@@ -89,7 +89,7 @@ public partial class ExpressionVisitor
             throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
         }
     }
-    
+
     public override IExpression VisitFunctionVerticalDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context)
     {
@@ -98,7 +98,7 @@ public partial class ExpressionVisitor
 
         var ilE = context.GetChild(2).Accept(this);
         var irE = context.GetChild(4).Accept(this);
-        
+
         if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
         {
             var rationalExp = Expressions.Expressions.VerticalDeviation(lCE, rCE);

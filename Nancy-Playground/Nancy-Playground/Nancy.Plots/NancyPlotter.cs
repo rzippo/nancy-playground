@@ -13,7 +13,7 @@ namespace Unipi.Nancy.Playground.Cli.Nancy.Plots;
 public abstract partial class NancyPlotter<TChart>
 {
     #region Curves
-    
+
     /// <summary>
     /// Plots a set of curves.
     /// </summary>
@@ -128,7 +128,7 @@ public abstract partial class NancyPlotter<TChart>
     }
 
     #endregion Curves
-    
+
     #region Sequences
 
     /// <summary>
@@ -141,7 +141,7 @@ public abstract partial class NancyPlotter<TChart>
         IReadOnlyList<Sequence> sequences,
         IReadOnlyList<string> names
     );
-    
+
     /// <summary>
     /// Plots a set of sequences.
     /// The sequences will be given default names f, g, h and so on.
@@ -157,7 +157,7 @@ public abstract partial class NancyPlotter<TChart>
             .ToList();
         return Plot(sequences, names);
     }
-    
+
     /// <summary>
     /// Plots a sequence.
     /// </summary>
@@ -174,7 +174,6 @@ public abstract partial class NancyPlotter<TChart>
     {
         return Plot([sequence], [name]);
     }
-
 
     #endregion Sequences
 }

@@ -23,7 +23,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     /// If true, prints the time taken to execute each statement.
     /// </summary>
     public bool PrintTimePerStatement { get; init; } = true;
-    
+
     public void FormatStatementPreamble(Statement statement)
     {
         switch (statement)
@@ -87,7 +87,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 }
                 break;
             }
-            
+
             case Assignment assignment:
             {
                 var assignmentOutput = (AssignmentOutput) output;
@@ -115,7 +115,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 AnsiConsole.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
                 break;
             }
-            
+
             case Comment comment:
             {
                 AnsiConsole.MarkupLineInterpolated($"[green]{comment.Text}[/]");

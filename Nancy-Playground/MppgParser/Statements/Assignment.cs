@@ -13,7 +13,7 @@ public record class Assignment : Statement
         VariableName = variableName;
         Expression = expression;
     }
-    
+
     public override string Execute(State state)
         => Execute(state, false, true, false);
 
@@ -87,7 +87,7 @@ public record class Assignment : Statement
                 throw new Exception($"Expression could not be parsed");
         }
         sw.Stop();
-        
+
         return new AssignmentOutput
         {
             StatementText = Text,

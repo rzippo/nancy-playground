@@ -18,7 +18,7 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
                     statements.Add(statement);
                }
           }
-          
+
           var program = new Program(statements);
           return program;
      }

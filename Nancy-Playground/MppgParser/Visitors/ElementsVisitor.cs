@@ -53,18 +53,18 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
     {
         var segmentText = context.GetJoinedText();
-        
+
         var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
         var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-        
+
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
 
         if(leftPoint.Time.IsInfinite)
             throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-        
+
         if(slopeContext == null)
         {
             var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
@@ -78,7 +78,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
-            
+
             Rational computedSlope;
             if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
             {
@@ -104,11 +104,11 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
     {
         var segmentText = context.GetJoinedText();
-        
+
         var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
         var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-        
+
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
@@ -144,7 +144,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
-            
+
             if(rightPoint.Time.IsPlusInfinite)
             {
                 if(slope < 0 && rightPoint.Value != Rational.MinusInfinity)
@@ -179,11 +179,11 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
     {
         var segmentText = context.GetJoinedText();
-        
+
         var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
         var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-        
+
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
@@ -203,7 +203,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
-            
+
             Rational computedSlope;
             if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
             {
@@ -228,11 +228,11 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
     {
         var segmentText = context.GetJoinedText();
-        
+
         var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
         var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
         var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-        
+
         var pointVisitor = new PointVisitor();
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
@@ -265,7 +265,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         {
             var numberLiteralVisitor = new NumberLiteralVisitor();
             var slope = numberLiteralVisitor.Visit(slopeContext);
-            
+
             if(rightPoint.Time.IsPlusInfinite)
             {
                 if(slope < 0 && rightPoint.Value != Rational.MinusInfinity)

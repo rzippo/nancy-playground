@@ -16,18 +16,18 @@ public class State
     {
         AddRange(functionVariables.Select(pair => (pair.Key, pair.Value)).ToList());
     }
-    
+
     public State(Dictionary<string, RationalExpression> rationalExpressions)
     {
         AddRange(rationalExpressions.Select(pair => (pair.Key, pair.Value)).ToList());
     }
-    
+
     public State(Dictionary<string, CurveExpression> functionVariables, Dictionary<string, RationalExpression> rationalExpressions)
     {
         AddRange(functionVariables.Select(pair => (pair.Key, pair.Value)).ToList());
         AddRange(rationalExpressions.Select(pair => (pair.Key, pair.Value)).ToList());
     }
-    
+
     public State(List<(string Key, CurveExpression Value)> functionVariables)
     {
         AddRange(functionVariables);
@@ -51,7 +51,7 @@ public class State
             .ToList();
         return names;
     }
-    
+
     /// <summary>
     /// Determines the type of a variable based on the provided key.
     /// </summary>
@@ -86,7 +86,7 @@ public class State
     {
         return FunctionVariables[variableName];
     }
-    
+
     public RationalExpression GetNumberVariable(string key)
     {
         return NumberVariables[key];
@@ -102,7 +102,7 @@ public class State
         else
             return NumberVariables[variableName];
     }
-    
+
     public void StoreVariable(
         string name, 
         RationalExpression value, 
@@ -117,13 +117,13 @@ public class State
             else
                 FunctionVariables.Remove(name);
         }
-        
+
         if (NumberVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
             NumberVariables[name] = value.WithName(name);
     }
-    
+
     public void StoreVariable(
         string name, 
         CurveExpression value, 
@@ -133,7 +133,7 @@ public class State
     {
         if(string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be null or whitespace.", nameof(name));
-        
+
         if (NumberVariables.ContainsKey(name))
         {
             if (!overwrite && !changeType)
@@ -141,7 +141,7 @@ public class State
             else
                 NumberVariables.Remove(name);
         }
-        
+
         if (FunctionVariables.ContainsKey(name) && !overwrite)
             throw new InvalidOperationException($"Variable {name} already exists!");
         else
@@ -150,16 +150,16 @@ public class State
 
     public void Add(string key, CurveExpression value)
         => StoreVariable(key, value, overwrite: false, changeType: false);
-    
+
     public void Add(string key, RationalExpression value)
         => StoreVariable(key, value, overwrite: false, changeType: false);
-    
+
     public void AddRange(List<(string key, CurveExpression value)> values)
         => values.ForEach(pair => Add(pair.key, pair.value));
-    
+
     public void AddRange(List<(string key, RationalExpression value)> values)
         => values.ForEach(pair => Add(pair.key, pair.value));
-    
+
     public void AddRange(Dictionary<string, CurveExpression> values)
     {
         foreach (var pair in values)
