@@ -148,9 +148,10 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
 
                 case "out":
                 {
+                    var outPath = argString.EndsWith(".png") ? argString : $"{argString}.png";
                     settings = settings with
                     {
-                        OutPath = argString
+                        OutPath = outPath
                     };
                     break;
                 }

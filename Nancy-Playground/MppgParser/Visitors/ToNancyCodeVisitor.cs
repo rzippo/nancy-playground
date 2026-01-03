@@ -203,7 +203,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
                 case "out":
                 {
-                    outPath = argString;
+                    outPath = argString.EndsWith(".png") ? argString : $"{argString}.png";
                     break;
                 }
 
