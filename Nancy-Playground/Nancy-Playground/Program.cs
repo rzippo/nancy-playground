@@ -50,6 +50,7 @@ public class Program
         var app = new CommandApp<InteractiveCommand>();
         app.Configure(config =>
         {
+            config.SetApplicationName("nancy-playground");
             config.AddCommand<RunCommand>("run")
                 .WithDescription("Runs a .mppg script")
                 .WithExample("run", "./Examples/hal-04513292v1.mppg")
