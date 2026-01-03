@@ -1,6 +1,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Unipi.MppgParser.Grammar;
+using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Expressions.Internals;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Utility;
@@ -641,6 +643,40 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         Unipi.MppgParser.Grammar.MppgParser.EpsilonFunctionContext context)
     {
         return ["Curve.PlusInfinite()"];
+    }
+
+    public override List<string> VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context)
+    {
+        // reuse the actual parsing + ToCodeString()
+        var expressionVisitor = new ExpressionVisitor(null);
+        var expression = context.Accept(expressionVisitor);
+
+        if (expression is ConcreteCurveExpression ce)
+        {
+            var curve = ce.Value;
+            return [curve.ToCodeString()];
+        }
+        else
+        {
+            throw new InvalidOperationException("Expected ConcreteCurveExpression");
+        }
+    }
+
+    public override List<string> VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
+    {
+        // reuse the actual parsing + ToCodeString()
+        var expressionVisitor = new ExpressionVisitor(null);
+        var expression = context.Accept(expressionVisitor);
+
+        if (expression is ConcreteCurveExpression ce)
+        {
+            var curve = ce.Value;
+            return [curve.ToCodeString()];
+        }
+        else
+        {
+            throw new InvalidOperationException("Expected ConcreteCurveExpression");
+        }
     }
 
     #endregion Function constructors
