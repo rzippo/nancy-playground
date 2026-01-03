@@ -102,7 +102,7 @@ public partial class InteractiveCommand
 
         // Item name + optional tags
         // AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/]{tagText}");
-        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] [green]{Escape(item.Format)}[/]");
+        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
 
         // One-line short description (truncated)
         if (!string.IsNullOrWhiteSpace(item.Description))
@@ -132,7 +132,7 @@ public partial class InteractiveCommand
 
     private static void PrintItemLong(HelpItem item)
     {
-        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] [green]{Escape(item.Format)}[/]");
+        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
 
         // does printing tags make sense? Make it an option?
 
@@ -165,5 +165,12 @@ public partial class InteractiveCommand
     private static string Escape(string text)
     {
         return Markup.Escape(text ?? string.Empty);
+    }
+
+    private static string MarkupFormats(List<string> formats)
+    {
+        return formats
+            .Select(format => $"[green]{Escape(format)}[/]")
+            .JoinText(" [dim]|[/] ");
     }
 }

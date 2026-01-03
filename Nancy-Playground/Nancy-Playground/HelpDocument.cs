@@ -21,35 +21,35 @@ Expect (and please report) oddities.
                     new HelpItem
                     {
                         Name = "Help",
-                        Format = "!help [query]",
+                        Formats = ["!help [query]"],
                         Description = "Shows this help text, or a search result. Useful reference for the syntax to use in scripts.",
                         Tags = ["help", "manual", "documentation"]
                     },
                     new HelpItem
                     {
                         Name = "CLI Help",
-                        Format = "!clihelp",
+                        Formats = ["!clihelp"],
                         Description = "Shows the CLI help text. Useful reference for commands and options of this app.",
                         Tags = ["cli", "help", "manual", "documentation"]
                     },
                     new HelpItem
                     {
                         Name = "Quit",
-                        Format = "!quit | !exit",
+                        Formats = ["!quit", "!exit"],
                         Description = "Terminates the program.",
                         Tags = ["quit", "exit", "terminate"]
                     },
                     new HelpItem
                     {
                         Name = "Export",
-                        Format = "!export <output-file>",
+                        Formats = ["!export <output-file>"],
                         Description = "Exports the current program to a .mppg file.",
                         Tags = ["export", "save", "file"]
                     },
                     new HelpItem
                     {
                         Name = "Convert",
-                        Format = "!convert <output-file>",
+                        Formats = ["!convert <output-file>"],
                         Description = "Converts the current program to a Nancy C# program and saves it to a file.",
                         Tags = ["convert", "nancy", "csharp", "file"]
                     }
@@ -65,7 +65,7 @@ Expect (and please report) oddities.
                     new HelpItem
                     {
                         Name = "Line comments",
-                        Format = "// text | % text | # text | > text",
+                        Formats = ["// text", "% text", "# text", "> text"],
                         Description = "Lines that start with //, %, #, or > are comments and are ignored.",
                         LongDescription = """
 Lines that start with any of these characters are treated as whole-line comments:
@@ -86,7 +86,7 @@ They are not parsed as expressions and do not affect execution.
                     new HelpItem
                     {
                         Name = "Inline comments",
-                        Format = "expression // text | expression % text | expression # text",
+                        Formats = ["expression // text", "expression % text", "expression # text"],
                         Description = "Comments at the end of a statement, starting with //, % or #.",
                         LongDescription = """
 Inline comments can appear after a statement. They must start with `//`, `%`, or `#`.
@@ -111,7 +111,7 @@ h := ... # This is a comment as well
                     new HelpItem
                     {
                         Name = "Function and scalar values",
-                        Format = "function | scalar",
+                        Formats = ["function", "scalar"],
                         Description = "The syntax supports function values (curves) and scalar values.",
                         LongDescription = """
 - Functions (also called curves in MPPG) represent piecewise-defined curves, service curves, arrival curves, etc.
@@ -132,7 +132,7 @@ h := ... # This is a comment as well
                     new HelpItem
                     {
                         Name = "Assignment",
-                        Format = "name := expression",
+                        Formats = ["name := expression"],
                         Description = "Assigns a function or scalar expression to a variable name.",
                         LongDescription = """
 Variables can store both scalar and function values. Once assigned, they can be reused in later expressions.
@@ -156,7 +156,7 @@ x := 3/2
                     new HelpItem
                     {
                         Name = "ratency",
-                        Format = "ratency(a, b)",
+                        Formats = ["ratency(a, b)"],
                         Description = "Rate-latency service function with rate a ≥ 0 and latency b ≥ 0.",
                         LongDescription = """
 Constructs a rate-latency service curve:
@@ -168,7 +168,7 @@ Constructs a rate-latency service curve:
                     new HelpItem
                     {
                         Name = "bucket",
-                        Format = "bucket(a, b)",
+                        Formats = ["bucket(a, b)"],
                         Description = "Leaky bucket arrival function with slope a ≥ 0 and constant b ≥ 0.",
                         LongDescription = """
 Constructs a leaky bucket arrival curve:
@@ -180,7 +180,7 @@ Constructs a leaky bucket arrival curve:
                     new HelpItem
                     {
                         Name = "affine",
-                        Format = "affine(a, b)",
+                        Formats = ["affine(a, b)"],
                         Description = "Affine function with slope a and constant b. Right-continuous at x = 0.",
                         LongDescription = """
 Constructs an affine function f(x) = a·x + b.
@@ -191,35 +191,35 @@ The function is right-continuous at 0: f(0+) = f(0).
                     new HelpItem
                     {
                         Name = "step",
-                        Format = "step(o, h)",
+                        Formats = ["step(o, h)"],
                         Description = "Step function with step at time o and height h.",
                         Tags = ["step", "step-function"]
                     },
                     new HelpItem
                     {
                         Name = "stair",
-                        Format = "stair(o, l, h)",
+                        Formats = ["stair(o, l, h)"],
                         Description = "Staircase function with first step at time o, length l, and step height h.",
                         Tags = ["stair", "staircase", "piecewise"]
                     },
                     new HelpItem
                     {
                         Name = "delay",
-                        Format = "delay(o)",
+                        Formats = ["delay(o)"],
                         Description = "Burst-delay function that occurs at time o.",
                         Tags = ["delay", "burst-delay"]
                     },
                     new HelpItem
                     {
                         Name = "zero",
-                        Format = "zero",
+                        Formats = ["zero"],
                         Description = "Zero function: f(x) = 0 for x ≥ 0.",
                         Tags = ["zero", "zero-function", "constant"]
                     },
                     new HelpItem
                     {
                         Name = "epsilon",
-                        Format = "epsilon",
+                        Formats = ["epsilon"],
                         Description = "Epsilon function: f(x) = +∞ for x ≥ 0.",
                         Tags = ["epsilon", "infinity", "constant"]
                     }
@@ -236,7 +236,7 @@ The function is right-continuous at 0: f(0+) = f(0).
                     new HelpItem
                     {
                         Name = "Segments",
-                        Format = "[(x1, y1)s(x2, y2)] and variants",
+                        Formats = ["[(x1, y1)s(x2, y2)] and variants"],
                         Description = "Primitive building blocks for arbitrary piecewise functions.",
                         LongDescription = """
 Segments describe intervals in the (x, y) plane. Variants control inclusion of endpoints and how the slope is given.
@@ -260,7 +260,7 @@ x and y can be any rational number or ±infinity. The end value of a segment is 
                     new HelpItem
                     {
                         Name = "Ultimately Affine functions",
-                        Format = "uaf(SEGMENT+)",
+                        Formats = ["uaf(SEGMENT+)"],
                         Description = "Ultimately affine function built from one or more segments.",
                         LongDescription = """
 Syntax:
@@ -279,7 +279,7 @@ uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
                     new HelpItem
                     {
                         Name = "Ultimately Pseudo-Periodic functions",
-                        Format = "upp([finiteSegments,] period(periodicSegments) [, incr[, period]])",
+                        Formats = ["upp([finiteSegments,] period(periodicSegments) [, incr[, period]])"],
                         Description = "Ultimately pseudo-periodic function with a finite part and a repeating pseudo-periodic part.",
                         LongDescription = """
 Syntax:
@@ -323,7 +323,7 @@ upp( [(0, +Infinity) 0 (6, +Infinity)],
                     new HelpItem
                     {
                         Name = "Number syntax",
-                        Format = "integer | rational | ±inf | ±infinity",
+                        Formats = ["integer", "rational", "±inf", "±infinity"],
                         Description = "Scalars are rationals plus ±infinity.",
                         LongDescription = """
 Supported numeric literals:
@@ -359,7 +359,7 @@ Implementation ignores any floating-point variant and focuses on rationals.
                     new HelpItem
                     {
                         Name = "Pointwise min/max",
-                        Format = "f1 ∧ f2 | f1 ∨ f2",
+                        Formats = ["f1 ∧ f2", "f1 ∨ f2"],
                         Description = "Pointwise minimum or maximum of two functions.",
                         LongDescription = """
 - `f1 ∧ f2`: pointwise minimum of f1 and f2.
@@ -370,14 +370,14 @@ Implementation ignores any floating-point variant and focuses on rationals.
                     new HelpItem
                     {
                         Name = "Addition and subtraction (functions)",
-                        Format = "f1 + f2 | f1 - f2",
+                        Formats = ["f1 + f2", "f1 - f2"],
                         Description = "Pointwise sum or difference of two functions.",
                         Tags = ["addition", "subtraction"]
                     },
                     new HelpItem
                     {
                         Name = "(min,+) convolution",
-                        Format = "f1 * f2 | f1 *_ f2",
+                        Formats = ["f1 * f2", "f1 *_ f2"],
                         Description = "(min,+) convolution of f1 and f2.",
                         LongDescription = """
 Both `*` and `*_` denote the (min,+) convolution. They are aliases.
@@ -387,35 +387,35 @@ Both `*` and `*_` denote the (min,+) convolution. They are aliases.
                     new HelpItem
                     {
                         Name = "(max,+) convolution",
-                        Format = "f1 *^ f2",
+                        Formats = ["f1 *^ f2"],
                         Description = "(max,+) convolution of f1 and f2.",
                         Tags = ["convolution", "max-plus"]
                     },
                     new HelpItem
                     {
                         Name = "(min,+) deconvolution",
-                        Format = "f1 / f2 | f1 /_ f2",
+                        Formats = ["f1 / f2", "f1 /_ f2"],
                         Description = "(min,+) deconvolution of f1 by f2.",
                         Tags = ["deconvolution", "min-plus"]
                     },
                     new HelpItem
                     {
                         Name = "(max,+) deconvolution",
-                        Format = "f1 /^ f2",
+                        Formats = ["f1 /^ f2"],
                         Description = "(max,+) deconvolution of f1 by f2.",
                         Tags = ["deconvolution", "max-plus"]
                     },
                     new HelpItem
                     {
                         Name = "Subadditive closure",
-                        Format = "star(f)",
+                        Formats = ["star(f)"],
                         Description = "Subadditive closure of f.",
                         Tags = ["closure", "subadditive", "star"]
                     },
                     new HelpItem
                     {
                         Name = "Horizontal shift",
-                        Format = "hShift(f, n) | hshift(f, n)",
+                        Formats = ["hShift(f, n)", "hshift(f, n)"],
                         Description = "Function identical to f but shifted horizontally by n.",
                         LongDescription = """
 - Positive n: shift to the right.
@@ -428,14 +428,14 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Vertical shift",
-                        Format = "vShift(f, n) | vshift(f, n)",
+                        Formats = ["vShift(f, n)", "vshift(f, n)"],
                         Description = "Function identical to f but shifted vertically by n.",
                         Tags = ["shift", "vertical", "traslation"]
                     },
                     new HelpItem
                     {
                         Name = "Pseudo-inverse (lower and upper)",
-                        Format = "inv(f) | low_inv(f) | up_inv(f)",
+                        Formats = ["inv(f)", "low_inv(f)", "up_inv(f)"],
                         Description = "Lower and upper pseudo-inverses of f.",
                         LongDescription = """
 - `inv(f)` and `low_inv(f)`: lower pseudo-inverse.
@@ -446,7 +446,7 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Upper closure",
-                        Format = "upclosure(f) | nnupclosure(f, n)",
+                        Formats = ["upclosure(f)", "nnupclosure(f, n)"],
                         Description = "Upper non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `upclosure(f)`: upper non-decreasing closure of f.
@@ -457,14 +457,14 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Composition",
-                        Format = "f comp g",
+                        Formats = ["f comp g"],
                         Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",
                         Tags = ["composition"]
                     },
                     new HelpItem
                     {
                         Name = "Left/right extensions",
-                        Format = "left-ext(f) | right-ext(f)",
+                        Formats = ["left-ext(f)", "right-ext(f)"],
                         Description = "Left- and right-continuous extensions of f.",
                         LongDescription = """
 - `left-ext(f)`: g(x) = f(x⁻)
@@ -475,7 +475,7 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Scaling by a scalar",
-                        Format = "scalar * f | f * scalar | f / scalar",
+                        Formats = ["scalar * f", "f * scalar", "f / scalar"],
                         Description = "Multiply or divide a function by a scalar.",
                         Tags = ["scaling", "multiplication", "division"]
                     }
@@ -492,7 +492,7 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Evaluation",
-                        Format = "f(x) | f(x+) | f(x-) | f(x~+) | f(x~-)",
+                        Formats = ["f(x)", "f(x+)", "f(x-)", "f(x~+)", "f(x~-)"],
                         Description = "Evaluates function f at or around a point x.",
                         LongDescription = """
 - `f(x)`: value of f at x.
@@ -506,21 +506,21 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Horizontal deviation",
-                        Format = "hDev(f, g) | hdev(f, g)",
+                        Formats = ["hDev(f, g)", "hdev(f, g)"],
                         Description = "Horizontal deviation between f and g.",
                         Tags = ["functions", "deviation", "horizontal", "hDev", "metrics"]
                     },
                     new HelpItem
                     {
                         Name = "Vertical deviation",
-                        Format = "vDev(f, g) | vdev(f, g)",
+                        Formats = ["vDev(f, g)", "vdev(f, g)"],
                         Description = "Vertical deviation between f and g.",
                         Tags = ["functions", "deviation", "vertical", "vDev", "metrics"]
                     },
                     new HelpItem
                     {
                         Name = "Max backlog period length",
-                        Format = "maxBacklogPeriod(f, g)",
+                        Formats = ["maxBacklogPeriod(f, g)"],
                         Description = "Max backlog period length between f and g. (Not implemented)",
                         Tags = ["functions", "backlog", "period", "metrics", "not-implemented"]
                     }
@@ -537,7 +537,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Min/max",
-                        Format = "v1 /\\ v2 | v1 \\/ v2",
+                        Formats = ["v1 /\\ v2", "v1 \\/ v2"],
                         Description = "Minimum or maximum of two scalar values.",
                         LongDescription = """
 - `v1 /\\ v2`: minimum of v1 and v2.
@@ -548,7 +548,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Arithmetic",
-                        Format = "v1 + v2 | v1 - v2 | v1 * v2 | v1 ÷ v2 | v1 div v2",
+                        Formats = ["v1 + v2", "v1 - v2", "v1 * v2", "v1 ÷ v2", "v1 div v2"],
                         Description = "Standard scalar arithmetic operations.",
                         LongDescription = """
 - `v1 + v2`: addition
@@ -572,7 +572,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Expression output",
-                        Format = "expression",
+                        Formats = ["expression"],
                         Description = "Any expression not assigned to a variable prints its value.",
                         LongDescription = """
 - If an expression is not on the right side of `:=`, it is evaluated and its result is printed.
@@ -583,7 +583,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Assignment output",
-                        Format = "name := expression",
+                        Formats = ["name := expression"],
                         Description = "Assignments print the variable name, not the value.",
                         LongDescription = """
 - `f := ratency(1, 2)` will print `f`.
@@ -594,7 +594,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Printing a variable",
-                        Format = "name",
+                        Formats = ["name"],
                         Description = "Typing the name of a variable prints its content.",
                         LongDescription = """
 - If the variable holds a function, its value is printed as a `uaf(...)` or `upp(...)` definition, regardless of the original constructor.
@@ -615,7 +615,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "plot",
-                        Format = "plot(f1, f2, ..., args)",
+                        Formats = ["plot(f1, f2, ..., args)"],
                         Description = "Plots one or more function variables with optional configuration arguments. (partially)",
                         LongDescription = """
 General form:
@@ -661,7 +661,7 @@ plot(xlim=[-0.3, 15], ylim=[-0.3, 15], service2, service1)
                     new HelpItem
                     {
                         Name = "assert",
-                        Format = "assert(f OP g)",
+                        Formats = ["assert(f OP g)"],
                         Description = "Tests a relation between two expressions; prints true or an error message.",
                         LongDescription = """
 General form:
@@ -705,7 +705,7 @@ assert(h != zero)
                     new HelpItem
                     {
                         Name = "printExpression",
-                        Format = "printExpression(f)",
+                        Formats = ["printExpression(f)"],
                         Description = "Prints out the expression of f, rather than its canonical uaf/upp form.",
                         LongDescription = """
 Useful to inspect the original expression used to define a function variable, instead of its normalized representation.
@@ -735,7 +735,7 @@ public record class HelpSection
 public record class HelpItem
 {
     public required string Name { get; init; }
-    public required string Format { get; init; }
+    public required List<string> Formats { get; init; }
     public required string Description { get; init; }
     public string LongDescription { get; init; } = string.Empty;
     public string Examples { get; init; } = string.Empty;
