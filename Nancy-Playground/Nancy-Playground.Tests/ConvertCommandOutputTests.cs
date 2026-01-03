@@ -6,11 +6,11 @@ using Xunit.Abstractions;
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
 using CliMarker = Cli.Program;
-public class ConvertCommandSameOutputTests
+public class ConvertCommandOutputTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public ConvertCommandSameOutputTests(ITestOutputHelper testOutputHelper)
+    public ConvertCommandOutputTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }
@@ -64,7 +64,7 @@ public class ConvertCommandSameOutputTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSameOutput(string caseDir)
+    public async Task ConvertCommandSameLastResult(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -77,6 +77,9 @@ public class ConvertCommandSameOutputTests
             throw new FileNotFoundException($"CLI assembly not found at: {cliDllPath}");
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        var outputDir = Path.Combine(caseDir, "last-result-test");
+        Directory.CreateDirectory(outputDir);
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
         List<string> runCommandArgs = [
@@ -108,9 +111,9 @@ public class ConvertCommandSameOutputTests
                 throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
             }
 
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stdout.txt"), runCommandResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString(), cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString(), cts.Token);
 
             Assert.Equal(0, runCommandResult.ExitCode);
             runCommandFinalResult = LastNonEmptyLine(runCommandResult.StandardOutput) ?? 
@@ -118,7 +121,7 @@ public class ConvertCommandSameOutputTests
         }
 
         // Arrange: convert the script to a C# file-based app
-        var programPath = Path.Combine(caseDir, "program.cs"); 
+        var programPath = Path.Combine(outputDir, "program.cs"); 
         List<string> convertCommandArgs =
         [
             "convert",
@@ -148,9 +151,9 @@ public class ConvertCommandSameOutputTests
                 throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
             }
 
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString(), cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString(), cts.Token);
 
             Assert.True(File.Exists(programPath));
             Assert.Equal(0, convertCommandResult.ExitCode);
@@ -176,9 +179,9 @@ public class ConvertCommandSameOutputTests
                 throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
             }
 
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(caseDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
 
             Assert.Equal(0, programResult.ExitCode);
             programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
