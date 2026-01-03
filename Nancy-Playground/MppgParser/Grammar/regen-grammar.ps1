@@ -1,4 +1,10 @@
-﻿Push-Location $PSScriptRoot
+﻿#!/usr/bin/pwsh
+
+# This script regenerates the ANTLR4 parser code from the grammar file Mppg.g4
+# It first checks if a compatible version of ANTLR4 is installed globally,
+# otherwise it downloads the ANTLR4 jar file and uses that.
+
+Push-Location $PSScriptRoot
 try {
     # This variable will contain the antlr command to call
     $antlrCommand = $null;
