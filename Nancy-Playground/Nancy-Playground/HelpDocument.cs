@@ -51,7 +51,7 @@ Expect (and please report) oddities.
                         Name = "Convert",
                         Formats = ["!convert <output-file>"],
                         Description = "Converts the current program to a Nancy C# program and saves it to a file.",
-                        Tags = ["convert", "nancy", "csharp", "file"]
+                        Tags = ["convert", "nancy", "csharp", "save", "file"]
                     }
                 ]
             },
@@ -163,7 +163,7 @@ Constructs a rate-latency service curve:
 - Parameter `a`: rate (slope), must be ≥ 0
 - Parameter `b`: latency (horizontal shift), must be ≥ 0
 """,
-                        Tags = ["ratency", "service-curve", "rate-latency"]
+                        Tags = ["ratency", "service-curve", "curve", "rate-latency"]
                     },
                     new HelpItem
                     {
@@ -175,7 +175,7 @@ Constructs a leaky bucket arrival curve:
 - `a` is the sustained arrival rate (slope)
 - `b` is the burst size (vertical offset)
 """,
-                        Tags = ["bucket", "arrival-curve", "leaky-bucket", "sigma-rho"]
+                        Tags = ["bucket", "arrival-curve", "curve", "leaky-bucket", "sigma-rho"]
                     },
                     new HelpItem
                     {
@@ -186,42 +186,42 @@ Constructs a leaky bucket arrival curve:
 Constructs an affine function f(x) = a·x + b.
 The function is right-continuous at 0: f(0+) = f(0).
 """,
-                        Tags = ["affine", "linear"]
+                        Tags = ["affine", "linear", "curve"]
                     },
                     new HelpItem
                     {
                         Name = "step",
                         Formats = ["step(o, h)"],
                         Description = "Step function with step at time o and height h.",
-                        Tags = ["step", "step-function"]
+                        Tags = ["step", "step-function", "curve"]
                     },
                     new HelpItem
                     {
                         Name = "stair",
                         Formats = ["stair(o, l, h)"],
                         Description = "Staircase function with first step at time o, length l, and step height h.",
-                        Tags = ["stair", "staircase", "piecewise"]
+                        Tags = ["stair", "staircase", "piecewise", "curve"]
                     },
                     new HelpItem
                     {
                         Name = "delay",
                         Formats = ["delay(o)"],
                         Description = "Burst-delay function that occurs at time o.",
-                        Tags = ["delay", "burst-delay"]
+                        Tags = ["delay", "burst-delay", "curve"]
                     },
                     new HelpItem
                     {
                         Name = "zero",
                         Formats = ["zero"],
                         Description = "Zero function: f(x) = 0 for x ≥ 0.",
-                        Tags = ["zero", "zero-function", "constant"]
+                        Tags = ["zero", "zero-function", "constant", "curve"]
                     },
                     new HelpItem
                     {
                         Name = "epsilon",
                         Formats = ["epsilon"],
-                        Description = "Epsilon function: f(x) = +∞ for x ≥ 0.",
-                        Tags = ["epsilon", "infinity", "constant"]
+                        Description = "Epsilon function: f(x) = +\\infty for x ≥ 0.",
+                        Tags = ["epsilon", "infinity", "constant", "curve"]
                     }
                 ]
             },
@@ -274,7 +274,7 @@ uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
                         Examples = """
 uaf( [(0,-3)1(1,-2)[ [(1,-2)2(7,10)[ [(7,10)0(+inf,10)[ )
 """,
-                        Tags = ["uaf", "ultimately-affine", "segments", "piecewise"]
+                        Tags = ["uaf", "ultimately-affine", "segments", "piecewise", "curve"]
                     },
                     new HelpItem
                     {
@@ -309,7 +309,7 @@ upp( [(0, +Infinity) 0 (6, +Infinity)],
      0,
      12)
 """,
-                        Tags = ["upp", "ultimately-pseudo-periodic", "periodic", "segments"]
+                        Tags = ["upp", "ultimately-pseudo-periodic", "periodic", "segments", "curve"]
                     }
                 ]
             },
@@ -359,11 +359,11 @@ Implementation ignores any floating-point variant and focuses on rationals.
                     new HelpItem
                     {
                         Name = "Pointwise min/max",
-                        Formats = ["f1 ∧ f2", "f1 ∨ f2"],
+                        Formats = ["f1 /\\ f2", "f1 \\/ f2"],
                         Description = "Pointwise minimum or maximum of two functions.",
                         LongDescription = """
-- `f1 ∧ f2`: pointwise minimum of f1 and f2.
-- `f1 ∨ f2`: pointwise maximum of f1 and f2.
+- `f1 /\\ f2`: pointwise minimum of f1 and f2.
+- `f1 \\/ f2`: pointwise maximum of f1 and f2.
 """,
                         Tags = ["min", "max"]
                     },
