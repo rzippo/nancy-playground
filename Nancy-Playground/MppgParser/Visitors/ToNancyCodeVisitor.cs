@@ -621,7 +621,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         var l = context.GetChild(4).Accept(this).Single();
         var h = context.GetChild(6).Accept(this).Single();
 
-        return [$"new Curve(new Sequence([Point.Origin(), new Segment(0, {l}, {h}, 0)]),0, {l}, {h}).DelayBy({o})"];
+        return [$"new StairCurve({h}, {l}).DelayBy({o})"];
     }
     
     public override List<string> VisitDelayFunction(
