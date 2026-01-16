@@ -339,7 +339,8 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
             return [$"Curve.Minimum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];
+        else
             return [$"Rational.Min({first}, {second})"];
     }
 
@@ -357,7 +358,8 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
             return [$"Curve.Maximum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];
+        else
             return [$"Rational.Max({first}, {second})"];
     }
 
@@ -793,7 +795,8 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
             return [$"Curve.Minimum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Curve.Minimum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];
+        else
             return [$"Rational.Min({first}, {second})"];
     }
 
@@ -811,7 +814,8 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
             return [$"Curve.Maximum({first}, new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];        else
+            return [$"Curve.Maximum({second}, new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];
+        else
             return [$"Rational.Max({first}, {second})"];
     }
 
