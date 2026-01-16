@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.Nancy.Playground.Cli.Plots;
@@ -51,7 +52,7 @@ public class RunCommand : Command<RunCommand.Settings>
         if(!settings.Deterministic)
             AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
-        var programText = File.ReadAllText(mppgFile.FullName);
+        var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);
         var program = MppgParser.Program.FromText(programText);
 
         if (program.Errors.Count > 0)

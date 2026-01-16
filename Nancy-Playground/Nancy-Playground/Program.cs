@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Reflection;
+using System.Text;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -37,6 +38,8 @@ public class Program
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
         if (Console.IsOutputRedirected)
         {
+            Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            AnsiConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             AnsiConsole.Profile.Capabilities.Ansi = false;
             AnsiConsole.Profile.Width = int.MaxValue;
         }
