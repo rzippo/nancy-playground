@@ -21,11 +21,14 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             "#:package Unipi.Nancy@1.2.28",
             "#:package Unipi.Nancy.Plots.ScottPlot@1.0.3",
             string.Empty,
+            "using System.Globalization;",
             "using System.IO;",
             "using Unipi.Nancy.NetworkCalculus;",
             "using Unipi.Nancy.MinPlusAlgebra;",
             "using Unipi.Nancy.Numerics;",
-            "using Unipi.Nancy.Plots.ScottPlot;"
+            "using Unipi.Nancy.Plots.ScottPlot;",
+            string.Empty,
+            "CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;",
         ];
         
         foreach (var statementLineContext in statementLineContexts)
