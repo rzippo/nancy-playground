@@ -9,7 +9,7 @@ using CliMarker = Cli.Program;
 
 /// <summary>
 /// Tests that MPPG scripts produce the same results when run in different modes:
-/// PerStatement (immediate computation) vs ExpressionDriven (lazy computation).
+/// PerStatement (immediate computation) vs ExpressionsBased (lazy computation).
 /// 
 /// Test cases use explicit print statements to capture results, ensuring output
 /// matches regardless of computation strategy.
@@ -59,7 +59,7 @@ public class RunModeEquivalenceTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task PerStatementAndExpressionDrivenProduceSameResults(string caseDir)
+    public async Task PerStatementAndExpressionsBasedProduceSameResults(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -115,8 +115,8 @@ public class RunModeEquivalenceTests
             perStatementOutput = Normalize(result.StandardOutput);
         }
 
-        // Act: Run script in ExpressionDriven mode
-        string expressionDrivenOutput;
+        // Act: Run script in ExpressionsBased mode
+        string expressionsBasedOutput;
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
         {
             BufferedCommandResult result;
@@ -127,7 +127,7 @@ public class RunModeEquivalenceTests
                     "run",
                     scriptPath,
                     "--output-mode", "ExplicitPrintsOnly",
-                    "--run-mode", "ExpressionDriven",
+                    "--run-mode", "ExpressionsBased",
                     "--deterministic",
                     "--no-welcome"
                 };
@@ -142,24 +142,24 @@ public class RunModeEquivalenceTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"ExpressionDriven run did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"ExpressionsBased run did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
             }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expression-driven.{tfm}.stdout.txt"), result.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expression-driven.{tfm}.stderr.txt"), result.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expression-driven.{tfm}.exitcode.txt"), result.ExitCode.ToString(), cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expressions-based.{tfm}.stdout.txt"), result.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expressions-based.{tfm}.stderr.txt"), result.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"expressions-based.{tfm}.exitcode.txt"), result.ExitCode.ToString(), cts.Token);
 
             Assert.Equal(0, result.ExitCode);
-            expressionDrivenOutput = Normalize(result.StandardOutput);
+            expressionsBasedOutput = Normalize(result.StandardOutput);
         }
 
         // Assert: Both modes should produce identical output
         _testOutputHelper.WriteLine("PerStatement output:");
         _testOutputHelper.WriteLine(perStatementOutput);
         _testOutputHelper.WriteLine("");
-        _testOutputHelper.WriteLine("ExpressionDriven output:");
-        _testOutputHelper.WriteLine(expressionDrivenOutput);
+        _testOutputHelper.WriteLine("ExpressionsBased output:");
+        _testOutputHelper.WriteLine(expressionsBasedOutput);
 
-        Assert.Equal(perStatementOutput, expressionDrivenOutput);
+        Assert.Equal(perStatementOutput, expressionsBasedOutput);
     }
 }

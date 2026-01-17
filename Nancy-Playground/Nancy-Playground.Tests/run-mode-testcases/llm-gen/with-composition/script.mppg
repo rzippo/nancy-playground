@@ -1,6 +1,6 @@
 f := stair(0, 5, 1)
 g := affine(2, 0)
 h := g comp f
-print(h)
+h
 h2 := f comp g
-print(h2)
+h2
