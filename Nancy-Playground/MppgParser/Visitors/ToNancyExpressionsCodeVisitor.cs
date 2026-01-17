@@ -332,7 +332,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
-        return [number.ToExplicitCodeString()];        
+        // todo: this may be simplifiable in many cases
+        return [ $"Expressions.FromRational({number.ToExplicitCodeString()})"];
     }
 
     public override List<string> VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context)
@@ -588,13 +589,42 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     
     #region Function constructors
 
+    /// <summary>
+    /// Determines if a context expression is a literal rational or a variable reference / computed value that resolves to a RationalExpression.
+    /// In the latter case, the generated code wraps with .Compute().
+    /// </summary>
+    private string WrapRationalExpressionIfNeeded(Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext context)
+    {
+        var expressionCode = context.Accept(this).Single(); 
+        
+        try {
+            // Try to determine the actual type via ExpressionVisitor
+            var expressionVisitor = new ExpressionVisitor(null);
+            var expression = context.Accept(expressionVisitor);
+
+            if(expression is RationalNumberExpression re)
+                return re.Value.ToExplicitCodeString();
+            else
+                return $"{expressionCode}.Compute()";
+        }
+        catch
+        {
+            // Fallback: if any error occurs, assume we need to wrap with .Compute()
+            // Example: variable reference that is not known at this time
+            return $"{expressionCode}.Compute()";
+        }        
+    }
+
     public override List<string> VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context)
     {
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var rate = context.GetChild(2).Accept(this).Single();
-        var latency = context.GetChild(4).Accept(this).Single();
+        var rateContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var latencyContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
+        
+        var rate = WrapRationalExpressionIfNeeded(rateContext ?? throw new Exception("Expected rate expression"));
+        var latency = WrapRationalExpressionIfNeeded(latencyContext ?? throw new Exception("Expected latency expression"));
 
         return [$"Expressions.FromCurve(new RateLatencyServiceCurve({rate}, {latency}), name: \"ratency\")"];
     }
@@ -604,8 +634,11 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var a = context.GetChild(2).Accept(this).Single();
-        var b = context.GetChild(4).Accept(this).Single();
+        var aContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var bContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
+        
+        var a = WrapRationalExpressionIfNeeded(aContext ?? throw new Exception("Expected a expression"));
+        var b = WrapRationalExpressionIfNeeded(bContext ?? throw new Exception("Expected b expression"));
 
         return [$"Expressions.FromCurve(new SigmaRhoArrivalCurve({b}, {a}), name: \"bucket\")"];
     }
@@ -616,8 +649,11 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var slope = context.GetChild(2).Accept(this).Single();
-        var constant = context.GetChild(4).Accept(this).Single();
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var constantContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
+        
+        var slope = WrapRationalExpressionIfNeeded(slopeContext ?? throw new Exception("Expected slope expression"));
+        var constant = WrapRationalExpressionIfNeeded(constantContext ?? throw new Exception("Expected constant expression"));
 
         return [$"Expressions.FromCurve(new Curve(new Sequence([new Point(0, {constant}), new Segment(0, 1, {constant}, {slope}) ]), 0, 1, {slope}), name: \"affine\")"];
     }
@@ -628,8 +664,11 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (context.ChildCount != 6)
             throw new Exception("Expected 6 child expression");
 
-        var o = context.GetChild(2).Accept(this).Single();
-        var h = context.GetChild(4).Accept(this).Single();
+        var oContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var hContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
+        
+        var o = WrapRationalExpressionIfNeeded(oContext ?? throw new Exception("Expected o expression"));
+        var h = WrapRationalExpressionIfNeeded(hContext ?? throw new Exception("Expected h expression"));
 
         return [$"Expressions.FromCurve(new StepCurve({h}, {o}), name: \"step\")"];
     }
@@ -639,9 +678,13 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (context.ChildCount != 8)
             throw new Exception("Expected 8 child expression");
 
-        var o = context.GetChild(2).Accept(this).Single();
-        var l = context.GetChild(4).Accept(this).Single();
-        var h = context.GetChild(6).Accept(this).Single();
+        var oContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var lContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
+        var hContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(2);
+        
+        var o = WrapRationalExpressionIfNeeded(oContext ?? throw new Exception("Expected o expression"));
+        var l = WrapRationalExpressionIfNeeded(lContext ?? throw new Exception("Expected l expression"));
+        var h = WrapRationalExpressionIfNeeded(hContext ?? throw new Exception("Expected h expression"));
 
         return [$"Expressions.FromCurve(new StairCurve({h}, {l}).DelayBy({o}), name: \"stair\")"];
     }
@@ -652,7 +695,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
 
-        var d = context.GetChild(2).Accept(this).Single();
+        var dContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var d = WrapRationalExpressionIfNeeded(dContext ?? throw new Exception("Expected d expression"));
 
         return [$"Expressions.FromCurve(new DelayServiceCurve({d}), name: \"delay\")"];
     }
