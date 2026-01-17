@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 using Unipi.Nancy.Playground.MppgParser.Utility;
@@ -177,7 +178,9 @@ public record class Program
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
 
         var programContext = parser.program();
-        var visitor = new ToNancyCodeVisitor();
+        MppgBaseVisitor<List<string>> visitor = useNancyExpressions 
+            ? new ToNancyExpressionsCodeVisitor()
+            : new ToNancyCodeVisitor();
         var code = programContext.Accept(visitor);
 
         return code;
