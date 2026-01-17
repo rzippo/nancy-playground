@@ -66,9 +66,10 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         AnsiConsole.MarkupLine($"[yellow]Output program will be saved in: {nancyFile.FullName}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
-        var code = MppgParser.Program.ToNancyCode(programText);
+        var code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
+        var programType = settings.UseNancyExpressions ? "Nancy.Expressions" : "Nancy";
         code.InsertRange(0,[
-            $"// Program automatically converted from MPPG syntax to a Nancy program",
+            $"// Program automatically converted from MPPG syntax to a {programType} program",
             $"// Original source was in {mppgFile.FullName}",
             string.Empty,
             $"// This is a file-based app: to run it, use the command `dotnet run file.cs`",
