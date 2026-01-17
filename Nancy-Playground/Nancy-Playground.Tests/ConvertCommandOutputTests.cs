@@ -471,7 +471,7 @@ public class ConvertCommandOutputTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "explicit-prints-test");
+        var outputDir = Path.Combine(caseDir, "explicit-prints-expressions-test");
         Directory.CreateDirectory(outputDir);
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
