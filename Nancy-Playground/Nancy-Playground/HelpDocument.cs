@@ -463,9 +463,9 @@ Both `hShift` and `hshift` are accepted spellings.
                     },
                     new HelpItem
                     {
-                        Name = "Left/right extensions",
+                        Name = "Left/right projections",
                         Formats = ["left-ext(f)", "right-ext(f)"],
-                        Description = "Left- and right-continuous extensions of f.",
+                        Description = "Left- and right-continuous projections of f.",
                         LongDescription = """
 - `left-ext(f)`: g(x) = f(x⁻)
 - `right-ext(f)`: g(x) = f(x⁺)
