@@ -8,6 +8,21 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// Specifies where plot output files should be saved.
+/// </summary>
+public enum PlotRootMode
+{
+    /// <summary>Save plots in the same directory as the MPPG script file.</summary>
+    ScriptDirectory,
+    
+    /// <summary>Save plots in the current working directory.</summary>
+    CurrentDirectory,
+    
+    /// <summary>Save plots in a manually specified directory.</summary>
+    Custom,
+}
+
 public class RunCommand : Command<RunCommand.Settings>
 {
     public sealed class Settings : CommonExecutionSettings
@@ -19,6 +34,14 @@ public class RunCommand : Command<RunCommand.Settings>
         [Description("If enabled, makes the output deterministic, removing preamble and time measurements. Useful to implement tests.")]
         [CommandOption("--deterministic")]
         public bool Deterministic { get; init; } = false;
+
+        [Description("Where to save plot output files. Options: ScriptDirectory (default), CurrentDirectory, or Custom. If --plots-root is specified, this defaults to Custom and must not be anything else.")]
+        [CommandOption("--plots-root-mode")]
+        public PlotRootMode? PlotsRootMode { get; init; }
+
+        [Description("Explicit directory for saving plot files. If specified, --plots-root-mode is assumed to be Custom.")]
+        [CommandOption("--plots-root")]
+        public string? PlotsRoot { get; init; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -47,8 +70,32 @@ public class RunCommand : Command<RunCommand.Settings>
             return 1;
         }
 
-        // todo: make this configurable
-        var plotsRoot = mppgFile.Directory?.FullName;
+        // Determine plots root based on the selected mode
+        // If --plots-root is specified, --plots-root-mode must be Custom (or omitted, which defaults to Custom)
+        string? plotsRoot;
+        
+        if (!string.IsNullOrWhiteSpace(settings.PlotsRoot))
+        {
+            // Explicit path provided
+            if (settings.PlotsRootMode.HasValue && settings.PlotsRootMode.Value != PlotRootMode.Custom)
+            {
+                throw new InvalidOperationException("--plots-root is specified with an explicit path, so --plots-root-mode must be Custom or omitted.");
+            }
+            plotsRoot = Path.GetFullPath(settings.PlotsRoot);
+        }
+        else
+        {
+            // Use mode to determine location
+            var mode = settings.PlotsRootMode ?? PlotRootMode.ScriptDirectory;
+            plotsRoot = mode switch
+            {
+                PlotRootMode.ScriptDirectory => mppgFile.Directory?.FullName,
+                PlotRootMode.CurrentDirectory => Directory.GetCurrentDirectory(),
+                PlotRootMode.Custom => throw new InvalidOperationException("--plots-root-mode is Custom but --plots-root was not specified."),
+                _ => mppgFile.Directory?.FullName,
+            };
+        }
+
         if(!settings.Deterministic)
             AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
