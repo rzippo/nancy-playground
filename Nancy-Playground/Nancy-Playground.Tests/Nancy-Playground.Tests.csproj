@@ -30,6 +30,7 @@
         <None Include="run-testcases\**\*.*" CopyToOutputDirectory="Always" />
         <None Include="convert-testcases\**\*.*" CopyToOutputDirectory="Always" />
         <None Include="plot-testcases\**\*.*" CopyToOutputDirectory="Always" />
+        <None Include="run-mode-testcases\**\*.*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
