@@ -142,7 +142,13 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         lines.Add("\tsettings: new ScottPlotSettings(){");
         
         var outPath = string.Empty;
-        
+
+        // populate then print dictionary, to mimic default values of PlotSettings
+        var argsDict = new Dictionary<string, string>();
+        argsDict["Title"] = "string.Empty";
+        argsDict["XLabel"] = "string.Empty";
+        argsDict["YLabel"] = "string.Empty";
+
         foreach (var plotArgContext in plotOptionContexts)
         {
             var argName = plotArgContext.GetChild(0).GetText();
@@ -157,7 +163,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
-                        lines.Add($"\t\tTitle = {formattableString.Single()},");   
+                        argsDict["Title"] = formattableString.Single();
                     break;
                 }
 
@@ -169,7 +175,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    lines.Add($"\t\tXLimit = new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()}),");
+                    argsDict["XLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
                     break;
                 }
 
@@ -181,7 +187,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    lines.Add($"\t\tYLimit = new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()}),");
+                    argsDict["YLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
                     break;
                 }
 
@@ -190,7 +196,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
-                        lines.Add($"\t\tXLabel = {formattableString.Single()},");   
+                        argsDict["XLabel"] = formattableString.Single();
                     break;
                 }
 
@@ -199,7 +205,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
-                        lines.Add($"\t\tYLabel = {formattableString.Single()},");   
+                        argsDict["YLabel"] = formattableString.Single();
                     break;
                 }
 
@@ -232,7 +238,14 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                     break;
             }
         }
-        
+
+        // now print the parsed arguments for ScottPlotSettings
+        lines.AddRange(
+            argsDict
+                .Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+                .Select(kv => $"\t\t{kv.Key} = {kv.Value},")
+        );
+
         lines.Add("\t}");
         lines.Add(");");
 
