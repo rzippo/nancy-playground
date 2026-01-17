@@ -120,7 +120,7 @@ public class ConvertCommandOutputTests
                                     throw new InvalidOperationException("No result from the run command!");
         }
 
-        // Arrange: convert the script to a C# file-based app
+        // Arrange: convert the MPPG script to a C# file-based app
         var programPath = Path.Combine(outputDir, "program.cs"); 
         List<string> convertCommandArgs =
         [
