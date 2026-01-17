@@ -80,6 +80,7 @@ public class ConvertCommandOutputTests
 
         var outputDir = Path.Combine(caseDir, "last-result-test");
         Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
         List<string> runCommandArgs = [
@@ -210,6 +211,7 @@ public class ConvertCommandOutputTests
 
         var outputDir = Path.Combine(caseDir, "last-result-expressions-test");
         Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
         List<string> runCommandArgs = [
@@ -344,6 +346,7 @@ public class ConvertCommandOutputTests
 
         var outputDir = Path.Combine(caseDir, "explicit-prints-test");
         Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
         List<string> runCommandArgs = [
@@ -473,6 +476,7 @@ public class ConvertCommandOutputTests
 
         var outputDir = Path.Combine(caseDir, "explicit-prints-expressions-test");
         Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
         var scriptPath = Path.Combine(caseDir, "script.mppg");
         List<string> runCommandArgs = [
