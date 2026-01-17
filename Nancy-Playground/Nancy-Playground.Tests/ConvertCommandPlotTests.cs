@@ -129,7 +129,6 @@ public class ConvertCommandPlotTests
         ];
         
         // Act: Run the MPPG script to generate plots
-        string runPlotPaths;
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
         {
             BufferedCommandResult runCommandResult;
