@@ -74,13 +74,23 @@ public class ConvertCommandPlotTests
     /// Extracts all plot output file paths from stdout.
     /// Plot commands print the full path to the generated image file.
     /// </summary>
-    private static IEnumerable<string> ExtractPlotPaths(string stdout)
+    private static IEnumerable<string> ExtractPlotPathsFromStdout(string stdout)
     {
         return stdout
             .Replace("\r\n", "\n")
             .Split('\n')
             .Where(line => !string.IsNullOrWhiteSpace(line) && line.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
             .Select(line => line.Trim());
+    }
+
+    /// <summary>
+    /// Extracts all plot output file paths from a directory.
+    /// </summary>
+    private static IEnumerable<string> ExtractPlotPaths(string dir)
+    {
+        return Directory
+            .EnumerateFiles(dir, "*.png", SearchOption.TopDirectoryOnly)
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -101,14 +111,23 @@ public class ConvertCommandPlotTests
         var outputDir = Path.Combine(caseDir, "plot-comparison-test");
         Directory.CreateDirectory(outputDir);
 
-        var scriptPath = Path.Combine(caseDir, "script.mppg");
-        
         // Create subdirectories for run and convert outputs to avoid conflicts
         var runOutputDir = Path.Combine(outputDir, "run");
         var convertOutputDir = Path.Combine(outputDir, "convert");
         Directory.CreateDirectory(runOutputDir);
         Directory.CreateDirectory(convertOutputDir);
+        _testOutputHelper.WriteLine($"runOutputDir: {Path.GetFullPath(runOutputDir)}");
+        _testOutputHelper.WriteLine($"convertOutputDir: {Path.GetFullPath(convertOutputDir)}");
 
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--no-welcome",
+            "--plots-root", 
+            runOutputDir
+        ];
+        
         // Act: Run the MPPG script to generate plots
         string runPlotPaths;
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
@@ -116,7 +135,6 @@ public class ConvertCommandPlotTests
             BufferedCommandResult runCommandResult;
             try
             {
-                var runCommandArgs = new List<string> { "run", scriptPath, "--no-welcome" };
                 var dotnetRunCommandArgs = new List<string> { cliDllPath };
                 dotnetRunCommandArgs.AddRange(runCommandArgs);
 
@@ -136,17 +154,25 @@ public class ConvertCommandPlotTests
             await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString(), cts.Token);
 
             Assert.Equal(0, runCommandResult.ExitCode);
-            runPlotPaths = runCommandResult.StandardOutput;
         }
 
-        // Act: Convert the MPPG script to C#
+        // Arrange: convert the MPPG script to a C# file-based app
         var programPath = Path.Combine(convertOutputDir, "program.cs");
+        List<string> convertCommandArgs = [
+            "convert", 
+            scriptPath, 
+            "--output-file", 
+            programPath, 
+            "--overwrite" 
+        ];
+
+        // Act: convert command, obtain the C# program
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
         {
             BufferedCommandResult convertCommandResult;
             try
             {
-                var convertCommandArgs = new List<string> { "convert", scriptPath, "--output-file", programPath, "--overwrite" };
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
                 var dotnetConvertCommandArgs = new List<string> { cliDllPath };
                 dotnetConvertCommandArgs.AddRange(convertCommandArgs);
 
@@ -193,11 +219,11 @@ public class ConvertCommandPlotTests
         }
 
         // Assert: Verify that plot files exist and have matching content
-        var runPlotFiles = ExtractPlotPaths(runPlotPaths).ToList();
-        var convertPlotFiles = ExtractPlotPaths(convertPlotPaths).ToList();
+        var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
+        var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
 
-        _testOutputHelper.WriteLine($"Run plot files: {string.Join(", ", runPlotFiles)}");
-        _testOutputHelper.WriteLine($"Convert plot files: {string.Join(", ", convertPlotFiles)}");
+        _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
+        _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
 
         // Both runs should produce the same number of plot files
         Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
