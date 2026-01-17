@@ -46,7 +46,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         var immediateComputeValue = settings.RunMode switch
         {
-            RunMode.ExpressionDriven => false,
+            RunMode.ExpressionsBased => false,
             RunMode.PerStatement => true,
             _ => false
         };

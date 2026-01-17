@@ -54,7 +54,7 @@ public enum RunMode
     /// <summary>
     /// Statements build up expressions, which are lazily evaluated only when required.
     /// </summary>
-    ExpressionDriven
+    ExpressionsBased
 }
 
 public enum OnErrorMode
