@@ -172,8 +172,8 @@ These operations return a _function_.
 | upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
 | nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
-| left-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^-)$. _So it is a left-continuous "extension"?_ | ✅ |
-| right-ext(f) | Defined as the function $g$ such that for all $x$, $g(x) = f(x^+)$. _So it is a right-continuous "extension"?_ | ✅ |
+| left-ext(f) | Left-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^-)$. | ✅ |
+| right-ext(f) | Right-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^+)$. | ✅ |
 | scalar * f | Function multiplication by a scalar value. | ✅ |
 | f * scalar | Function multiplication by a scalar value. | ✅ |
 | f / scalar | Function division by a scalar value. | ✅ |
