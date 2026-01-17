@@ -139,7 +139,7 @@ public class RunCommand : Command<RunCommand.Settings>
 
         var immediateComputeValue = settings.RunMode switch
         {
-            RunMode.ExpressionDriven => false,
+            RunMode.ExpressionsBased => false,
             RunMode.PerStatement => true,
             _ => false
         };
