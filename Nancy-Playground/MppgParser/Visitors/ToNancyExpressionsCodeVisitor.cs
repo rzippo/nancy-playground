@@ -24,7 +24,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
         List<string> code = [
             "#:package Unipi.Nancy@1.2.28",
-            "#:package Unipi.Nancy.Expressions@1.0.0-beta.36",
+            "#:package Unipi.Nancy.Expressions@1.0.0-beta.39",
             "#:package Unipi.Nancy.Plots.ScottPlot@1.0.3",
             string.Empty,
             "using System.Globalization;",
@@ -361,11 +361,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
             return [$"{first}.Minimum({second})"];
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first}.Minimum({second})"];
+        {
+            var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
+            return [$"{first}.Minimum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
+        }
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second}.Minimum({first})"];
+        {
+            var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
+            return [$"{second}.Minimum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
+        }
         else
-            return [$"Rational.Min({first}, {second})"];
+            return [$"RationalExpression.Min({first}, {second})"];
     }
 
     public override List<string> VisitFunctionMaximum(Unipi.MppgParser.Grammar.MppgParser.FunctionMaximumContext context)
@@ -379,11 +387,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
             return [$"{first}.Maximum({second})"];
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first}.Maximum(new Curve(new Sequence([ new Point(0, {second}), Segment.Constant(0, 1, {second})]), 0, 1, 0))"];
+        {
+            var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
+            return [$"{first}.Maximum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
+        }
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second}.Maximum(new Curve(new Sequence([ new Point(0, {first}), Segment.Constant(0, 1, {first})]), 0, 1, 0))"];
+        {
+            var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
+            return [$"{second}.Maximum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
+        }
         else
-            return [$"Rational.Max({first}, {second})"];
+            return [$"RationalExpression.Max({first}, {second})"];
     }
 
     public override List<string> VisitFunctionMinPlusConvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
@@ -595,6 +611,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     /// </summary>
     private string WrapRationalExpressionIfNeeded(Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext context)
     {
+        // todo: simplify code by omitting parentheses when not needed
         var expressionCode = context.Accept(this).Single(); 
         
         try {
@@ -605,14 +622,24 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             if(expression is RationalNumberExpression re)
                 return re.Value.ToExplicitCodeString();
             else
-                return $"{expressionCode}.Compute()";
+                return WrapRationalExpression(expressionCode);
         }
         catch
         {
             // Fallback: if any error occurs, assume we need to wrap with .Compute()
             // Example: variable reference that is not known at this time
-            return $"{expressionCode}.Compute()";
-        }        
+            return WrapRationalExpression(expressionCode);
+        }
+    }
+
+    /// <summary>
+    /// Determines if a context expression is a literal rational or a variable reference / computed value that resolves to a RationalExpression.
+    /// In the latter case, the generated code wraps with .Compute().
+    /// </summary>
+    private string WrapRationalExpression(string expressionCode)
+    {
+        // todo: simplify code by omitting parentheses when not needed
+        return $"({expressionCode}).Compute()";
     }
 
     public override List<string> VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context)
@@ -858,11 +885,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
             return [$"{first}.Minimum({second})"];
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first}.Minimum({second})"];
+        {
+            var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
+            return [$"{first}.Minimum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
+        }
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second}.Minimum({first})"];
+        {
+            var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
+            return [$"{second}.Minimum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
+        }
         else
-            return [$"Rational.Min({first}, {second})"];
+            return [$"RationalExpression.Min({first}, {second})"];
     }
 
     public override List<string> VisitNumberMaximum(Unipi.MppgParser.Grammar.MppgParser.NumberMaximumContext context)
@@ -876,11 +911,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
             return [$"{first}.Maximum({second})"];
         else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first}.Maximum({second})"];
+        {
+            var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
+            return [$"{first}.Maximum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
+        }
         else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second}.Maximum({first})"];
+        {
+            var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
+            return [$"{second}.Maximum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
+        }
         else
-            return [$"Rational.Max({first}, {second})"];
+            return [$"RationalExpression.Max({first}, {second})"];
     }
 
     #endregion
