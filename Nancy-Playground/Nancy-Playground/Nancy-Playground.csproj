@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>net9.0;net10.0;net8.0</TargetFrameworks>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
@@ -33,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.2-preview.0.77" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.3" />
+    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.4" />
   </ItemGroup>
 
   <PropertyGroup>
