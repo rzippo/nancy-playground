@@ -23,9 +23,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
-            "#:package Unipi.Nancy@1.2.28",
-            "#:package Unipi.Nancy.Expressions@1.0.0-beta.39",
-            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.3",
+            "#:package Unipi.Nancy.Expressions@1.0.0",
+            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.4",
             string.Empty,
             "using System.Globalization;",
             "using System.IO;",
