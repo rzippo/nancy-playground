@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Spectre.Console;
@@ -63,7 +63,8 @@ public class Program
             config.AddCommand<InteractiveCommand>("interactive")
                 .WithDescription("Interactive mode, where the user can input MPPG lines one by one.");
 
-            config.AddCommand<ConvertCommand>("convert");
+            config.AddCommand<ConvertCommand>("convert")
+                .WithDescription("Converts a .mppg file to a Nancy program");
 
 #if USE_PLAYWRIGHT
             config.AddCommand<SetupCommand>("setup")
