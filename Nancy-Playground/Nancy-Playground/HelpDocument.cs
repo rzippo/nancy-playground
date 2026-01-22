@@ -43,14 +43,14 @@ Expect (and please report) oddities.
                     {
                         Name = "Export",
                         Formats = ["!export <output-file>"],
-                        Description = "Exports the current program to a .mppg file.",
+                        Description = "Exports the commands in the current interactive session to a .mppg file.",
                         Tags = ["export", "save", "file"]
                     },
                     new HelpItem
                     {
                         Name = "Convert",
                         Formats = ["!convert <output-file>"],
-                        Description = "Converts the current program to a Nancy C# program and saves it to a file.",
+                        Description = "Converts the commands in the current interactive session to a Nancy C# program and saves it to a file.",
                         Tags = ["convert", "nancy", "csharp", "save", "file"]
                     }
                 ]
