@@ -23,7 +23,7 @@ Expect (and please report) oddities.
                         Name = "Help",
                         Formats = ["!help [query]"],
                         Description = "Shows this help text, or a search result. Useful reference for the syntax to use in scripts.",
-                        Tags = ["help", "manual", "documentation"]
+                        Tags = ["help", "manual", "documentation", "interactive", "command", "cli"]
                     },
                     new HelpItem
                     {
@@ -59,7 +59,7 @@ Expect (and please report) oddities.
             {
                 Name = "Comments",
                 Description = "Line and inline comments that are ignored by the interpreter.",
-                Tags = ["comments"],
+                Tags = ["comments", "syntax", "statement"],
                 Items =
                 [
                     new HelpItem
@@ -105,7 +105,7 @@ h := ... # This is a comment as well
             {
                 Name = "Types",
                 Description = "Supported value kinds.",
-                Tags = ["types", "kinds"],
+                Tags = ["types", "kinds", "syntax", "statement"],
                 Items =
                 [
                     new HelpItem
@@ -126,7 +126,7 @@ h := ... # This is a comment as well
             {
                 Name = "Variable declaration",
                 Description = "Naming functions and scalars.",
-                Tags = ["variables", "declaration", "assignment", "names"],
+                Tags = ["variables", "declaration", "assignment", "names", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -150,7 +150,7 @@ x := 3/2
             {
                 Name = "Function constructors: known shapes",
                 Description = "Built-in function constructors with common shapes.",
-                Tags = ["functions", "constructors", "service-curves", "arrival-curves", "shapes", "builtins"],
+                Tags = ["functions", "constructors", "service-curves", "arrival-curves", "shapes", "builtins", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -230,7 +230,7 @@ The function is right-continuous at 0: f(0+) = f(0).
             {
                 Name = "Function constructors: arbitrary shapes",
                 Description = "Ultimately affine and ultimately pseudo-periodic functions built from segments.",
-                Tags = ["constructors", "segments", "uaf", "upp", "piecewise", "pseudo-periodic"],
+                Tags = ["constructors", "segments", "uaf", "upp", "piecewise", "pseudo-periodic", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -318,6 +318,7 @@ upp( [(0, +Infinity) 0 (6, +Infinity)],
             {
                 Name = "Scalar values",
                 Description = "Number syntax and allowed literals.",
+                Tags = ["scalars", "numbers", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -353,26 +354,26 @@ Implementation ignores any floating-point variant and focuses on rationals.
             {
                 Name = "Function-returning operations",
                 Description = "Operations that take functions (and possibly scalars) and return functions.",
-                Tags = ["functions", "operations"],
+                Tags = ["functions", "operations", "syntax"],
                 Items =
                 [
                     new HelpItem
                     {
-                        Name = "Pointwise min/max",
+                        Name = "Min/max",
                         Formats = ["f1 /\\ f2", "f1 \\/ f2"],
-                        Description = "Pointwise minimum or maximum of two functions.",
+                        Description = "Minimum or maximum of two functions.",
                         LongDescription = """
-- `f1 /\\ f2`: pointwise minimum of f1 and f2.
-- `f1 \\/ f2`: pointwise maximum of f1 and f2.
+- `f1 /\\ f2`: minimum of f1 and f2.
+- `f1 \\/ f2`: maximum of f1 and f2.
 """,
-                        Tags = ["min", "max"]
+                        Tags = ["min", "max", "operation", "pointwise"]
                     },
                     new HelpItem
                     {
                         Name = "Addition and subtraction (functions)",
                         Formats = ["f1 + f2", "f1 - f2"],
-                        Description = "Pointwise sum or difference of two functions.",
-                        Tags = ["addition", "subtraction"]
+                        Description = "Sum or difference of two functions.",
+                        Tags = ["addition", "subtraction", "operation", "pointwise"]
                     },
                     new HelpItem
                     {
@@ -382,35 +383,35 @@ Implementation ignores any floating-point variant and focuses on rationals.
                         LongDescription = """
 Both `*` and `*_` denote the (min,+) convolution. They are aliases.
 """,
-                        Tags = ["convolution", "min-plus"]
+                        Tags = ["convolution", "min-plus", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "(max,+) convolution",
                         Formats = ["f1 *^ f2"],
                         Description = "(max,+) convolution of f1 and f2.",
-                        Tags = ["convolution", "max-plus"]
+                        Tags = ["convolution", "max-plus", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "(min,+) deconvolution",
                         Formats = ["f1 / f2", "f1 /_ f2"],
                         Description = "(min,+) deconvolution of f1 by f2.",
-                        Tags = ["deconvolution", "min-plus"]
+                        Tags = ["deconvolution", "min-plus", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "(max,+) deconvolution",
                         Formats = ["f1 /^ f2"],
                         Description = "(max,+) deconvolution of f1 by f2.",
-                        Tags = ["deconvolution", "max-plus"]
+                        Tags = ["deconvolution", "max-plus", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Subadditive closure",
                         Formats = ["star(f)"],
                         Description = "Subadditive closure of f.",
-                        Tags = ["closure", "subadditive", "star"]
+                        Tags = ["closure", "subadditive", "star", "operation"]
                     },
                     new HelpItem
                     {
@@ -423,14 +424,14 @@ Both `*` and `*_` denote the (min,+) convolution. They are aliases.
 
 Both `hShift` and `hshift` are accepted spellings.
 """,
-                        Tags = ["shift", "horizontal", "traslation"]
+                        Tags = ["shift", "horizontal", "traslation", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Vertical shift",
                         Formats = ["vShift(f, n)", "vshift(f, n)"],
                         Description = "Function identical to f but shifted vertically by n.",
-                        Tags = ["shift", "vertical", "traslation"]
+                        Tags = ["shift", "vertical", "traslation", "operation"]
                     },
                     new HelpItem
                     {
@@ -441,7 +442,7 @@ Both `hShift` and `hshift` are accepted spellings.
 - `inv(f)` and `low_inv(f)`: lower pseudo-inverse.
 - `up_inv(f)`: upper pseudo-inverse.
 """,
-                        Tags = ["pseudo-inverse", "inverse", "lower", "upper"]
+                        Tags = ["pseudo-inverse", "inverse", "lower", "upper", "operation"]
                     },
                     new HelpItem
                     {
@@ -452,14 +453,14 @@ Both `hShift` and `hshift` are accepted spellings.
 - `upclosure(f)`: upper non-decreasing closure of f.
 - `nnupclosure(f, n)`: non-negative upper non-decreasing closure, parameterized by n.
 """,
-                        Tags = ["closure", "non-decreasing", "upper"]
+                        Tags = ["closure", "non-decreasing", "upper", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Composition",
                         Formats = ["f comp g"],
                         Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",
-                        Tags = ["composition"]
+                        Tags = ["composition", "operation"]
                     },
                     new HelpItem
                     {
@@ -470,14 +471,14 @@ Both `hShift` and `hshift` are accepted spellings.
 - `left-ext(f)`: g(x) = f(x⁻)
 - `right-ext(f)`: g(x) = f(x⁺)
 """,
-                        Tags = ["extensions", "left-continuous", "right-continuous"]
+                        Tags = ["extensions", "left-continuous", "right-continuous", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Scaling by a scalar",
                         Formats = ["scalar * f", "f * scalar", "f / scalar"],
                         Description = "Multiply or divide a function by a scalar.",
-                        Tags = ["scaling", "multiplication", "division"]
+                        Tags = ["scaling", "multiplication", "division", "operation"]
                     }
                 ]
             },
@@ -486,7 +487,7 @@ Both `hShift` and `hshift` are accepted spellings.
             {
                 Name = "Scalar-returning operations on functions",
                 Description = "Operations that take functions (or functions and scalars) and return a scalar.",
-                Tags = ["functions", "scalars", "operations", "evaluation", "deviation"],
+                Tags = ["functions", "scalars", "operations", "evaluation", "deviation", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -501,21 +502,21 @@ Both `hShift` and `hshift` are accepted spellings.
 
 Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 """,
-                        Tags = ["functions", "evaluation", "limits", "right-limit", "left-limit", "scalars"]
+                        Tags = ["functions", "evaluation", "limits", "right-limit", "left-limit", "scalars", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Horizontal deviation",
                         Formats = ["hDev(f, g)", "hdev(f, g)"],
                         Description = "Horizontal deviation between f and g.",
-                        Tags = ["functions", "deviation", "horizontal", "hDev", "metrics"]
+                        Tags = ["functions", "deviation", "horizontal", "hDev", "metrics", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Vertical deviation",
                         Formats = ["vDev(f, g)", "vdev(f, g)"],
                         Description = "Vertical deviation between f and g.",
-                        Tags = ["functions", "deviation", "vertical", "vDev", "metrics"]
+                        Tags = ["functions", "deviation", "vertical", "vDev", "metrics", "operation"]
                     },
                     new HelpItem
                     {
@@ -531,7 +532,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
             {
                 Name = "Scalar operations",
                 Description = "Operations between scalars returning scalars.",
-                Tags = ["scalars", "operations", "arithmetic", "min", "max"],
+                Tags = ["scalars", "operations", "arithmetic", "min", "max", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -543,7 +544,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - `v1 /\\ v2`: minimum of v1 and v2.
 - `v1 \\/ v2`: maximum of v1 and v2.
 """,
-                        Tags = ["scalars", "min", "max", "comparison", "operations"]
+                        Tags = ["scalars", "min", "max", "comparison", "operations", "operation"]
                     },
                     new HelpItem
                     {
@@ -557,7 +558,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - `v1 ÷ v2`: division
 - `v1 div v2`: division (same semantics for this syntax)
 """,
-                        Tags = ["scalars", "arithmetic", "addition", "multiplication", "division", "operations"]
+                        Tags = ["scalars", "arithmetic", "addition", "multiplication", "division", "operations", "operation"]
                     }
                 ]
             },
@@ -565,7 +566,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
             new HelpSection
             {
                 Name = "Output",
-                Description = "Rules for console output of expressions and variables.",
+                Description = "Rules for console output of expressions, variables and assertions.",
                 Tags = ["output", "printing", "console", "variables", "display"],
                 Items =
                 [
@@ -601,6 +602,13 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - If the variable holds a scalar, the scalar value is printed.
 """,
                         Tags = ["output", "variables", "printing", "console"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Testing a property",
+                        Formats = ["assert( exp1 OP exp2 )"],
+                        Description = "Assertions tests for equality or inequality.",
+                        LongDescription = "Assertions tests for equality or inequality. See assert command for more details."
                     }
                 ]
             },
@@ -609,7 +617,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
             {
                 Name = "Plots",
                 Description = "Plotting functions using plot(f1, f2, ..., args).",
-                Tags = ["plots", "graph", "visualization", "plot", "functions"],
+                Tags = ["plots", "graph", "visualization", "plot", "functions", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -655,7 +663,7 @@ plot(xlim=[-0.3, 15], ylim=[-0.3, 15], service2, service1)
             {
                 Name = "Asserts",
                 Description = "Relational checks between functions and/or scalars.",
-                Tags = ["assert", "assertion", "checks", "relations", "constraints"],
+                Tags = ["assert", "assertion", "checks", "relations", "constraints", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -664,27 +672,12 @@ plot(xlim=[-0.3, 15], ylim=[-0.3, 15], service2, service1)
                         Formats = ["assert(f OP g)"],
                         Description = "Tests a relation between two expressions; prints true or an error message.",
                         LongDescription = """
-General form:
-- `assert(f OP g)`
+f and g can be variable names or expressions, and can evaluate to either functions or scalars.
+For two functions, the relation must hold for all t: f(t) OP g(t).
+For function vs scalar c, the relation must hold for all t: f(t) OP c.
+Supported operators are =, !=, <=, and >=.
 
-Where:
-- f and g can be variable names or expressions
-- They can evaluate to either functions or scalars
-
-Semantics:
-- For two functions: relation must hold for all t: f(t) OP g(t).
-- For function vs scalar c: relation must hold for all t: f(t) OP c.
-
-Supported operators:
-- `=`
-- `!=`
-- `<=`
-- `>=`
-
-If the assertion holds, prints `true`.
-Otherwise, prints `assertion failed` with an explanation.
-
-If the syntax is unsupported or too complex, prints `-1`.
+If the assertion holds, prints `true`, otherwise `false`.
 """,
                         Examples = """
 assert(f <= g)

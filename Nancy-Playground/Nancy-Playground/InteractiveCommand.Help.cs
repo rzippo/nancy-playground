@@ -35,23 +35,36 @@ public partial class InteractiveCommand
 
     public static void PrintSearchLong(HelpDocument doc, IReadOnlyList<string> args)
     {
+        static string NormalizeQuery(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s))
+                return string.Empty;
+            var t = s.Trim().ToLowerInvariant();
+            t = t.Replace("_", "-");
+            if (t.Length > 1 && t.EndsWith("s"))
+                t = t[..^1];
+            return t;
+        }
+
+        var userQuery = NormalizeQuery(args[0]);
+
         var searchMatches = NancyPlaygroundDocs.HelpDocument.Sections
             .Where(section =>
-                section.Tags.Any(tag => Regex.IsMatch(tag, args[0])) ||
+                section.Tags.Any(tag => Regex.IsMatch(tag, userQuery)) ||
                 section.Items.Any(item =>
-                    item.Tags.Any(tag => Regex.IsMatch(tag, args[0]))
+                    item.Tags.Any(tag => Regex.IsMatch(tag, userQuery))
                 )
             )
             .Select(section =>
                 {
-                    if (section.Tags.Any(tag => Regex.IsMatch(tag, args[0])))
+                    if (section.Tags.Any(tag => Regex.IsMatch(tag, userQuery)))
                         return section;
                     else
                     {
                         var filteredSection = section with
                         {
                             Items = section.Items
-                                .Where(item => item.Tags.Any(tag => Regex.IsMatch(tag, args[0])))
+                                .Where(item => item.Tags.Any(tag => Regex.IsMatch(tag, userQuery)))
                                 .ToList()
                         };
                         return filteredSection;
