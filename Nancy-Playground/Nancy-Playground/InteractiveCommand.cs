@@ -89,6 +89,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     var args = line.Split(' ').Skip(1).ToArray();
                     LoadProgram(args, programContext, formatter, immediateComputeValue, lineEditor);
                 }
+                else if (line.StartsWith("!clear"))
+                {
+                    programContext = new ProgramContext();
+                    lineEditor.SetSessionKeywords([]);
+                    AnsiConsole.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
+                }
                 else if (line.StartsWith("!help"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
