@@ -244,6 +244,19 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 return;
             }
 
+            // Create a formatter with EchoInput enabled, preserving all other settings from the provided formatter
+            IStatementFormatter loadFormatter = formatter switch
+            {
+                AnsiConsoleStatementFormatter ansi => new AnsiConsoleStatementFormatter()
+                {
+                    PlotFormatter = ansi.PlotFormatter,
+                    PrintInputAsConfirmation = ansi.PrintInputAsConfirmation,
+                    PrintTimePerStatement = ansi.PrintTimePerStatement,
+                    EchoInput = true
+                },
+                _ => formatter
+            };
+
             var lines = File.ReadAllLines(filePath);
             int successCount = 0;
             int errorCount = 0;
@@ -269,7 +282,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 try
                 {
                     var statement = Statement.FromLine(trimmedLine);
-                    programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+                    programContext.ExecuteStatement(statement, loadFormatter, immediateComputeValue);
                     successCount++;
                 }
                 catch (Exception ex)
