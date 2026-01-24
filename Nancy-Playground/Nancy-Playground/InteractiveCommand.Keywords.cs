@@ -11,6 +11,7 @@ public partial class InteractiveCommand
         "!exit",
         "!export",
         "!convert",
+        "!load",
         // curves
         "ratency",
         "bucket",
