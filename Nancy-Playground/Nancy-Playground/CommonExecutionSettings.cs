@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Spectre.Console.Cli;
 
 namespace Unipi.Nancy.Playground.Cli;
@@ -11,9 +11,9 @@ public class CommonExecutionSettings : CommandSettings
         = Cli.OutputMode.NancyNew;
     
     [CommandOption("-r|--run-mode")]
-    [Description("How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: PerStatement.")]
+    [Description("How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased.")]
     public RunMode? RunMode { get; init; }
-        = Cli.RunMode.PerStatement;
+        = Cli.RunMode.ExpressionsBased;
     
     [CommandOption("-e|--on-error")]
     [Description("Specifies what to do when an error occurs. Available options: Stop (default), Continue.")]
