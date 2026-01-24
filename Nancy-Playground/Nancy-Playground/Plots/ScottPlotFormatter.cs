@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Spectre.Console;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
@@ -57,42 +58,30 @@ public class ScottPlotFormatter : IPlotFormatter
             var showInGui = plotOutput.Settings.ShowInGui ?? true;
             var saveToFile = !plotOutput.Settings.OutPath.IsNullOrWhiteSpace();
 
-            if (saveToFile)
-            {
-                var imagePath = Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath);
-                File.WriteAllBytes(imagePath, imageBytes);
+            var imagePath = saveToFile ?
+                Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath) :
+                Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
+            File.WriteAllBytes(imagePath, imageBytes);
 
-                if (showInGui)
-                {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = imagePath,
-                        UseShellExecute = true
-                    };
-                    try {
-                        Process.Start(psi);
-                    }
-                    catch(System.ComponentModel.Win32Exception)
-                    {
-                        AnsiConsole.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
-                    }
-                }
-            }
-            else if (showInGui)
+            AnsiConsole.MarkupLine($"[gray]Plot image written to: {imagePath}[/]");
+
+            if (showInGui)
             {
-                var imageTempFileName = Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
-                File.WriteAllBytes(imageTempFileName, imageBytes);
-                AnsiConsole.MarkupLine($"[gray]Temp image written to: {imageTempFileName}; opening in default app[/]");
+                var command = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "xdg-open" :
+                  RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" :
+                  RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "xdg-open";
+                var args = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? new[] { "/c", "start", imagePath } : new[] { imagePath };
+
                 var psi = new ProcessStartInfo
                 {
-                    FileName = imageTempFileName,
-                    UseShellExecute = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
+                    FileName = command,
+                    Arguments = args.JoinText(),
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true
                 };
                 try {
-                    var process = Process.Start(psi);
-                    // do something with standard error / output?
+                    Process.Start(psi);
                 }
                 catch(System.ComponentModel.Win32Exception)
                 {
