@@ -86,10 +86,13 @@ public class ScottPlotFormatter : IPlotFormatter
                 var psi = new ProcessStartInfo
                 {
                     FileName = imageTempFileName,
-                    UseShellExecute = true
+                    UseShellExecute = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
                 try {
-                    Process.Start(psi);
+                    var process = Process.Start(psi);
+                    // do something with standard error / output?
                 }
                 catch(System.ComponentModel.Win32Exception)
                 {
