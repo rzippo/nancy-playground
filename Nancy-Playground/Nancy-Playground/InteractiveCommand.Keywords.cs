@@ -13,6 +13,7 @@ public partial class InteractiveCommand
         "!save",
         "!convert",
         "!load",
+        "!clear",
         // curves
         "ratency",
         "bucket",

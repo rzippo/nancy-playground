@@ -63,6 +63,17 @@ Reads a .mppg file line by line and executes each line in the current interactiv
 Empty lines and lines starting with // are skipped.
 """,
                         Tags = ["load", "file", "import", "execute"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Clear",
+                        Formats = ["!clear"],
+                        Description = "Resets the current session by clearing all variables and executed lines.",
+                        LongDescription = """
+Clears all variables and statement history from the current session.
+The command history for arrow key navigation is preserved.
+""",
+                        Tags = ["clear", "reset", "session", "variables"]
                     }
                 ]
             },
