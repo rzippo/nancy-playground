@@ -10,6 +10,7 @@ public partial class InteractiveCommand
         "!quit",
         "!exit",
         "!export",
+        "!save",
         "!convert",
         "!load",
         // curves

@@ -42,7 +42,7 @@ Expect (and please report) oddities.
                     new HelpItem
                     {
                         Name = "Export",
-                        Formats = ["!export <output-file>"],
+                        Formats = ["!export <output-file>", "!save <output-file>"],
                         Description = "Exports the commands in the current interactive session to a .mppg file.",
                         Tags = ["export", "save", "file"]
                     },

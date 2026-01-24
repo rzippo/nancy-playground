@@ -74,7 +74,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     AnsiConsole.MarkupLine("[green]Bye.[/]");
                     break;
                 }
-                else if (line.StartsWith("!export"))
+                else if (line.StartsWith("!export") || line.StartsWith("!save"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
                     ExportProgram(args, programContext);
