@@ -188,20 +188,41 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// <summary>
     /// Loads and executes a program from a file.
     /// </summary>
-    /// <param name="args">Arguments containing the file path</param>
+    /// <param name="args">Arguments containing the file path and optional flags</param>
     /// <param name="programContext">The current program context</param>
     /// <param name="formatter">The statement formatter to use</param>
     /// <param name="immediateComputeValue">Whether to compute values immediately</param>
     /// <param name="lineEditor">The line editor for updating keywords</param>
     private void LoadProgram(string[] args, ProgramContext programContext, IStatementFormatter formatter, bool immediateComputeValue, LineEditor lineEditor)
     {
-        if (args.Length != 1)
+        if (args.Length == 0)
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] !load requires exactly one argument: the input file path.");
+            AnsiConsole.MarkupLine("[red]Error:[/] !load requires at least one argument: the input file path.");
             return;
         }
 
-        var filePath = args[0];
+        // Parse options
+        bool addToHistory = false;
+        string filePath = null;
+
+        foreach (var arg in args)
+        {
+            if (arg == "-h" || arg == "--history")
+            {
+                addToHistory = true;
+            }
+            else if (!arg.StartsWith("-"))
+            {
+                filePath = arg;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            AnsiConsole.MarkupLine("[red]Error:[/] !load requires a file path argument.");
+            return;
+        }
+
         try
         {
             var file = new FileInfo(filePath);
@@ -214,6 +235,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             var lines = File.ReadAllLines(filePath);
             int successCount = 0;
             int errorCount = 0;
+            var loadedLines = new List<string>();
 
             AnsiConsole.MarkupLine($"[green]Loading program from[/] [blue]{Escape(filePath)}[/]...");
 
@@ -224,6 +246,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // Skip empty lines and comments
                 if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("//"))
                     continue;
+
+                // Track the line for history if requested
+                if (addToHistory)
+                {
+                    loadedLines.Add(trimmedLine);
+                }
 
                 // Execute the statement
                 try
@@ -239,11 +267,20 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     errorCount++;
                 }
             }
-
             // Update session-based autocomplete with new variables
             lineEditor.SetSessionKeywords(programContext.State.GetVariableNames());
 
-            AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed");
+            // Add loaded lines to history if requested
+            if (addToHistory && loadedLines.Count > 0)
+            {
+                lineEditor.AddToHistory(loadedLines);
+                AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed, {loadedLines.Count} lines added to history");
+            }
+            else
+            {
+                AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed");
+            }
+
             if (errorCount > 0)
                 AnsiConsole.MarkupLine($"[yellow]Warnings:[/] {errorCount} errors encountered");
         }

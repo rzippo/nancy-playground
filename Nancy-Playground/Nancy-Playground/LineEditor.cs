@@ -470,6 +470,22 @@ public class LineEditor
     }
 
     /// <summary>
+    /// Adds one or more lines to the history.
+    /// </summary>
+    /// <param name="lines">The lines to add to history</param>
+    public void AddToHistory(IEnumerable<string> lines)
+    {
+        foreach (var line in lines)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                _history.Add(line);
+            }
+        }
+        _historyIndex = _history.Count; // one past last
+    }
+
+    /// <summary>
     /// Gets the list of active keywords for autocomplete, given the current line before the cursor.
     /// </summary>
     /// <param name="currentLineBeforeCursor"></param>

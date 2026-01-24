@@ -56,13 +56,16 @@ Expect (and please report) oddities.
                     new HelpItem
                     {
                         Name = "Load",
-                        Formats = ["!load <input-file>"],
+                        Formats = ["!load <input-file>", "!load [-h|--history] <input-file>"],
                         Description = "Loads and executes commands from a .mppg file into the current interactive session.",
                         LongDescription = """
 Reads a .mppg file line by line and executes each line in the current interactive session.
 Empty lines and lines starting with // are skipped.
+
+Options:
+- `-h` or `--history`: Adds all loaded lines to the command history for arrow key navigation.
 """,
-                        Tags = ["load", "file", "import", "execute"]
+                        Tags = ["load", "file", "import", "execute", "history"]
                     },
                     new HelpItem
                     {
