@@ -70,6 +70,9 @@ public class RunCommand : Command<RunCommand.Settings>
             return 1;
         }
 
+        // in interactive mode, the default is not to echo each command
+        var echoInput = settings.EchoInput ?? true;
+
         // Determine plots root based on the selected mode
         // If --plots-root is specified, --plots-root-mode must be Custom (or omitted, which defaults to Custom)
         string? plotsRoot;
@@ -133,6 +136,8 @@ public class RunCommand : Command<RunCommand.Settings>
             {
                 PlotFormatter = plotFormatter,
                 PrintTimePerStatement = !settings.Deterministic,
+                PrintInputAsConfirmation = false,
+                EchoInput = echoInput
             },
             _ => new PlainConsoleStatementFormatter()
         };

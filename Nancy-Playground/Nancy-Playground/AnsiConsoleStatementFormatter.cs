@@ -20,6 +20,12 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     public bool PrintInputAsConfirmation { get; init; } = false;
 
     /// <summary>
+    /// If true, echoes user input in interactive mode.
+    /// If false, input is only echoed on syntax errors.
+    /// </summary>
+    public bool EchoInput { get; init; } = false;
+
+    /// <summary>
     /// If true, prints the time taken to execute each statement.
     /// </summary>
     public bool PrintTimePerStatement { get; init; } = true;
@@ -42,21 +48,24 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
             default:
             {
-                if (PrintInputAsConfirmation)
+                if(EchoInput)
                 {
-                    // use gray text, to not attract focus
-                    if (statement.InlineComment.IsNullOrWhiteSpace())
-                        AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
+                    if(PrintInputAsConfirmation)
+                    {
+                        // use gray text, to not attract focus
+                        if (statement.InlineComment.IsNullOrWhiteSpace())
+                            AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
+                        else
+                            AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
+                    }
                     else
-                        AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
-                }
-                else
-                {
-                    // use $mainColor text
-                    if (statement.InlineComment.IsNullOrWhiteSpace())
-                        AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
-                    else
-                        AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
+                    {
+                        // use $mainColor text
+                        if (statement.InlineComment.IsNullOrWhiteSpace())
+                            AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                        else
+                            AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
+                    }
                 }
                 break;
             }
@@ -161,6 +170,19 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
     public void FormatError(Statement statement, ErrorOutput error)
     {
+        // On syntax errors, echo the input if it hasn't been echoed yet
+        if (error.Exception is SyntaxErrorException && !EchoInput && !PrintInputAsConfirmation)
+        {
+            // Echo the input that caused the syntax error
+            if (statement is not Comment and not EmptyStatement)
+            {
+                if (statement.InlineComment.IsNullOrWhiteSpace())
+                    AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
+                else
+                    AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
+            }
+        }
+
         switch(error.Exception)
         {
             case SyntaxErrorException:

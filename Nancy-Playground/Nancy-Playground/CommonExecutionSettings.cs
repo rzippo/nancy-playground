@@ -24,6 +24,10 @@ public class CommonExecutionSettings : CommandSettings
     [Description("Mutes the welcome message.")]
     public bool MuteWelcomeMessage { get; init; } = false;
 
+    [CommandOption("--echo")]
+    [Description("Echoes user input in interactive mode. Default: true in run mode, false in interactive mode.")]
+    public bool? EchoInput { get; init; }
+
     [Description("If used, the program prints out the version and immediately terminates.")]
     [CommandOption("--version")]
     public bool Version { get; init; } = false;

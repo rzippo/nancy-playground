@@ -28,6 +28,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         var programContext = new ProgramContext();
 
+        // in interactive mode, the default is not to echo each command
+        var echoInput = settings.EchoInput ?? false;
+
         // todo: make this configurable
         var plotsRoot = Environment.CurrentDirectory;
 
@@ -39,7 +42,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // todo: make this configurable
                 PlotFormatter = new ScottPlotFormatter(plotsRoot),
                 // PlotFormatter = new XPlotPlotFormatter(plotsRoot),
-                PrintInputAsConfirmation = true
+                PrintInputAsConfirmation = true,
+                EchoInput = echoInput
             },
             _ => new PlainConsoleStatementFormatter()
         };
