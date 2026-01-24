@@ -140,7 +140,14 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case PlotCommand plot:
             {
                 if(PlotFormatter is not null)
-                    PlotFormatter.FormatPlot((PlotOutput) output);
+                {
+                    var plotOutput = (PlotOutput) output;
+                    if (plotOutput.Time > TimeSpan.Zero && PrintTimePerStatement)
+                    {
+                        AnsiConsole.MarkupLineInterpolated(FormatStatementTime(plotOutput.Time).Concat($"[grey]Plot inputs computed.[/]"));
+                    }
+                    PlotFormatter.FormatPlot(plotOutput);
+                }
                 else
                     AnsiConsole.MarkupLineInterpolated($"[yellow]Plots disabled.[/]");
                 break;

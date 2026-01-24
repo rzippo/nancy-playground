@@ -215,7 +215,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         // Parse options
         bool addToHistory = false;
-        string filePath = null;
+        string filePath = string.Empty;
 
         foreach (var arg in args)
         {
