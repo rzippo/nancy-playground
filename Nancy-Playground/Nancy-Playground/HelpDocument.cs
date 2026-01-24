@@ -52,6 +52,17 @@ Expect (and please report) oddities.
                         Formats = ["!convert <output-file>"],
                         Description = "Converts the commands in the current interactive session to a Nancy C# program and saves it to a file.",
                         Tags = ["convert", "nancy", "csharp", "save", "file"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Load",
+                        Formats = ["!load <input-file>"],
+                        Description = "Loads and executes commands from a .mppg file into the current interactive session.",
+                        LongDescription = """
+Reads a .mppg file line by line and executes each line in the current interactive session.
+Empty lines and lines starting with // are skipped.
+""",
+                        Tags = ["load", "file", "import", "execute"]
                     }
                 ]
             },

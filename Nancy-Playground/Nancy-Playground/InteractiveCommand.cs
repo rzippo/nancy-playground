@@ -84,6 +84,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     var args = line.Split(' ').Skip(1).ToArray();
                     ConvertProgram(args, programContext);
                 }
+                else if (line.StartsWith("!load"))
+                {
+                    var args = line.Split(' ').Skip(1).ToArray();
+                    LoadProgram(args, programContext, formatter, immediateComputeValue, lineEditor);
+                }
                 else if (line.StartsWith("!help"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
@@ -171,6 +176,74 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         catch (Exception e)
         {
             AnsiConsole.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
+        }
+    }
+
+    /// <summary>
+    /// Loads and executes a program from a file.
+    /// </summary>
+    /// <param name="args">Arguments containing the file path</param>
+    /// <param name="programContext">The current program context</param>
+    /// <param name="formatter">The statement formatter to use</param>
+    /// <param name="immediateComputeValue">Whether to compute values immediately</param>
+    /// <param name="lineEditor">The line editor for updating keywords</param>
+    private void LoadProgram(string[] args, ProgramContext programContext, IStatementFormatter formatter, bool immediateComputeValue, LineEditor lineEditor)
+    {
+        if (args.Length != 1)
+        {
+            AnsiConsole.MarkupLine("[red]Error:[/] !load requires exactly one argument: the input file path.");
+            return;
+        }
+
+        var filePath = args[0];
+        try
+        {
+            var file = new FileInfo(filePath);
+            if (!file.Exists)
+            {
+                AnsiConsole.MarkupLine($"[red]Error:[/] File [blue]{Escape(filePath)}[/] not found.");
+                return;
+            }
+
+            var lines = File.ReadAllLines(filePath);
+            int successCount = 0;
+            int errorCount = 0;
+
+            AnsiConsole.MarkupLine($"[green]Loading program from[/] [blue]{Escape(filePath)}[/]...");
+
+            foreach (var line in lines)
+            {
+                var trimmedLine = line.Trim();
+
+                // Skip empty lines and comments
+                if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("//"))
+                    continue;
+
+                // Execute the statement
+                try
+                {
+                    var statement = Statement.FromLine(trimmedLine);
+                    programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+                    successCount++;
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]Error executing line:[/] {Escape(trimmedLine)}");
+                    AnsiConsole.MarkupLine($"[red]{Escape(ex.Message)}[/]");
+                    errorCount++;
+                }
+            }
+
+            // Update session-based autocomplete with new variables
+            lineEditor.SetSessionKeywords(programContext.State.GetVariableNames());
+
+            AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed");
+            if (errorCount > 0)
+                AnsiConsole.MarkupLine($"[yellow]Warnings:[/] {errorCount} errors encountered");
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[red]Error:[/] Could not load program from [blue]{Escape(filePath)}[/]: {Escape(e.Message)}");
         }
     }
 }
