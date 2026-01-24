@@ -352,28 +352,20 @@ upp( [(0, +Infinity) 0 (6, +Infinity)],
                     new HelpItem
                     {
                         Name = "Number syntax",
-                        Formats = ["integer", "rational", "±inf", "±infinity"],
+                        Formats = ["integer", "decimal", "rational", "±inf", "±infinity"],
                         Description = "Scalars are rationals plus ±infinity.",
                         LongDescription = """
 Supported numeric literals:
 - Integers: `0`, `1`, `-3`
-- Rationals: `3/2`
+- Decimals: `0.25`, `3.14`, `-0.5`
+- Rationals: `3/2`, `1/4`
 - Positive infinity: `+inf`, `+infinity`
 - Negative infinity: `-inf`, `-infinity`
 
-Implementation ignores any floating-point variant and focuses on rationals.
+Decimals are converted to exact rational values internally, avoiding floating-point precision issues.
 """,
-                        Examples = """
-0
-1
--3
-3/2
-+inf
--inf
-+infinity
--infinity
-""",
-                        Tags = ["scalars", "numbers", "rational", "infinity"]
+                        Examples = string.Empty,
+                        Tags = ["scalars", "numbers", "rational", "decimal", "infinity"]
                     }
                 ]
             },
