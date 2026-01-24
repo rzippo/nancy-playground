@@ -9,4 +9,5 @@ public class PlotOutput : StatementOutput
     public string XLabel { get; init; } = string.Empty;
     public string YLabel { get; init; } = string.Empty;
     public PlotSettings Settings { get; init; } = new();
+    public TimeSpan Time { get; init; } = TimeSpan.Zero;
 }

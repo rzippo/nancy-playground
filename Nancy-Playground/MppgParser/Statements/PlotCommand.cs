@@ -14,6 +14,8 @@ public record class PlotCommand : Statement
 
     public override StatementOutput ExecuteToFormattable(State state)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        
         var functions = FunctionsToPlot
             .Select(ex =>
             {   
@@ -28,6 +30,8 @@ public record class PlotCommand : Statement
         var xLabel = Settings.XLabel.Compute(state);
         var yLabel = Settings.YLabel.Compute(state);
 
+        stopwatch.Stop();
+
         return new PlotOutput
         {
             FunctionsToPlot = functions,
@@ -35,6 +39,7 @@ public record class PlotCommand : Statement
             XLabel = xLabel,
             YLabel = yLabel,
             Settings = Settings,
+            Time = stopwatch.Elapsed,
             StatementText = Text,
             OutputText = "If you are reading this, the formatter does not implement plots."
         };
