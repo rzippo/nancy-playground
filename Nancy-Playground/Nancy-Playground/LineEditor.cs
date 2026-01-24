@@ -486,6 +486,15 @@ public class LineEditor
     }
 
     /// <summary>
+    /// Clears all command history.
+    /// </summary>
+    public void ClearHistory()
+    {
+        _history.Clear();
+        _historyIndex = 0;
+    }
+
+    /// <summary>
     /// Gets the list of active keywords for autocomplete, given the current line before the cursor.
     /// </summary>
     /// <param name="currentLineBeforeCursor"></param>

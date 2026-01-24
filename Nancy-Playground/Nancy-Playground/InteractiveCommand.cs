@@ -91,9 +91,21 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 }
                 else if (line.StartsWith("!clear"))
                 {
+                    var args = line.Split(' ').Skip(1).ToArray();
+                    bool clearHistory = args.Any(arg => arg == "-h" || arg == "--history");
+                    
                     programContext = new ProgramContext();
                     lineEditor.SetSessionKeywords([]);
-                    AnsiConsole.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
+                    
+                    if (clearHistory)
+                    {
+                        lineEditor.ClearHistory();
+                        AnsiConsole.MarkupLine("[green]Session cleared. All variables, executed lines, and command history have been reset.[/]");
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
+                    }
                 }
                 else if (line.StartsWith("!help"))
                 {

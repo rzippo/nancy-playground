@@ -70,13 +70,16 @@ Options:
                     new HelpItem
                     {
                         Name = "Clear",
-                        Formats = ["!clear"],
+                        Formats = ["!clear", "!clear [-h|--history]"],
                         Description = "Resets the current session by clearing all variables and executed lines.",
                         LongDescription = """
 Clears all variables and statement history from the current session.
-The command history for arrow key navigation is preserved.
+By default, the command history for arrow key navigation is preserved.
+
+Options:
+- `-h` or `--history`: Also clears the command history.
 """,
-                        Tags = ["clear", "reset", "session", "variables"]
+                        Tags = ["clear", "reset", "session", "variables", "history"]
                     }
                 ]
             },
