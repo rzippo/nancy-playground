@@ -539,7 +539,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     {
         var curve = context.GetChild(2).Accept(this).Single();
 
-        return [$"{curve}.SubAdditiveClosure()"];
+        return [$"({curve}).SubAdditiveClosure()"];
     }
 
     public override List<string> VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
