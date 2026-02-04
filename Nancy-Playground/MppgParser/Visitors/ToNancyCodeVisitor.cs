@@ -267,6 +267,46 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return lines;
     }
 
+    public override List<string> VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
+    {
+        var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
+        var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
+        var operatorContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.AssertionOperatorContext>(0);
+
+        var leftExpressionCode = leftExpressionContext.Accept(this);
+        var rightExpressionCode = rightExpressionContext.Accept(this);
+        var operatorText = operatorContext.GetText();
+
+        if (leftExpressionCode is null || leftExpressionCode.Count == 0 ||
+            rightExpressionCode is null || rightExpressionCode.Count == 0)
+        {
+            return [$"// INNER EXPRESSION NOT IMPLEMENTED"];
+        }
+
+        var leftExpr = leftExpressionCode.Single();
+        var rightExpr = rightExpressionCode.Single();
+
+        // Map assertion operators to C# comparison operators
+        var csharpOperator = operatorText switch
+        {
+            "=" => "==",
+            "!=" => "!=",
+            "<" => "<",
+            "<=" => "<=",
+            ">" => ">",
+            ">=" => ">=",
+            _ => "=="
+        };
+
+        // Generate assertion code that outputs the result
+        var lines = new List<string>
+        {
+            $"Console.WriteLine(({leftExpr} {csharpOperator} {rightExpr}).ToString().ToLower());"
+        };
+
+        return lines;
+    }
+
     public override List<string> VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
     {
         var visitor = new ComputableStringVisitor();

@@ -16,6 +16,6 @@ wcd_sum := wcd_1 + wcd_2
 // Compute a service curve for the concatenation of the two nodes using (min,+) convolution 
 wcd_pboo := hdev(ac, sc_1 * sc_2)
 // PBOO gives better bounds
-// assert(wcd_pboo <= wcd_sum)
+assert(wcd_pboo <= wcd_sum)
 wcd_sum
 wcd_pboo

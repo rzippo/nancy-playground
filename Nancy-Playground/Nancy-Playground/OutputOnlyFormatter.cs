@@ -45,6 +45,13 @@ public class OutputOnlyFormatter : IStatementFormatter
                 break;
             }
 
+            case Assertion:
+            {
+                var assertionOutput = (AssertionOutput)output;
+                Console.WriteLine(assertionOutput.Result.ToString().ToLower());
+                break;
+            }
+
             // all other outputs are suppressed
             default:
                 break;
