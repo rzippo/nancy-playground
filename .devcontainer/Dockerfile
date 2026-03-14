@@ -34,5 +34,14 @@ RUN rm /home/dotnet/dotnet-install.sh
 ENV PATH="/home/dotnet/.dotnet:${PATH}"
 ENV DOTNET_ROOT="/home/dotnet/.dotnet"
 
+# Add ANTLR command line tools
+USER root
+RUN wget https://www.antlr.org/download/antlr-4.13.2-complete.jar -O /usr/local/lib/antlr-4.13.2-complete.jar
+COPY --chown=root --chmod=755 ./antlr4 /usr/local/bin/antlr4
+COPY --chown=root --chmod=755 ./grun /usr/local/bin/grun
+
+# This assumes CLASSPATH is currently empty
+ENV CLASSPATH=".:/usr/local/lib/antlr-4.13.2-complete.jar"
+
 # Set the default user as non-root
 USER dotnet
