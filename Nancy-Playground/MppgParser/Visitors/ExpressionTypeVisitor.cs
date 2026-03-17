@@ -49,18 +49,7 @@ class ExpressionTypeVisitor : MppgBaseVisitor<ExpressionType>
 
     #region Function binary operators
 
-    public override ExpressionType VisitFunctionMinimum(Unipi.MppgParser.Grammar.MppgParser.FunctionMinimumContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitFunctionMaximum(Unipi.MppgParser.Grammar.MppgParser.FunctionMaximumContext context)
+    public override ExpressionType VisitFunctionSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxContext context)
     {
         var firstType = context.GetChild(0).Accept(this);
         var secondType = context.GetChild(2).Accept(this);
@@ -148,29 +137,7 @@ class ExpressionTypeVisitor : MppgBaseVisitor<ExpressionType>
         else
             return ExpressionType.Number;
     }
-
-    public override ExpressionType VisitFunctionSum(Unipi.MppgParser.Grammar.MppgParser.FunctionSumContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitFunctionSubtraction(Unipi.MppgParser.Grammar.MppgParser.FunctionSubtractionContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
+    
     #endregion
 
     #region Function unary operators
@@ -324,64 +291,20 @@ class ExpressionTypeVisitor : MppgBaseVisitor<ExpressionType>
     
     #region Number binary operators
 
-    public override ExpressionType VisitNumberMultiplication(Unipi.MppgParser.Grammar.MppgParser.NumberMultiplicationContext context)
+    public override ExpressionType VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {
         var firstType = context.GetChild(0).Accept(this);
         var secondType = context.GetChild(2).Accept(this);
 
         if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            // either a convolution, or a function scaling
+            // if op = *, either a convolution, or a function scaling;
+            // if op = /, either a deconvolution, or a function scaling
             return ExpressionType.Function;
         else
             return ExpressionType.Number;
     }
 
-    public override ExpressionType VisitNumberDivision(Unipi.MppgParser.Grammar.MppgParser.NumberDivisionContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            // either a deconvolution, or a function scaling
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitNumberSum(Unipi.MppgParser.Grammar.MppgParser.NumberSumContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitNumberSub(Unipi.MppgParser.Grammar.MppgParser.NumberSubContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitNumberMinimum(Unipi.MppgParser.Grammar.MppgParser.NumberMinimumContext context)
-    {
-        var firstType = context.GetChild(0).Accept(this);
-        var secondType = context.GetChild(2).Accept(this);
-
-        if (firstType == ExpressionType.Function || secondType == ExpressionType.Function)
-            return ExpressionType.Function;
-        else
-            return ExpressionType.Number;
-    }
-
-    public override ExpressionType VisitNumberMaximum(Unipi.MppgParser.Grammar.MppgParser.NumberMaximumContext context)
+    public override ExpressionType VisitNumberSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.NumberSumSubMinMaxContext context)
     {
         var firstType = context.GetChild(0).Accept(this);
         var secondType = context.GetChild(2).Accept(this);

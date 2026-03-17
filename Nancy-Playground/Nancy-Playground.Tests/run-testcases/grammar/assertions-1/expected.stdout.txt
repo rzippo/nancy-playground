@@ -22,7 +22,7 @@ true
 true
 > assert ( g ( 0 ) < 1 )
 true
-> assert ( g ( 0 ) > -1 )
+> assert ( g ( 0 ) > - 1 )
 true
 > h := f * f
 h = new RateLatencyServiceCurve(1, 6)

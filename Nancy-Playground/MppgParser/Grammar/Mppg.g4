@@ -3,16 +3,23 @@ grammar Mppg;
 // lexer rules
 NEW_LINE : [\r\n]+;
 WHITE_SPACE : [ \t]+ -> skip;
-VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
+
+NUMBER_ABS_LITERAL : INTEGER_LITERAL | DECIMAL_NUMBER_ABS_LITERAL | INFINITE_NUMBER_ABS_LITERAL;
+INTEGER_LITERAL : [0-9]+;
+DECIMAL_NUMBER_ABS_LITERAL : [0-9]+('.'[0-9]+)?;
+INFINITE_NUMBER_ABS_LITERAL : 'inf'|'infinity'|'Infinity';
+
 ASSIGN : ':=';
+PLUS : '+';
+MINUS : '-';
+WEDGE : '/\\';
+VEE : '\\/';
+PROD_SIGN: '*';
+DIV_SIGN: '/';
+DIV_OP: 'div';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
 INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
-
-// Number literals
-NUMBER_LITERAL : INTEGER_LITERAL | DECIMAL_NUMBER_LITERAL | INFINITE_NUMBER_LITERAL;
-INTEGER_LITERAL : [-+]?[0-9]+;
-DECIMAL_NUMBER_LITERAL : [-+]?[0-9]+('.'[0-9]+)?;
-INFINITE_NUMBER_LITERAL : [-+]('inf'|'infinity'|'Infinity');
+VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 
 // parser rules
 program : statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
@@ -38,22 +45,18 @@ empty: ;
 // Functions
 functionExpression
     :  '(' functionExpression ')' #functionBrackets
-    | functionExpression '/\\' functionExpression #functionMinimum
-    | functionExpression '/\\' numberEnclosedExpression #functionMinimum
-    | functionExpression '\\/' functionExpression #functionMaximum
-    | functionExpression '\\/' numberEnclosedExpression #functionMaximum
+    | PLUS functionExpression #functionPositive
+    | MINUS functionExpression #functionNegative
     | functionExpression ('*'|'*_') functionExpression #functionMinPlusConvolution
     | functionExpression '*^' functionExpression #functionMaxPlusConvolution
     | functionExpression ('/'|'/_') functionExpression #functionMinPlusDeconvolution
     | functionExpression '/^' functionExpression #functionMaxPlusDeconvolution
-    | functionExpression 'comp' functionExpression #functionComposition
     | functionExpression '*' numberEnclosedExpression #functionScalarMultiplicationLeft
     | numberEnclosedExpression '*' functionExpression #functionScalarMultiplicationRight
     | functionExpression '/' numberEnclosedExpression #functionScalarDivision
-    | functionExpression '+' functionExpression #functionSum
-    | functionExpression '+' numberEnclosedExpression #functionSum
-    | functionExpression '-' functionExpression #functionSubtraction
-    | functionExpression '-' numberEnclosedExpression #functionSubtraction
+    | functionExpression op=(PLUS|MINUS|WEDGE|VEE) functionExpression #functionSumSubMinMax
+    | functionExpression op=(PLUS|MINUS|WEDGE|VEE) numberEnclosedExpression #functionSumSubMinMax
+    | functionExpression 'comp' functionExpression #functionComposition
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
@@ -120,13 +123,10 @@ segmentLeftClosedRightClosed: '[' endpoint numberLiteral? endpoint ']';
 numberExpression 
     : numberReturningfunctionOperation #numberReturningfunctionOperationExp 
     | '(' numberExpression ')' #numberBrackets
-    | numberExpression '*' numberExpression #numberMultiplication
-    | numberExpression '/' numberExpression #numberDivision
-    | numberExpression 'div' numberExpression #numberDivision
-    | numberExpression '+' numberExpression #numberSum
-    | numberExpression '-' numberExpression #numberSub
-    | numberExpression '/\\' numberExpression #numberMinimum
-    | numberExpression '\\/' numberExpression #numberMaximum
+    | PLUS numberExpression #numberPositive
+    | MINUS numberExpression #numberNegative
+    | numberExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP) numberExpression #numberMulDiv
+    | numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberExpression #numberSumSubMinMax
     | VARIABLE_NAME #numberVariableExp
     | numberLiteral #numberLiteralExp
     ;
@@ -138,7 +138,7 @@ numberEnclosedExpression
     | numberLiteral #encNumberLiteralExp
     ;
 
-numberLiteral: NUMBER_LITERAL;
+numberLiteral: (PLUS|MINUS)? NUMBER_ABS_LITERAL;
 
 // Number-returning function operations
 numberReturningfunctionOperation 
@@ -148,8 +148,8 @@ numberReturningfunctionOperation
     | functionHorizontalDeviation 
     | functionVerticalDeviation;
 functionValueAt: functionName '(' numberExpression ')';
-functionLeftLimitAt: functionName '(' numberExpression '~'? '-' ')';
-functionRightLimitAt: functionName '(' numberExpression '~'? '+' ')';
+functionLeftLimitAt: functionName '(' numberExpression '~'? MINUS ')';
+functionRightLimitAt: functionName '(' numberExpression '~'? PLUS ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
