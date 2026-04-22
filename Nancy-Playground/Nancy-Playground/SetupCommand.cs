@@ -9,7 +9,7 @@ public class SetupCommand : Command<SetupCommand.Settings>
     {
 
     }
-    public override int Execute(CommandContext context, Settings settings)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         HtmlToImage.InstallBrowser();
         return 0;

@@ -27,7 +27,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         public bool Overwrite { get; init; } = false;
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)
         {
