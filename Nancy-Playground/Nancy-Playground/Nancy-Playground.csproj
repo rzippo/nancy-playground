@@ -33,7 +33,7 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203" PrivateAssets="All" />
-    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.4" />
+    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.5" />
   </ItemGroup>
 
   <PropertyGroup>
