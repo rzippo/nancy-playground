@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
@@ -151,6 +152,9 @@ public class RunCommandGoldenTests
     [MemberData(nameof(GoldenTestCases))]
     public void AppTesterEquivalence(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange
         _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
 

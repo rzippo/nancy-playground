@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using CliWrap;
@@ -277,6 +278,9 @@ public class ConvertCommandPlotTests
     [MemberData(nameof(TestCases))]
     public async Task AppTesterSamePlotImages(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange
         // we locate the CLI dll only for the TFM string
         var cliDllPath = typeof(CliMarker).Assembly.Location;

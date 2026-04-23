@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
@@ -216,6 +217,9 @@ public class ConvertCommandOutputTests
     [MemberData(nameof(TestCases))]
     public async Task AppTesterSameLastResult(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange
         // we locate the CLI dll only for the TFM string
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -469,6 +473,9 @@ public class ConvertCommandOutputTests
     [MemberData(nameof(TestCases))]
     public async Task AppTesterSameLastResultExpressions(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -726,6 +733,9 @@ public class ConvertCommandOutputTests
     [MemberData(nameof(TestCases))]
     public async Task AppTesterSameExplicitPrints(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange
         // we locate the CLI dll only for the TFM string
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -978,6 +988,9 @@ public class ConvertCommandOutputTests
     [MemberData(nameof(TestCases))]
     public async Task AppTesterSameExplicitPrintsExpressions(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         // Arrange
         // we locate the CLI dll only for the TFM string
         var cliDllPath = typeof(CliMarker).Assembly.Location;

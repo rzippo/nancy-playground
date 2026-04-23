@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
@@ -174,6 +175,9 @@ public class RunModeEquivalenceTests
     [MemberData(nameof(TestCases))]
     public void AppTesterPerStatementAndExpressionsBasedProduceSameResults(string caseDir)
     {
+        // must be setup here, since AppTesters inherit it
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
         var scriptPath = Path.Combine(caseDir, "script.mppg");
 
         // Run in PerStatement mode
