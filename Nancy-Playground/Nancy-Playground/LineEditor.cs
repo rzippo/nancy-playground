@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Unipi.Nancy.Playground.Cli;
@@ -5,6 +6,7 @@ namespace Unipi.Nancy.Playground.Cli;
 /// <summary>
 /// Handles user input, with a navigable history of previous commands.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public class LineEditor
 {
     /// <summary>
@@ -534,6 +536,7 @@ public class LineEditor
     }
 }
 
+[ExcludeFromCodeCoverage]
 public record ContextualKeywords
 {
     public List<string> Enablers { get; init; } = [];

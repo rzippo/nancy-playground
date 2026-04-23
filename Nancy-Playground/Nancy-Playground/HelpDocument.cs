@@ -1,5 +1,8 @@
-﻿namespace Unipi.Nancy.Playground.Cli;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace Unipi.Nancy.Playground.Cli;
+
+[ExcludeFromCodeCoverage]
 public static class NancyPlaygroundDocs
 {
     public static HelpDocument HelpDocument = new()
@@ -731,12 +734,14 @@ Useful to inspect the original expression used to define a function variable, in
     };
 }
 
+[ExcludeFromCodeCoverage]
 public class HelpDocument
 {
     public string Preamble { get; init; } = string.Empty;
     public required List<HelpSection> Sections { get; init; }
 }
 
+[ExcludeFromCodeCoverage]
 public record class HelpSection
 {
     public required string Name { get; init; }
@@ -745,6 +750,7 @@ public record class HelpSection
     public List<string> Tags { get; init; } = [];
 }
 
+[ExcludeFromCodeCoverage]
 public record class HelpItem
 {
     public required string Name { get; init; }

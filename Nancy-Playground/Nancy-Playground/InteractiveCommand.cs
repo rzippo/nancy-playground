@@ -1,4 +1,5 @@
-﻿using Spectre.Console;
+﻿using System.Diagnostics.CodeAnalysis;
+using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.Nancy.Playground.Cli.Plots;
 using Unipi.Nancy.Playground.MppgParser;
@@ -7,6 +8,7 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+[ExcludeFromCodeCoverage]
 public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 {
     public sealed class Settings : CommonExecutionSettings
