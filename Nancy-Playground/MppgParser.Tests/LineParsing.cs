@@ -1,6 +1,5 @@
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
-using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 

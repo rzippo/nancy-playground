@@ -1,5 +1,4 @@
 using Unipi.Nancy.Playground.MppgParser.Statements;
-using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 

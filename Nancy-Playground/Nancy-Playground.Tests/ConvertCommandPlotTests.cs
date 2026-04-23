@@ -5,7 +5,6 @@ using CliWrap;
 using CliWrap.Buffered;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
-using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
@@ -17,6 +16,8 @@ using CliMarker = Cli.Program;
 /// </summary>
 public class ConvertCommandPlotTests
 {
+    #pragma warning disable xUnit1051 // recommends xUnit cancellation token
+
     private readonly ITestOutputHelper _testOutputHelper;
 
     public ConvertCommandPlotTests(ITestOutputHelper testOutputHelper)

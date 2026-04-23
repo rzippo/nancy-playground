@@ -4,7 +4,6 @@ using CliWrap;
 using CliWrap.Buffered;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
-using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
 

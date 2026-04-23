@@ -1,5 +1,4 @@
 using Antlr4.Runtime;
-using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
