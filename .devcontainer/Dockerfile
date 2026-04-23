@@ -14,12 +14,12 @@ RUN groupadd --gid $USER_GID dotnet \
     && echo dotnet ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dotnet \
     && chmod 0440 /etc/sudoers.d/dotnet
 
-# Add powershell 7.5.4, using deb package
+# Add powershell 7.6.1, using deb package
 USER root
-RUN wget https://github.com/PowerShell/PowerShell/releases/download/v7.5.4/powershell_7.5.4-1.deb_amd64.deb
-RUN dpkg -i powershell_7.5.4-1.deb_amd64.deb
+RUN wget https://github.com/PowerShell/PowerShell/releases/download/v7.6.1/powershell_7.6.1-1.deb_amd64.deb
+RUN dpkg -i powershell_7.6.1-1.deb_amd64.deb
 ## Cleanup
-RUN rm powershell_7.5.4-1.deb_amd64.deb
+RUN rm powershell_7.6.1-1.deb_amd64.deb
 
 # Add dotnet 8.0, 9.0 and 10.0, using user-local install
 USER dotnet
