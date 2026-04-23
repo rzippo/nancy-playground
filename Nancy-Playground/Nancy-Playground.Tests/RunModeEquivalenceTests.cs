@@ -1,6 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
@@ -59,7 +62,8 @@ public class RunModeEquivalenceTests
 
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task PerStatementAndExpressionsBasedProduceSameResults(string caseDir)
+    [ExcludeFromCodeCoverage]
+    public async Task CliPerStatementAndExpressionsBasedProduceSameResults(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -161,5 +165,71 @@ public class RunModeEquivalenceTests
         _testOutputHelper.WriteLine(expressionsBasedOutput);
 
         Assert.Equal(perStatementOutput, expressionsBasedOutput);
+    }
+
+    /// <summary>
+    /// Tests both run modes using AppTester.
+    /// Provides test coverage metrics.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public void AppTesterPerStatementAndExpressionsBasedProduceSameResults(string caseDir)
+    {
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+
+        // Run in PerStatement mode
+        var perStatementConsole = new TestConsole();
+        perStatementConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        perStatementConsole.Profile.Capabilities.Ansi = false;
+        perStatementConsole.Profile.Width = int.MaxValue;
+
+        var perStatementApp = new CommandAppTester(console: perStatementConsole);
+        perStatementApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        var argsPerStatement = new[]
+        {
+            "run",
+            scriptPath,
+            "--output-mode", "ExplicitPrintsOnly",
+            "--run-mode", "PerStatement",
+            "--deterministic",
+            "--no-welcome"
+        };
+
+        var resultPerStatement = perStatementApp.Run(argsPerStatement);
+        var perStatementOutput = Normalize(perStatementConsole.Output);
+
+        // Run in ExpressionsBased mode
+        var expressionsConsole = new TestConsole();
+        expressionsConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        expressionsConsole.Profile.Capabilities.Ansi = false;
+        expressionsConsole.Profile.Width = int.MaxValue;
+
+        var expressionsApp = new CommandAppTester(console: expressionsConsole);
+        expressionsApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        var argsExpressions = new[]
+        {
+            "run",
+            scriptPath,
+            "--output-mode", "ExplicitPrintsOnly",
+            "--run-mode", "ExpressionsBased",
+            "--deterministic",
+            "--no-welcome"
+        };
+
+        var resultExpressions = expressionsApp.Run(argsExpressions);
+        var expressionsOutput = Normalize(expressionsConsole.Output);
+
+        // Assert: Both modes should produce identical output
+        Assert.Equal(0, resultPerStatement.ExitCode);
+        Assert.Equal(0, resultExpressions.ExitCode);
+        Assert.Equal(perStatementOutput, expressionsOutput);
     }
 }

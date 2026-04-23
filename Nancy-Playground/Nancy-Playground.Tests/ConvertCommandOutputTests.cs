@@ -1,6 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
@@ -47,6 +50,9 @@ public class ConvertCommandOutputTests
         return tfm ?? "unknown-tfm";
     }
 
+    private static string Normalize(string s) =>
+        s.Replace("\r\n", "\n").Trim();
+
     /// <summary>
     /// Returns the last non-empty line, if it exists.
     /// If none exists, returns null.
@@ -62,9 +68,14 @@ public class ConvertCommandOutputTests
            .LastOrDefault(l => !string.IsNullOrWhiteSpace(l));
     }
 
+    /// <summary>
+    /// Builds and launches the actual app: first in run mode, then convert.
+    /// Then builds and launches the converted script to test that the last results match, using step-by-step computations. 
+    /// </summary>
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSameLastResult(string caseDir)
+    [ExcludeFromCodeCoverage]
+    public async Task CliSameLastResult(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -78,7 +89,7 @@ public class ConvertCommandOutputTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "last-result-test");
+        var outputDir = Path.Combine(caseDir, "last-result-test", "cli");
         Directory.CreateDirectory(outputDir);
         _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
@@ -193,9 +204,130 @@ public class ConvertCommandOutputTests
         Assert.Equal(runCommandFinalResult, programFinalResult);
     }
 
+    /// <summary>
+    /// Tests the run and convert commands via AppTesters.
+    /// Then builds and launches the converted script to test that the last results match, using step-by-step computations. 
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSameLastResultExpressions(string caseDir)
+    public async Task AppTesterSameLastResult(string caseDir)
+    {
+        // Arrange
+        // we locate the CLI dll only for the TFM string
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        var outputDir = Path.Combine(caseDir, "last-result-test", "app-tester");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--run-mode", "PerStatement",
+            "--deterministic",
+            "--no-welcome"
+        ];
+        
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+        
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        // Act: run command, obtain the script output
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+        
+        var runCommandFinalResult = LastNonEmptyLine(runCommandResult.Output) ?? 
+                                throw new InvalidOperationException("No result from the run command!");
+
+        // Arrange: convert the MPPG script to a C# file-based app
+        var programPath = Path.Combine(outputDir, "program.cs"); 
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file", programPath,
+            "--overwrite"
+        ];
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+        
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+        
+        // Act: convert command, obtain the C# program
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        // Arrange: run the converted program (from here on, identical to the CLI test)
+        string programFinalResult;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+            Assert.Equal(0, programResult.ExitCode);
+            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                    throw new InvalidOperationException("No result from the run command!");
+        }
+
+        // Finally: check that both results are the same
+        Assert.Equal(runCommandFinalResult, programFinalResult);
+    }
+    
+    /// <summary>
+    /// Builds and launches the actual app: first in run mode, then convert.
+    /// Then builds and launches the converted script to test that the last results match, using expression computations. 
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    [ExcludeFromCodeCoverage]
+    public async Task CliSameLastResultExpressions(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -209,7 +341,7 @@ public class ConvertCommandOutputTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "last-result-expressions-test");
+        var outputDir = Path.Combine(caseDir, "last-result-expressions-test", "cli");
         Directory.CreateDirectory(outputDir);
         _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
@@ -325,12 +457,16 @@ public class ConvertCommandOutputTests
         Assert.Equal(runCommandFinalResult, programFinalResult);
     }
 
-    private static string Normalize(string s) =>
-        s.Replace("\r\n", "\n").Trim();
-
+    /// <summary>
+    /// Tests the run and convert commands via AppTesters.
+    /// Then builds and launches the converted script to test that the last results match, using expression computations. 
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSameExplicitPrints(string caseDir)
+    public async Task AppTesterSameLastResultExpressions(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -344,7 +480,127 @@ public class ConvertCommandOutputTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "explicit-prints-test");
+        var outputDir = Path.Combine(caseDir, "last-result-expressions-test", "app-tester");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--run-mode", "ExpressionsBased",
+            "--deterministic",
+            "--no-welcome"
+        ];
+
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+        
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+        
+        // Act: run command, obtain the script output
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+        
+        var runCommandFinalResult = LastNonEmptyLine(runCommandResult.Output) ?? 
+                                throw new InvalidOperationException("No result from the run command!");
+
+        // Arrange: convert the MPPG script to a C# file-based app
+        var programPath = Path.Combine(outputDir, "program.cs"); 
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file", programPath,
+            "--overwrite",
+            "--use-expressions"
+        ];
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+        
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+        
+        // Act: convert command, obtain the C# program
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        // Arrange: run the converted program (from here on, identical to the CLI test)
+        string programFinalResult;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+            Assert.Equal(0, programResult.ExitCode);
+            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                    throw new InvalidOperationException("No result from the run command!");
+        }
+
+        // Finally: check that both results are the same
+        Assert.Equal(runCommandFinalResult, programFinalResult);
+    }
+
+    /// <summary>
+    /// Builds and launches the actual app: first in run mode, then convert.
+    /// Then builds and launches the converted script to test that all explicit prints match, using step-by-step computations. 
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    [ExcludeFromCodeCoverage]
+    public async Task CliSameExplicitPrints(string caseDir)
+    {
+        // Arrange: locate the CLI dll built for *this* test run's TFM.
+        // Because this test project is multi-targeted, dotnet test runs it per TFM.
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+
+        _testOutputHelper.WriteLine($"cliDllPath: {cliDllPath}");
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        if (string.IsNullOrWhiteSpace(cliDllPath) || !File.Exists(cliDllPath))
+            throw new FileNotFoundException($"CLI assembly not found at: {cliDllPath}");
+
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        var outputDir = Path.Combine(caseDir, "explicit-prints-test", "cli");
         Directory.CreateDirectory(outputDir);
         _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
@@ -458,9 +714,130 @@ public class ConvertCommandOutputTests
         Assert.Equal(runCommandExplicitPrints, programExplicitPrints);
     }
 
+    /// <summary>
+    /// Tests the run and convert commands via AppTesters.
+    /// Then builds and launches the converted script to test that all explicit prints match, using step-by-step computations. 
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSameExplicitPrintsExpressions(string caseDir)
+    public async Task AppTesterSameExplicitPrints(string caseDir)
+    {
+        // Arrange
+        // we locate the CLI dll only for the TFM string
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        var outputDir = Path.Combine(caseDir, "explicit-prints-test", "app-tester");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--output-mode", "ExplicitPrintsOnly",
+            "--run-mode", "PerStatement",
+            "--deterministic",
+            "--no-welcome"
+        ];
+
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+        
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        // Act: run command, obtain the script output
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+        
+        Assert.Equal(0, runCommandResult.ExitCode);
+        var runCommandExplicitPrints = Normalize(runCommandResult.Output);
+
+        // Arrange: convert the MPPG script to a C# file-based app
+        var programPath = Path.Combine(outputDir, "program.cs"); 
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file", programPath,
+            "--overwrite"
+        ];
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+        
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+        
+        // Act: convert command, obtain the C# program
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        // Arrange: run the converted program (from here on, identical to the CLI test)
+        string programExplicitPrints;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+            Assert.Equal(0, programResult.ExitCode);
+            programExplicitPrints = Normalize(programResult.StandardOutput);
+        }
+
+        // Finally: check that both results are the same
+        Assert.Equal(runCommandExplicitPrints, programExplicitPrints);
+    }
+    
+    /// <summary>
+    /// Builds and launches the actual app: first in run mode, then convert.
+    /// Then builds and launches the converted script to test that all explicit prints match, using expression computations. 
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    [ExcludeFromCodeCoverage]
+    public async Task CliSameExplicitPrintsExpressions(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -474,7 +851,7 @@ public class ConvertCommandOutputTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "explicit-prints-expressions-test");
+        var outputDir = Path.Combine(caseDir, "explicit-prints-expressions-test", "cli");
         Directory.CreateDirectory(outputDir);
         _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
@@ -588,5 +965,121 @@ public class ConvertCommandOutputTests
         // Finally: check that both results are the same
         Assert.Equal(runCommandExplicitPrints, programExplicitPrints);
     }
+    
+    /// <summary>
+    /// Tests the run and convert commands via AppTesters.
+    /// Then builds and launches the converted script to test that all explicit prints match, using expression computations. 
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async Task AppTesterSameExplicitPrintsExpressions(string caseDir)
+    {
+        // Arrange
+        // we locate the CLI dll only for the TFM string
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
 
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        var outputDir = Path.Combine(caseDir, "explicit-prints-expressions-test", "app-tester");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--output-mode", "ExplicitPrintsOnly",
+            "--run-mode", "ExpressionsBased",
+            "--deterministic",
+            "--no-welcome"
+        ];
+
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+        
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        // Act: run command, obtain the script output
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+        
+        Assert.Equal(0, runCommandResult.ExitCode);
+        var runCommandExplicitPrints = Normalize(runCommandResult.Output);
+
+        // Arrange: convert the MPPG script to a C# file-based app
+        var programPath = Path.Combine(outputDir, "program.cs"); 
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file", programPath,
+            "--overwrite",
+            "--use-expressions"
+        ];
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+        
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+        
+        // Act: convert command, obtain the C# program
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        // Arrange: run the converted program (from here on, identical to the CLI test)
+        string programExplicitPrints;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                // Run framework-dependent output as: dotnet <YourCli.dll> <args...>
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+            Assert.Equal(0, programResult.ExitCode);
+            programExplicitPrints = Normalize(programResult.StandardOutput);
+        }
+
+        // Finally: check that both results are the same
+        Assert.Equal(runCommandExplicitPrints, programExplicitPrints);
+    }
 }

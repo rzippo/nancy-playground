@@ -8,6 +8,8 @@ namespace Unipi.Nancy.Playground.Cli;
 
 public class ConvertCommand : Command<ConvertCommand.Settings>
 {
+    private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
+    
     public sealed class Settings : CommonExecutionSettings
     {
         [Description("Path to the .mppg file to convert to a Nancy program.")]
@@ -27,29 +29,34 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         public bool Overwrite { get; init; } = false;
     }
 
+    public ConvertCommand(IAnsiConsole console)
+    {
+        Console = console;
+    }
+
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)
         {
-            AnsiConsole.MarkupLine(Program.CliVersionLine);
+            Console.MarkupLine(Program.CliVersionLine);
             return 0;
         }
 
         if (!settings.MuteWelcomeMessage)
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
-                AnsiConsole.MarkupLine(cliWelcomeLine);
+                Console.MarkupLine(cliWelcomeLine);
 
         if (string.IsNullOrWhiteSpace(settings.MppgFile))
         {
-            AnsiConsole.MarkupLine($"[red]No input file specified.[/]");
-            AnsiConsole.MarkupLine($"[red]Did you want to run the interactive command?[/]");
+            Console.MarkupLine($"[red]No input file specified.[/]");
+            Console.MarkupLine($"[red]Did you want to run the interactive command?[/]");
             return 1;
         }
 
         var mppgFile = new FileInfo(settings.MppgFile);
         if (!mppgFile.Exists)
         {
-            AnsiConsole.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
+            Console.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
             return 1;
         }
 
@@ -59,11 +66,11 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         var nancyFile = new FileInfo(nancyFilePath);
         if (nancyFile.Exists && !settings.Overwrite)
         {
-            AnsiConsole.MarkupLine($"[red]{nancyFile.FullName}: file already exists.[/]");
+            Console.MarkupLine($"[red]{nancyFile.FullName}: file already exists.[/]");
             return 1;
         }
 
-        AnsiConsole.MarkupLine($"[yellow]Output program will be saved in: {nancyFile.FullName}[/]");
+        Console.MarkupLine($"[yellow]Output program will be saved in: {nancyFile.FullName}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
         var code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
@@ -80,7 +87,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
 
         File.WriteAllLines(nancyFile.FullName, (IEnumerable<string>)code);
 
-        AnsiConsole.MarkupLine($"[yellow]Conversion complete.[/]");
+        Console.MarkupLine($"[yellow]Conversion complete.[/]");
 
         return 0;
     }

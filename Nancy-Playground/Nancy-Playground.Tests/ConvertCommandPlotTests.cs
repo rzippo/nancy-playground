@@ -1,7 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
@@ -93,9 +96,14 @@ public class ConvertCommandPlotTests
             .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Builds and launches the actual app: first in run mode, then convert.
+    /// Then builds and launches the converted script to test that the same plots are produced. 
+    /// </summary>
     [Theory]
     [MemberData(nameof(TestCases))]
-    public async Task ConvertCommandSamePlotImages(string caseDir)
+    [ExcludeFromCodeCoverage]
+    public async Task CliSamePlotImages(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -108,7 +116,7 @@ public class ConvertCommandPlotTests
 
         var tfm = GetCurrentTfmFromPath(cliDllPath);
 
-        var outputDir = Path.Combine(caseDir, "plot-comparison-test");
+        var outputDir = Path.Combine(caseDir, "plot-comparison-test", "cli");
         Directory.CreateDirectory(outputDir);
 
         // Create subdirectories for run and convert outputs to avoid conflicts
@@ -124,8 +132,7 @@ public class ConvertCommandPlotTests
             "run",
             scriptPath,
             "--no-welcome",
-            "--plots-root", 
-            runOutputDir
+            "--plots-root", runOutputDir
         ];
         
         // Act: Run the MPPG script to generate plots
@@ -160,8 +167,7 @@ public class ConvertCommandPlotTests
         List<string> convertCommandArgs = [
             "convert", 
             scriptPath, 
-            "--output-file", 
-            programPath, 
+            "--output-file", programPath, 
             "--overwrite" 
         ];
 
@@ -194,6 +200,158 @@ public class ConvertCommandPlotTests
         }
 
         // Act: Run the converted C# program to generate plots
+        string convertPlotPaths;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        {
+            BufferedCommandResult programResult;
+            try
+            {
+                var dotnetProgramArgs = new List<string> { programPath };
+
+                programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments(dotnetProgramArgs)
+                    .WithWorkingDirectory(convertOutputDir)
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException($"Program did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            }
+
+            Assert.Equal(0, programResult.ExitCode);
+            convertPlotPaths = programResult.StandardOutput;
+        }
+
+        // Assert: Verify that plot files exist and have matching content
+        var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
+        var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
+
+        _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
+        _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
+
+        // Both runs should produce the same number of plot files
+        Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
+
+        // Compare each plot file by hash
+        for (int i = 0; i < runPlotFiles.Count; i++)
+        {
+            var runPlotFile = runPlotFiles[i];
+            var convertPlotFile = convertPlotFiles[i];
+
+            // Extract just the filename for comparison (paths may differ)
+            var runFileName = Path.GetFileName(runPlotFile);
+            var convertFileName = Path.GetFileName(convertPlotFile);
+
+            Assert.Equal(runFileName, convertFileName);
+
+            // Get full paths
+            var runFilePath = Path.Combine(runOutputDir, runFileName);
+            var convertFilePath = Path.Combine(convertOutputDir, convertFileName);
+
+            Assert.True(File.Exists(runFilePath), $"Run plot file not found: {runFilePath}");
+            Assert.True(File.Exists(convertFilePath), $"Convert plot file not found: {convertFilePath}");
+
+            // Compare file hashes
+            var runHash = await ComputeFileHashAsync(runFilePath);
+            var convertHash = await ComputeFileHashAsync(convertFilePath);
+
+            _testOutputHelper.WriteLine($"Plot file: {runFileName}");
+            _testOutputHelper.WriteLine($"  Run hash:     {runHash}");
+            _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
+
+            Assert.Equal(runHash, convertHash);
+        }
+    }
+
+    /// <summary>
+    /// Tests the run and convert commands via AppTesters.
+    /// Then builds and launches the converted script to test that the same plots are produced. 
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
+    [Theory]
+    [MemberData(nameof(TestCases))]
+    public async Task AppTesterSamePlotImages(string caseDir)
+    {
+        // Arrange
+        // we locate the CLI dll only for the TFM string
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        var outputDir = Path.Combine(caseDir, "plot-comparison-test", "app-tester");
+        Directory.CreateDirectory(outputDir);
+
+        // Create subdirectories for run and convert outputs to avoid conflicts
+        var runOutputDir = Path.Combine(outputDir, "run");
+        var convertOutputDir = Path.Combine(outputDir, "convert");
+        Directory.CreateDirectory(runOutputDir);
+        Directory.CreateDirectory(convertOutputDir);
+        _testOutputHelper.WriteLine($"runOutputDir: {Path.GetFullPath(runOutputDir)}");
+        _testOutputHelper.WriteLine($"convertOutputDir: {Path.GetFullPath(convertOutputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs = [
+            "run",
+            scriptPath,
+            "--no-welcome",
+            "--plots-root", runOutputDir
+        ];
+        
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+        
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        // Act: Run the MPPG script to generate plots
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stderr.txt"), runCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+        
+        Assert.Equal(0, runCommandResult.ExitCode);
+
+        // Arrange: convert the MPPG script to a C# file-based app
+        var programPath = Path.Combine(convertOutputDir, "program.cs");
+        List<string> convertCommandArgs = [
+            "convert", 
+            scriptPath, 
+            "--output-file", programPath, 
+            "--overwrite" 
+        ];
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+        
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+
+        // Act: convert command, obtain the C# program
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        // await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stderr.txt"), convertCommandResult.StandardError);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        // Act: Run the converted C# program to generate plots (from here on, identical to the CLI test)
         string convertPlotPaths;
         using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
         {

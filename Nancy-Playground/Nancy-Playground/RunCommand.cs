@@ -25,6 +25,8 @@ public enum PlotRootMode
 
 public class RunCommand : Command<RunCommand.Settings>
 {
+    private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
+
     public sealed class Settings : CommonExecutionSettings
     {
         [Description("Path to the .mppg file to run")]
@@ -44,29 +46,34 @@ public class RunCommand : Command<RunCommand.Settings>
         public string? PlotsRoot { get; init; }
     }
 
+    public RunCommand(IAnsiConsole console)
+    {
+        Console = console;
+    }
+
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)
         {
-            AnsiConsole.MarkupLine(Program.CliVersionLine);
+            Console.MarkupLine(Program.CliVersionLine);
             return 0;
         }
 
         if (!settings.MuteWelcomeMessage)
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
-                AnsiConsole.MarkupLine(cliWelcomeLine);
+                Console.MarkupLine(cliWelcomeLine);
 
         if (string.IsNullOrWhiteSpace(settings.MppgFile))
         {
-            AnsiConsole.MarkupLine($"[red]No input file specified.[/]");
-            AnsiConsole.MarkupLine($"[red]Did you want to run the interactive command?[/]");
+            Console.MarkupLine($"[red]No input file specified.[/]");
+            Console.MarkupLine($"[red]Did you want to run the interactive command?[/]");
             return 1;
         }
 
         var mppgFile = new FileInfo(settings.MppgFile);
         if (!mppgFile.Exists)
         {
-            AnsiConsole.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
+            Console.MarkupLine($"[red]{mppgFile.FullName}: file not found.[/]");
             return 1;
         }
 
@@ -100,7 +107,7 @@ public class RunCommand : Command<RunCommand.Settings>
         }
 
         if(!settings.Deterministic)
-            AnsiConsole.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
+            Console.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);
         var program = MppgParser.Program.FromText(programText);
@@ -109,31 +116,37 @@ public class RunCommand : Command<RunCommand.Settings>
         {
             if (settings.OnErrorMode == OnErrorMode.Stop)
             {
-                AnsiConsole.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
+                Console.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
                 foreach(var error in program.Errors)
-                    AnsiConsole.MarkupLineInterpolated($"[red]\t - {error.ToString()}[/]");
+                    Console.MarkupLineInterpolated($"[red]\t - {error.ToString()}[/]");
                 return 1;
             }
             else
             {
-                AnsiConsole.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
+                Console.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
                 foreach(var error in program.Errors)
-                    AnsiConsole.MarkupLineInterpolated($"[darkorange]\t - {error.ToString()}[/]");
+                    Console.MarkupLineInterpolated($"[darkorange]\t - {error.ToString()}[/]");
             }
         }
 
-        var plotFormatter = settings.Deterministic ? null : new ScottPlotFormatter(plotsRoot);
+        var plotFormatter = settings.Deterministic ? null : 
+            new ScottPlotFormatter(plotsRoot)
+            {
+                Console = Console
+            };
         // add option to use XPlotPlotFormatter?
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.ExplicitPrintsOnly => new OutputOnlyFormatter()
             {
+                Console = Console,
                 PlotFormatter = plotFormatter,
             },
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
+                Console = Console,
                 PlotFormatter = plotFormatter,
                 PrintTimePerStatement = !settings.Deterministic,
                 PrintInputAsConfirmation = false,

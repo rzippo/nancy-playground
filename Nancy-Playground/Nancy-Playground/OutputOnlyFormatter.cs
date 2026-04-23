@@ -13,7 +13,8 @@ namespace Unipi.Nancy.Playground.Cli;
 public class OutputOnlyFormatter : IStatementFormatter
 {
     public IPlotFormatter? PlotFormatter { get; init; }
-    
+    public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
+
     public void FormatStatementPreamble(Statement statement)
     {
         return;

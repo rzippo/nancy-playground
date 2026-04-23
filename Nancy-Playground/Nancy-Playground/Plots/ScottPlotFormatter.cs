@@ -18,6 +18,7 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 public class ScottPlotFormatter : IPlotFormatter
 {
     public string PlotsExportRoot { get; set; }
+    public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
     public ScottPlotFormatter(string? plotsRoot)
     {
@@ -29,7 +30,7 @@ public class ScottPlotFormatter : IPlotFormatter
     public void FormatPlot(PlotOutput plotOutput)
     {
         if (plotOutput.FunctionsToPlot.Count == 0)
-            AnsiConsole.MarkupLine("[red]No functions to plot.[/]");
+            Console.MarkupLine("[red]No functions to plot.[/]");
         else
         {
             var plotSettings = new ScottPlotSettings()
@@ -63,7 +64,7 @@ public class ScottPlotFormatter : IPlotFormatter
                 Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
             File.WriteAllBytes(imagePath, imageBytes);
 
-            AnsiConsole.MarkupLine($"[gray]Plot image written to: {imagePath}[/]");
+            Console.MarkupLine($"[gray]Plot image written to: {imagePath}[/]");
 
             if (showInGui)
             {
@@ -85,7 +86,7 @@ public class ScottPlotFormatter : IPlotFormatter
                 }
                 catch(System.ComponentModel.Win32Exception)
                 {
-                    AnsiConsole.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
+                    Console.MarkupLine($"[yellow]Unable to open plot in GUI.[/] [gray]Is this a container?[/]");
                 }
             }
         }

@@ -1,6 +1,9 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using CliWrap;
 using CliWrap.Buffered;
+using Spectre.Console.Cli.Testing;
+using Spectre.Console.Testing;
 using Xunit.Abstractions;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
@@ -29,12 +32,52 @@ public class RunCommandGoldenTests
         return caseDirs;
     }
 
+    private static bool IsCaseDirectory(string dir) 
+        => File.Exists(Path.Combine(dir, "expected.exitcode.txt"));
+
     public static IEnumerable<object[]> GoldenTestCases() 
         => GoldenTestDirs().Select(dir => (object[])[dir]);
 
+    private static IReadOnlyList<string> ReadArgs(string path)
+    {
+        if (!File.Exists(path)) return Array.Empty<string>();
+
+        return File.ReadAllLines(path)
+            .Select(l => l.Trim())
+            .Where(l => !string.IsNullOrWhiteSpace(l))
+            .Where(l => !l.StartsWith("#"))
+            .ToArray();
+    }
+
+    private static string ReadFileOrEmpty(string path) =>
+        File.Exists(path) ? File.ReadAllText(path) : "";
+
+    private static string ReadRequired(string path) =>
+        File.Exists(path) ? File.ReadAllText(path)
+            : throw new FileNotFoundException($"Missing required testcase file: {path}");
+
+    private static string Normalize(string s) =>
+        s.Replace("\r\n", "\n").Trim();
+
+    private static string GetCurrentTfmFromPath(string assemblyPath)
+    {
+        // Typical path contains .../bin/Release/<tfm>/...
+        // We'll grab the first segment that looks like netX.Y
+        var parts = assemblyPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Where(p => !string.IsNullOrWhiteSpace(p))
+            .ToArray();
+
+        var tfm = parts.FirstOrDefault(p => p.StartsWith("net", StringComparison.OrdinalIgnoreCase));
+        return tfm ?? "unknown-tfm";
+    }
+
+    /// <summary>
+    /// Builds and launches the actual app, testing its CLI output. 
+    /// </summary>
     [Theory]
     [MemberData(nameof(GoldenTestCases))]
-    public async Task GoldenTestEquivalence(string caseDir)
+    [ExcludeFromCodeCoverage]
+    public async Task CliTestEquivalence(string caseDir)
     {
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
@@ -98,40 +141,51 @@ public class RunCommandGoldenTests
             throw;
         }
     }
-
-    private static bool IsCaseDirectory(string dir) =>
-        File.Exists(Path.Combine(dir, "expected.exitcode.txt"));
-
-    private static IReadOnlyList<string> ReadArgs(string path)
+    
+    /// <summary>
+    /// Tests the run command using an AppTester.
+    /// </summary>
+    /// <remarks>
+    /// Provides a debug path, and test coverage metrics.
+    /// </remarks>
+    [Theory]
+    [MemberData(nameof(GoldenTestCases))]
+    public void AppTesterEquivalence(string caseDir)
     {
-        if (!File.Exists(path)) return Array.Empty<string>();
+        // Arrange
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
 
-        return File.ReadAllLines(path)
-            .Select(l => l.Trim())
-            .Where(l => !string.IsNullOrWhiteSpace(l))
-            .Where(l => !l.StartsWith("#"))
-            .ToArray();
-    }
+        List<string> args = [
+            "run",
+            Path.Combine(caseDir, "input.txt"),
+            "--deterministic",
+            "--no-welcome"
+        ];
+        args.AddRange(ReadArgs(Path.Combine(caseDir, "args.txt")));
 
-    private static string ReadFileOrEmpty(string path) =>
-        File.Exists(path) ? File.ReadAllText(path) : "";
+        var expectedOut = Normalize(ReadFileOrEmpty(Path.Combine(caseDir, "expected.stdout.txt")));
+        var expectedErr = Normalize(ReadFileOrEmpty(Path.Combine(caseDir, "expected.stderr.txt")));
+        var expectedExit = int.Parse(ReadRequired(Path.Combine(caseDir, "expected.exitcode.txt")).Trim());
 
-    private static string ReadRequired(string path) =>
-        File.Exists(path) ? File.ReadAllText(path)
-            : throw new FileNotFoundException($"Missing required testcase file: {path}");
+        var console = new TestConsole();
+        console.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        console.Profile.Capabilities.Ansi = false;
+        console.Profile.Width = int.MaxValue;
+        
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
 
-    private static string Normalize(string s) =>
-        s.Replace("\r\n", "\n").Trim();
-
-    private static string GetCurrentTfmFromPath(string assemblyPath)
-    {
-        // Typical path contains .../bin/Release/<tfm>/...
-        // We'll grab the first segment that looks like netX.Y
-        var parts = assemblyPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-            .Where(p => !string.IsNullOrWhiteSpace(p))
-            .ToArray();
-
-        var tfm = parts.FirstOrDefault(p => p.StartsWith("net", StringComparison.OrdinalIgnoreCase));
-        return tfm ?? "unknown-tfm";
+        // Act
+        var result = app.Run(args.ToArray());
+        
+        var actualOut = Normalize(console.Output);
+        
+        // Assert
+        Assert.Equal(expectedExit, result.ExitCode);
+        Assert.Equal(expectedOut, actualOut);
+        // no current way to test stderr in Spectre.Console?
     }
 }

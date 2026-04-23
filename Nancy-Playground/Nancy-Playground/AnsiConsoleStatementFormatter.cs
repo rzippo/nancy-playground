@@ -30,6 +30,12 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     /// </summary>
     public bool PrintTimePerStatement { get; init; } = true;
 
+    /// <summary>
+    /// The console used for output.
+    /// Defaults to a stdout console.
+    /// </summary>
+    public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
+
     public void FormatStatementPreamble(Statement statement)
     {
         switch (statement)
@@ -54,17 +60,17 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                     {
                         // use gray text, to not attract focus
                         if (statement.InlineComment.IsNullOrWhiteSpace())
-                            AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
+                            Console.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
                         else
-                            AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
+                            Console.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
                     }
                     else
                     {
                         // use $mainColor text
                         if (statement.InlineComment.IsNullOrWhiteSpace())
-                            AnsiConsole.MarkupLineInterpolated($"> {statement.Text}");
+                            Console.MarkupLineInterpolated($"> {statement.Text}");
                         else
-                            AnsiConsole.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
+                            Console.MarkupLineInterpolated($"> {statement.Text} [green]{statement.InlineComment}[/]");
                     }
                 }
                 break;
@@ -88,11 +94,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                         RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
-                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionValue}[/]"));
+                    Console.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionValue}[/]"));
                 }
                 else
                 {
-                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionOutput.OutputText}[/]"));
+                    Console.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionOutput.OutputText}[/]"));
                 }
                 break;
             }
@@ -109,11 +115,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                         RationalExpression re => re.Value.ToPrettyString(),
                         _ => throw new InvalidOperationException()
                     };
-                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]"));
+                    Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]"));
                 }
                 else
                 {
-                    AnsiConsole.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]"));
+                    Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]"));
                 }
                 break;
             }
@@ -121,13 +127,13 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case Assertion assertion:
             {
                 var assertionOutput = (AssertionOutput) output;
-                AnsiConsole.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
+                Console.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
                 break;
             }
 
             case Comment comment:
             {
-                AnsiConsole.MarkupLineInterpolated($"[green]{comment.Text}[/]");
+                Console.MarkupLineInterpolated($"[green]{comment.Text}[/]");
                 break;
             }
 
@@ -144,18 +150,18 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                     var plotOutput = (PlotOutput) output;
                     if (plotOutput.Time > TimeSpan.Zero && PrintTimePerStatement)
                     {
-                        AnsiConsole.MarkupLineInterpolated(FormatStatementTime(plotOutput.Time).Concat($"[grey]Plot inputs computed.[/]"));
+                        Console.MarkupLineInterpolated(FormatStatementTime(plotOutput.Time).Concat($"[grey]Plot inputs computed.[/]"));
                     }
                     PlotFormatter.FormatPlot(plotOutput);
                 }
                 else
-                    AnsiConsole.MarkupLineInterpolated($"[yellow]Plots disabled.[/]");
+                    Console.MarkupLineInterpolated($"[yellow]Plots disabled.[/]");
                 break;
             }
 
             default:
             {
-                AnsiConsole.MarkupLineInterpolated($"{output.OutputText}");
+                Console.MarkupLineInterpolated($"{output.OutputText}");
                 break;
             }
         }
@@ -184,9 +190,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             if (statement is not Comment and not EmptyStatement)
             {
                 if (statement.InlineComment.IsNullOrWhiteSpace())
-                    AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
+                    Console.MarkupLineInterpolated($"[grey]» {statement.Text}[/]");
                 else
-                    AnsiConsole.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
+                    Console.MarkupLineInterpolated($"[grey]» {statement.Text}[/] [green]{statement.InlineComment}[/]");
             }
         }
 
@@ -194,13 +200,13 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
         {
             case SyntaxErrorException:
             {
-                AnsiConsole.MarkupLineInterpolated($"[red]Syntax error[/]: {error.Exception.Message}");
+                Console.MarkupLineInterpolated($"[red]Syntax error[/]: {error.Exception.Message}");
                 break;
             }
 
             default:
             {
-                AnsiConsole.MarkupLineInterpolated($"[red]Execution error[/]: {error.Exception.Message}");
+                Console.MarkupLineInterpolated($"[red]Execution error[/]: {error.Exception.Message}");
                 break;
             }
         }
@@ -209,6 +215,6 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
     public void FormatEndOfProgram()
     {
-        AnsiConsole.MarkupLineInterpolated($"[yellow]End of Program.[/]");
+        Console.MarkupLineInterpolated($"[yellow]End of Program.[/]");
     }
 }
