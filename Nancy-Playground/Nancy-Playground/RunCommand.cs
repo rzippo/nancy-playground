@@ -44,6 +44,10 @@ public class RunCommand : Command<RunCommand.Settings>
         [Description("Explicit directory for saving plot files. If specified, --plots-root-mode is assumed to be Custom.")]
         [CommandOption("--plots-root")]
         public string? PlotsRoot { get; init; }
+
+        [Description("If enabled, plots are never opened automatically, regardless of the command used. Useful to implement tests.")]
+        [CommandOption("--no-plots-auto-open")]
+        public bool NoPlotsAutoOpen { get; init; } = false;
     }
 
     public RunCommand(IAnsiConsole console)
@@ -132,7 +136,8 @@ public class RunCommand : Command<RunCommand.Settings>
         var plotFormatter = settings.Deterministic ? null : 
             new ScottPlotFormatter(plotsRoot)
             {
-                Console = Console
+                Console = Console,
+                AutoOpenPlots = !settings.NoPlotsAutoOpen
             };
         // add option to use XPlotPlotFormatter?
 

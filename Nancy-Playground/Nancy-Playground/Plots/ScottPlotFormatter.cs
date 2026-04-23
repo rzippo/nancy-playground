@@ -19,6 +19,7 @@ public class ScottPlotFormatter : IPlotFormatter
 {
     public string PlotsExportRoot { get; set; }
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
+    public bool AutoOpenPlots { get; init; } = true;
 
     public ScottPlotFormatter(string? plotsRoot)
     {
@@ -68,6 +69,12 @@ public class ScottPlotFormatter : IPlotFormatter
 
             if (showInGui)
             {
+                if(!AutoOpenPlots)
+                {
+                    Console.MarkupLine($"[yellow]Auto-opening plots is disabled, command setting ignored.[/]");
+                    return;
+                }
+
                 var command = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "xdg-open" :
                   RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" :
                   RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd" : "xdg-open";
