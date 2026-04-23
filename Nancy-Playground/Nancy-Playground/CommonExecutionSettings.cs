@@ -28,6 +28,10 @@ public class CommonExecutionSettings : CommandSettings
     [Description("Echoes user input in interactive mode. Default: true in run mode, false in interactive mode.")]
     public bool? EchoInput { get; init; }
 
+    [CommandOption("--verbose")]
+    [Description("If enabled, the program prints out additional information about the execution, such as the time taken during parsing. Default: false.")]
+    public bool Verbose {get; init;} = false;
+
     [Description("If used, the program prints out the version and immediately terminates.")]
     [CommandOption("--version")]
     public bool Version { get; init; } = false;

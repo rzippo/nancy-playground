@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -113,8 +114,13 @@ public class RunCommand : Command<RunCommand.Settings>
         if(!settings.Deterministic)
             Console.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
+        var parsingStopwatch = Stopwatch.StartNew();
         var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);
         var program = MppgParser.Program.FromText(programText);
+        parsingStopwatch.Stop();
+
+        if (settings.Verbose)
+            Console.MarkupLine($"[gray]Parsing completed in {parsingStopwatch.Elapsed.TotalMilliseconds} ms.[/]");
 
         if (program.Errors.Count > 0)
         {
