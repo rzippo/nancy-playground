@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using Spectre.Console;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
-using Unipi.Nancy.Playground.Cli.Nancy.Plots;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 using Unipi.Nancy.Plots.ScottPlot;
