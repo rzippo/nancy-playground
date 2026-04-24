@@ -305,13 +305,23 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             _ => "=="
         };
 
-        // Generate assertion code that outputs the result
-        var lines = new List<string>
+        if(csharpOperator == "==")
         {
-            $"Console.WriteLine(({leftExpr}.Compute() {csharpOperator} {rightExpr}.Compute()).ToString().ToLower());"
-        };
+            // for function equality, must use Nancy's Curve.Equivalence to treat different representations of the same curve as equal
+            var leftType = leftExpressionContext.Accept(TypeVisitor);
+            var rightType = rightExpressionContext.Accept(TypeVisitor);
+            if (leftType == ExpressionType.Function && rightType == ExpressionType.Function)
+            {
+                return [
+                    $"Console.WriteLine(Curve.Equivalent({leftExpr}.Compute(), {rightExpr}.Compute()).ToString().ToLower());"
+                ];
+            }
+        }
 
-        return lines;
+        // In all other cases, C# operators will do the job
+        return [
+            $"Console.WriteLine(({leftExpr}.Compute() {csharpOperator} {rightExpr}.Compute()).ToString().ToLower());"
+        ];
     }
 
     public override List<string> VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
