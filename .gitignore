@@ -2,3 +2,4 @@ NC-files/*
 experiments/*
 *.png
 *.binlog
+benchmark-results-*.txt
