@@ -1,7 +1,12 @@
 #!/bin/pwsh
 param(
     [Parameter(Mandatory=$true)]
-    [string]$MppgScriptPath
+    [string]$MppgScriptPath,
+
+    [Parameter(Mandatory=$false)]
+    [int]$Iterations = 5,
+
+    [switch]$OutputLatex = $false
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,8 +41,8 @@ function Measure-Benchmark {
         [string]$ExePath,
         [string]$WorkingDir,
         [string[]]$Arguments,
-        [int]$Iterations = 3,
-        [int]$MemorySamplingInterval = 15
+        [int]$Iterations = 5,
+        [int]$MemorySamplingInterval = 10
     )
 
     $times = @()
@@ -64,7 +69,6 @@ function Measure-Benchmark {
 
         $proc = [System.Diagnostics.Process]::Start($psi)
         if(-not $isVerbose) {
-            # Need to read output asynchronously to prevent deadlocks if the process generates a lot of output
             $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
             $stderrTask = $proc.StandardError.ReadToEndAsync()
         }
@@ -92,42 +96,37 @@ function Measure-Benchmark {
     }
 }
 
-$scriptContent = Get-Content $MppgScriptPath -Raw
-$scriptName = [System.IO.Path]::GetFileName($MppgScriptPath)
+$benchmarks = @{
+    "Nancy-Playground run" = @{ TimeMs = 0; MemoryMB = 0 }
+    "Nancy-Playground convert" = @{ TimeMs = 0; MemoryMB = 0 }
+    "Converted C#" = @{ TimeMs = 0; MemoryMB = 0 }
+}
 
-Write-Host "`n=== Step 2: Benchmarking Nancy-Playground CLI ===" -ForegroundColor Yellow
+Write-Host "`n=== Step 2: Benchmarking Nancy-Playground run ===" -ForegroundColor Yellow
 
-$runResult = Measure-Benchmark -ExePath $cliDllPath -WorkingDir $workingDir -Arguments @("run", $MppgScriptPath) -Iterations 3
+$runResult = Measure-Benchmark -ExePath $cliDllPath -WorkingDir $workingDir -Arguments @("run", $MppgScriptPath) -Iterations $Iterations
 
 Write-Host "  Avg Time: $($runResult.AvgTimeMs) ms" -ForegroundColor Cyan
 Write-Host "  Avg Memory: $($runResult.AvgMemoryMB) MB" -ForegroundColor Cyan
 
-$cliTime = $runResult.AvgTimeMs
-$cliMem = $runResult.AvgMemoryMB
+$benchmarks["Nancy-Playground run"].TimeMs = $runResult.AvgTimeMs
+$benchmarks["Nancy-Playground run"].MemoryMB = $runResult.AvgMemoryMB
 
-Write-Host "`n=== Step 3: Converting to C# Program ===" -ForegroundColor Yellow
+Write-Host "`n=== Step 3: Benchmarking Nancy-Playground convert ===" -ForegroundColor Yellow
 
 $outputCsPath = Join-Path $convertedDir "program.cs"
 $convertArgs = @("convert", $MppgScriptPath, "--output-file", $outputCsPath)
 
-$convertPsi = New-Object System.Diagnostics.ProcessStartInfo
-$convertPsi.FileName = "dotnet"
-$convertPsi.Arguments = "$cliDllPath $($convertArgs -join ' ')"
-$convertPsi.WorkingDirectory = $convertedDir
-$convertPsi.UseShellExecute = $false
-$convertPsi.RedirectStandardOutput = $true
-$convertPsi.RedirectStandardError = $true
-$convertPsi.CreateNoWindow = $true
+$convertResult = Measure-Benchmark -ExePath $cliDllPath -WorkingDir $convertedDir -Arguments $convertArgs -Iterations $Iterations
 
-$convertProc = [System.Diagnostics.Process]::Start($convertPsi)
-$convertStdOut = $convertProc.StandardOutput.ReadToEnd()
-$convertStdErr = $convertProc.StandardError.ReadToEnd()
-$convertProc.WaitForExit()
+Write-Host "  Avg Time: $($convertResult.AvgTimeMs) ms" -ForegroundColor Cyan
+Write-Host "  Avg Memory: $($convertResult.AvgMemoryMB) MB" -ForegroundColor Cyan
 
-if ($convertProc.ExitCode -ne 0) {
-    Write-Host "Convert stdout: $convertStdOut" -ForegroundColor Red
-    Write-Host "Convert stderr: $convertStdErr" -ForegroundColor Red
-    throw "Convert failed with exit code $($convertProc.ExitCode)"
+$benchmarks["Nancy-Playground convert"].TimeMs = $convertResult.AvgTimeMs
+$benchmarks["Nancy-Playground convert"].MemoryMB = $convertResult.AvgMemoryMB
+
+if (-not (Test-Path $outputCsPath)) {
+    throw "Convert failed - output file not created"
 }
 
 Write-Host "Converted to: $outputCsPath" -ForegroundColor Green
@@ -173,41 +172,55 @@ $convertedDll = Join-Path $convertProjectDir "bin\Release\net10.0\ConvertedProje
 
 Write-Host "`n=== Step 5: Benchmarking Converted Program ===" -ForegroundColor Yellow
 
-$convResult = Measure-Benchmark -ExePath $convertedDll -WorkingDir $convertProjectDir -Arguments @() -Iterations 3
+$convResult = Measure-Benchmark -ExePath $convertedDll -WorkingDir $convertProjectDir -Arguments @() -Iterations $Iterations
 
 Write-Host "  Avg Time: $($convResult.AvgTimeMs) ms" -ForegroundColor Cyan
 Write-Host "  Avg Memory: $($convResult.AvgMemoryMB) MB" -ForegroundColor Cyan
 
-$convTime = $convResult.AvgTimeMs
-$convMem = $convResult.AvgMemoryMB
+$benchmarks["Converted C#"].TimeMs = $convResult.AvgTimeMs
+$benchmarks["Converted C#"].MemoryMB = $convResult.AvgMemoryMB
 
-Write-Host "`n=== Comparison Table ===" -ForegroundColor Green
+Write-Host "`n=== Comparison Table ===" -ForegroundColor Yellow
 
-$table = @"
-+---------------------------+------------------+------------------+
-| Metric                    | Nancy-Playground | Converted C#     |
-+---------------------------+------------------+------------------+
-| Runtime (ms)              | $($cliTime.ToString().PadLeft(16)) | $($convTime.ToString().PadLeft(16)) |
-| Memory (MB)               | $($cliMem.ToString().PadLeft(16)) | $($convMem.ToString().PadLeft(16)) |
-+---------------------------+------------------+------------------+
+$asciiTable = @"
++--------------------------------+-------------------+--------------------+
+|                                | Runtime (ms)      | Peak Memory (MB)   |
++--------------------------------+-------------------+--------------------+
+| Nancy-Playground run           | $($benchmarks["Nancy-Playground run"].TimeMs.ToString().PadLeft(17)) | $($benchmarks["Nancy-Playground run"].MemoryMB.ToString().PadLeft(18)) |
+| Nancy-Playground convert       | $($benchmarks["Nancy-Playground convert"].TimeMs.ToString().PadLeft(17)) | $($benchmarks["Nancy-Playground convert"].MemoryMB.ToString().PadLeft(18)) |
+| Converted C#                   | $($benchmarks["Converted C#"].TimeMs.ToString().PadLeft(17)) | $($benchmarks["Converted C#"].MemoryMB.ToString().PadLeft(18)) |
++--------------------------------+-------------------+--------------------+
 "@
+Write-Host $asciiTable
 
-Write-Host $table
+if($OutputLatex){
+    $latexTable = @"
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|r|r|}
+    \hline
+     & Runtime (ms) & Peak Memory (MB) \\
+    \hline
+    Nancy-Playground run & $($benchmarks["Nancy-Playground run"].TimeMs) & $($benchmarks["Nancy-Playground run"].MemoryMB) \\
+    \hline
+    Nancy-Playground convert & $($benchmarks["Nancy-Playground convert"].TimeMs) & $($benchmarks["Nancy-Playground convert"].MemoryMB) \\
+    \hline
+    Converted C\# & $($benchmarks["Converted C#"].TimeMs) & $($benchmarks["Converted C#"].MemoryMB) \\
+    \hline
+    \end{tabular}
+\end{table}
+"@
+    Write-Host $latexTable
+}
 
 $summaryFile = Join-Path $scriptDir "benchmark-results-$([System.IO.Path]::GetFileNameWithoutExtension($MppgScriptPath))-$($benchmarkDate.ToString("yyyyMMdd-HH-mm-ss")).txt"
-$summary = @"
-Benchmark Results
-=================
+
+$summary = "Benchmark Results
+===============
 Script: $MppgScriptPath
 Date: $($benchmarkDate.ToString("yyyy-MM-dd HH:mm:ss"))
 
-+------------------+------------------+
-| Nancy-Playground | Converted C#     |
-+------------------+------------------+
-| $($cliTime.ToString().PadLeft(13)) ms | $($convTime.ToString().PadLeft(13)) ms |
-| $($cliMem.ToString().PadLeft(13)) MB | $($convMem.ToString().PadLeft(13)) MB |
-+------------------+------------------+
-"@
+$asciiTable"
 $summary | Set-Content $summaryFile
 Write-Host "`nResults saved to: $summaryFile" -ForegroundColor Gray
 
