@@ -43,4 +43,4 @@ jobs:
         run: dotnet build $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
 
       - name: Test Nancy-Playground
-        run: dotnet test $NANCY_PLAYGROUND_TESTS /p:Configuration=$BUILD_CONFIG
+        run: dotnet test --project $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
