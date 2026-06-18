@@ -15,7 +15,7 @@ If you use the Nancy library, or any software including parts of it or derived f
 we would appreciate it if you could cite the original paper describing it:
 
 R. Zippo, G. Stea, "Nancy: an efficient parallel Network Calculus library", 
-SoftwareX, Volume 19, July 2022, DOI: 10.1016/j.softx.2022.101178
+SoftwareX, Volume 19, July 2022, DOI: 10.4230/LIPIcs.ECRTS.2026.5
 ```
 
 The MIT license allows you to use this software for almost any purpose. However, if you use or include this software or its code (in full or in part) in your own, the fact that you are doing so in full compliance to the license does not exempt you from following standard academic practices regarding attribution and citation. 
