@@ -42,7 +42,7 @@ jobs:
         run: dotnet build $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
 
       - name: Test Nancy-Playground
-        run: dotnet test --project $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
+        run: dotnet test --project $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG -- --stop-on-fail on
 
       - name: Pack
         run: dotnet pack $NANCY_PLAYGROUND --configuration $BUILD_CONFIG --no-restore --no-build
