@@ -2,6 +2,7 @@
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
+using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Visitors;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
@@ -78,6 +79,8 @@ public class Expression
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
+        parser.ErrorHandler = new BailErrorStrategy();
+        parser.SeedVariableTypes(state);
 
         var context = parser.expression();
         var visitor = new ExpressionVisitor(state);

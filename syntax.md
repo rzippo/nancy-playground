@@ -49,6 +49,9 @@ Functions and scalars can be given a name and recalled later using the `:=` synt
 f := ...
 ```
 
+Variable references must point to variables that were already declared in the current script or interactive session.
+Forward references and unknown names are rejected by the parser instead of being guessed as either scalars or functions.
+
 ## Function constructors
 
 ### Known functions
@@ -180,6 +183,24 @@ These operations return a _function_.
 
 > `hShift` and `hshift` are both fine, like `vShift` and `vshift`.
 > Fun thing: this is not documented, but used heavily in the PhD Thesis of Guidolin--Pina.
+
+### Function operator precedence
+
+Operators are parsed by the type of the expression they return.
+Mixed scalar/function operators therefore parse as function expressions when their result is a function.
+For example, `x + f`, `f(x) * g`, and `f comp x` are function expressions, while `f(x)` and `f(x) + x` are scalar expressions.
+
+The supported precedence order is:
+
+1. Function sampling and unary operators.
+2. Product/composition operators: `*`, `/`, `*_`, `*^`, `/_`, `/^`, and `comp`, evaluated left-to-right.
+3. Sum/min/max operators: `+`, `-`, `/\`, and `\/`, evaluated left-to-right.
+
+Thus `f comp g * x` is parsed as `(f comp g) * x`, and `f * x comp g` is parsed as `(f * x) comp g`.
+
+Some mixed scalar/function forms are Nancy extensions beyond the subset that RTaW computes successfully.
+For example, `f(x) comp g` is accepted as a mixed scalar/function composition and returns a function.
+For syntax that RTaW computes successfully, the implementation is expected to match RTaW behavior.
 
 ## Scalar-returning operations
 

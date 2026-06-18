@@ -21,6 +21,12 @@ public partial class ExpressionVisitor
         var rate = rateExp.Compute();
         var latency = latencyExp.Compute();
 
+        if (latency.IsPlusInfinite)
+            return Expressions.Expressions.FromCurve(Curve.PlusInfinite(), name: "epsilon");
+
+        if (rate.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite slope allowed");
+
         var curve = new RateLatencyServiceCurve(rate, latency);
         var curveExp = Expressions.Expressions.FromCurve(curve, name: $"ratency_{{{rate}, {latency}}}");
 
@@ -40,6 +46,12 @@ public partial class ExpressionVisitor
 
         var a = aExp.Compute();
         var b = bExp.Compute();
+
+        if (a.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite slopes allowed");
+
+        if (b.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite constants allowed");
 
         var curve = new SigmaRhoArrivalCurve(b, a);
         var curveExp = Expressions.Expressions.FromCurve(curve, name: $"bucket_{{{a}, {b}}}");
@@ -61,6 +73,21 @@ public partial class ExpressionVisitor
 
         var slope = slopeExp.Compute();
         var constant = constantExp.Compute();
+
+        if (slope.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite slopes allowed");
+
+        if (constant.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite constants allowed");
+
+        if (constant.IsMinusInfinite || (slope.IsMinusInfinite && !constant.IsPlusInfinite))
+            return Expressions.Expressions.FromCurve(new Curve(
+                new Sequence([
+                    new Point(0, Rational.MinusInfinity),
+                    new Segment(0, 1, Rational.MinusInfinity, 0)
+                ]),
+                0, 1, 0
+            ), name: "minus_epsilon");
 
         var curve = new Curve(
             new Sequence([
@@ -84,10 +111,13 @@ public partial class ExpressionVisitor
         var ihExp = context.GetChild(4).Accept(this);
 
         if (ioExp is not RationalExpression oExp || ihExp is not RationalExpression hExp)
-            throw new Exception("Expected expressions for o, l and h");
+            throw new Exception("Expected expressions for o and h");
 
         var o = oExp.Compute();
         var h = hExp.Compute();
+
+        if (o.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite step lengths allowed");
 
         var curve = new StepCurve(h, o);
         var curveExp = Expressions.Expressions.FromCurve(curve, name: $"step_{{{o}, {h}}}");
@@ -112,13 +142,7 @@ public partial class ExpressionVisitor
         var l = lExp.Compute();
         var h = hExp.Compute();
 
-        var curve = new Curve(
-            new Sequence([
-                Point.Origin(),
-                new Segment(0, l, h, 0)
-            ]),
-            0, l, h
-        ).DelayBy(o);
+        var curve = new StairCurve(h, l).DelayBy(o);
         var curveExp = Expressions.Expressions.FromCurve(curve, name: $"stair_{{{o}, {l}, {h}}}");
 
         return curveExp;
@@ -136,6 +160,9 @@ public partial class ExpressionVisitor
             throw new Exception("Expected expression for d");
 
         var d = dExp.Compute();
+
+        if (d.IsPlusInfinite)
+            throw new InvalidOperationException("Only finite latency allowed");
 
         var curve = new DelayServiceCurve(d);
         var curveExp = curve.ToExpression();
@@ -162,13 +189,14 @@ public partial class ExpressionVisitor
         var uppText = context.GetJoinedText();
 
         var transientElements = Enumerable.Empty<Element>();
-        var elementsVisitor = new ElementsVisitor();
+        var transientElementsVisitor = new ElementsVisitor(State);
+        var periodElementsVisitor = new ElementsVisitor(State, normalizeInfiniteRightEndpoint: true);
 
         var transientContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.UppTransientPartContext>(0);
         if (transientContext is not null)
         {
             var transientSequenceContext = transientContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
-            var parsedTransientElements = transientSequenceContext.Accept(elementsVisitor);
+            var parsedTransientElements = transientSequenceContext.Accept(transientElementsVisitor);
             transientElements = transientElements.Concat(parsedTransientElements);
         }
         var transientElementsList = transientElements.ToList();
@@ -177,7 +205,7 @@ public partial class ExpressionVisitor
 
         var periodContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.UppPeriodicPartContext>(0);
         var periodSequenceContext = periodContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
-        var periodElements = periodSequenceContext.Accept(elementsVisitor);
+        var periodElements = periodSequenceContext.Accept(periodElementsVisitor);
         var periodElementsList = periodElements.ToList();
         if(periodElementsList.Any(e => e.StartTime.IsInfinite || e.EndTime.IsInfinite))
             throw new InvalidOperationException($"Elements with infinite time are not supported in UPP functions: {uppText}");
@@ -199,8 +227,12 @@ public partial class ExpressionVisitor
         else
         {
             if (periodSequence.IsFinite)
-                c = periodSequence.LeftLimitAt(periodSequence.DefinedUntil) -
-                    periodSequence.ValueAt(periodSequence.DefinedFrom);
+            {
+                var periodStartValue = periodSequence.IsLeftOpen
+                    ? ((Segment) periodSequence.Elements[0]).RightLimitAtStartTime
+                    : periodSequence.ValueAt(periodSequence.DefinedFrom);
+                c = periodSequence.LeftLimitAt(periodSequence.DefinedUntil) - periodStartValue;
+            }
         }
 
         IEnumerable<Element> allElements;
@@ -239,7 +271,7 @@ public partial class ExpressionVisitor
 
     public override IExpression VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context)
     {
-        var elementsVisitor = new ElementsVisitor();
+        var elementsVisitor = new ElementsVisitor(State);
 
         var sequenceContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.SequenceContext>(0);
         var elements = sequenceContext.Accept(elementsVisitor);

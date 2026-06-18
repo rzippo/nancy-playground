@@ -1,0 +1,6 @@
+--output-mode
+ExplicitPrintsOnly
+--run-mode
+PerStatement
+--on-error
+Stop

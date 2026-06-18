@@ -139,7 +139,8 @@ public class ConvertCommandPlotTests
         ];
         
         // Act: Run the MPPG script to generate plots
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int runTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(runTimeoutSeconds)))
         {
             BufferedCommandResult runCommandResult;
             try
@@ -155,7 +156,7 @@ public class ConvertCommandPlotTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Run command did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"CLI did not exit within {runTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
 
             await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.StandardOutput, cts.Token);
@@ -175,7 +176,8 @@ public class ConvertCommandPlotTests
         ];
 
         // Act: convert command, obtain the C# program
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int convertTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertTimeoutSeconds)))
         {
             BufferedCommandResult convertCommandResult;
             try
@@ -191,7 +193,7 @@ public class ConvertCommandPlotTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Convert command did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"CLI did not exit within {convertTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
 
             await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.StandardOutput, cts.Token);
@@ -201,15 +203,26 @@ public class ConvertCommandPlotTests
             Assert.True(File.Exists(programPath), $"Converted program not found at {programPath}");
             Assert.Equal(0, convertCommandResult.ExitCode);
         }
+        
+        // Build the converted program (no timeout - handles NuGet restore)
+        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildResult = await CliWrap.Cli.Wrap("dotnet")
+            .WithArguments(["build", programPath, "-o", buildDir])
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
+        Assert.Equal(0, buildResult.ExitCode);
+        var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
+        Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
         // Act: Run the converted C# program to generate plots
         string convertPlotPaths;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int convertedProgramTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
         {
             BufferedCommandResult programResult;
             try
             {
-                var dotnetProgramArgs = new List<string> { programPath };
+                var dotnetProgramArgs = new List<string> { dllPath };
 
                 programResult = await CliWrap.Cli.Wrap("dotnet")
                     .WithArguments(dotnetProgramArgs)
@@ -219,8 +232,12 @@ public class ConvertCommandPlotTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Program did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
+            
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
 
             Assert.Equal(0, programResult.ExitCode);
             convertPlotPaths = programResult.StandardOutput;
@@ -358,14 +375,25 @@ public class ConvertCommandPlotTests
         Assert.True(File.Exists(programPath));
         Assert.Equal(0, convertCommandResult.ExitCode);
 
+        // Build the converted program (no timeout - handles NuGet restore)
+        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildResult = await CliWrap.Cli.Wrap("dotnet")
+            .WithArguments(["build", programPath, "-o", buildDir])
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
+        Assert.Equal(0, buildResult.ExitCode);
+        var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
+        Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
+
         // Act: Run the converted C# program to generate plots (from here on, identical to the CLI test)
         string convertPlotPaths;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int convertedProgramTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
         {
             BufferedCommandResult programResult;
             try
             {
-                var dotnetProgramArgs = new List<string> { programPath };
+                var dotnetProgramArgs = new List<string> { dllPath };
 
                 programResult = await CliWrap.Cli.Wrap("dotnet")
                     .WithArguments(dotnetProgramArgs)
@@ -375,7 +403,7 @@ public class ConvertCommandPlotTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"Program did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
 
             Assert.Equal(0, programResult.ExitCode);

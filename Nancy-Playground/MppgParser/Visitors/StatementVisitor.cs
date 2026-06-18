@@ -5,14 +5,36 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
-public class StatementVisitor : MppgBaseVisitor<Statement>
+public class StatementVisitor : MppgBaseVisitor<Statement?>
 {
-    public override Statement VisitStatementLine([NotNull] Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
+    private readonly SyntaxErrorInfo? _syntaxError;
+
+    public StatementVisitor(SyntaxErrorInfo? syntaxError = null)
     {
+        _syntaxError = syntaxError;
+    }
+
+    public override Statement? VisitStatementLine([NotNull] Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
+    {
+        if (_syntaxError is not null)
+            return CreateSyntaxErrorStatement(context);
+
         var statementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0);
         var inlineCommentContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.InlineCommentContext>(0);
 
-        var statement = statementContext.Accept(this);
+        Statement? statement;
+        try
+        {
+            statement = statementContext?.Accept(this);
+        }
+        catch (Exception ex)
+        {
+            return CreateSyntaxErrorStatement(context, ex);
+        }
+
+        if (statement is null)
+            return CreateSyntaxErrorStatement(context);
+
         if (inlineCommentContext != null)
         {
             var inlineComment = inlineCommentContext.GetJoinedText();
@@ -31,18 +53,18 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
             return statement;
     }
 
-    public override Statement VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)
+    public override Statement? VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)
     {
         var text = context.GetJoinedText();
         return new Comment { Text = text };
     }
 
-    public override Statement VisitEmpty([NotNull] Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
+    public override Statement? VisitEmpty([NotNull] Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
     {
         return new EmptyStatement();
     }
 
-    public override Statement VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
+    public override Statement? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
         var text = context.GetJoinedText();
         var args = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>();
@@ -212,14 +234,14 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         };
     }
 
-    public override Statement VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
+    public override Statement? VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
     {
         var expression = new Expression(context);
         var text = context.GetJoinedText();
         return new ExpressionCommand(expression) { Text = text };
     }
 
-    public override Statement VisitAssignment(Unipi.MppgParser.Grammar.MppgParser.AssignmentContext context)
+    public override Statement? VisitAssignment(Unipi.MppgParser.Grammar.MppgParser.AssignmentContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -232,7 +254,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         return new Assignment(name, expression) { Text = text };
     }
 
-    public override Statement VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context)
+    public override Statement? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context)
     {
         if (context.ChildCount != 4)
             throw new Exception("Expected 4 child expression");
@@ -243,7 +265,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         return new PrintExpressionCommand(name) { Text = text };
     }
 
-    public override Statement VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
+    public override Statement? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {
         var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
@@ -265,5 +287,18 @@ public class StatementVisitor : MppgBaseVisitor<Statement>
         };
 
         return new Assertion(leftExpression, rightExpression, @operator){ Text = text };
+    }
+
+    private SyntaxErrorStatement CreateSyntaxErrorStatement(
+        Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context,
+        Exception? innerException = null)
+    {
+        return new SyntaxErrorStatement
+        {
+            Text = context.GetJoinedText(),
+            SyntaxError = _syntaxError,
+            InnerException = innerException,
+            Message = "Statement could not be parsed."
+        };
     }
 }

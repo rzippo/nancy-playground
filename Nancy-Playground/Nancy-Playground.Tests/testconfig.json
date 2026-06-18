@@ -1,0 +1,6 @@
+{
+    "maxParallelThreads": 8,
+    "parallelizeTestCollections": true,
+    "parallelAlgorithm": "conservative",
+    "preEnumerateTheories": true
+}

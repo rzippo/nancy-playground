@@ -1,5 +1,314 @@
 grammar Mppg;
 
+@parser::members {
+    public enum VariableType
+    {
+        Number,
+        Function
+    }
+
+    private readonly Dictionary<string, VariableType> _variableTypes = new();
+    private static readonly HashSet<string> FunctionExpressionStarters = new()
+    {
+        "ratency",
+        "bucket",
+        "affine",
+        "step",
+        "stair",
+        "delay",
+        "zero",
+        "epsilon",
+        "uaf",
+        "upp",
+        "star",
+        "hShift",
+        "hshift",
+        "vShift",
+        "vshift",
+        "inv",
+        "low_inv",
+        "up_inv",
+        "upclosure",
+        "nnupclosure",
+        "left-ext",
+        "right-ext"
+    };
+    private static readonly HashSet<string> NumberReturningFunctionStarters = new()
+    {
+        "hDev",
+        "hdev",
+        "vDev",
+        "vdev"
+    };
+
+    public IReadOnlyDictionary<string, VariableType> VariableTypes => _variableTypes;
+
+    public void SetVariableType(string name, VariableType type)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
+        _variableTypes[name] = type;
+    }
+
+    public void SetVariableTypes(IEnumerable<KeyValuePair<string, VariableType>> variableTypes)
+    {
+        foreach (var pair in variableTypes)
+            SetVariableType(pair.Key, pair.Value);
+    }
+
+    private bool IsFunctionVariable(string name) =>
+        _variableTypes.TryGetValue(name, out var type) && type == VariableType.Function;
+
+    private bool IsNumberVariable(string name) =>
+        _variableTypes.TryGetValue(name, out var type) && type == VariableType.Number;
+
+    private bool IsKnownVariable(string name) =>
+        _variableTypes.ContainsKey(name);
+
+    private bool IsFunctionSampleStart() =>
+            IsFunctionVariable(CurrentToken.Text) && TokenStream.LT(2).Text == "(";
+
+    private bool IsFunctionVariableReferenceAt(int lookaheadIndex)
+    {
+        var token = TokenStream.LT(lookaheadIndex);
+        return token.Type == VARIABLE_NAME
+            && IsFunctionVariable(token.Text)
+            && TokenStream.LT(lookaheadIndex + 1).Text != "(";
+    }
+
+    private bool IsSignedNumberLiteralStart(int lookaheadIndex)
+    {
+        var text = TokenStream.LT(lookaheadIndex).Text;
+        return (text == "+" || text == "-")
+            && TokenStream.LT(lookaheadIndex + 1).Type == NUMBER_ABS_LITERAL;
+    }
+
+    private bool IsFunctionOperandStart(int lookaheadIndex)
+    {
+        var token = TokenStream.LT(lookaheadIndex);
+        var text = token.Text;
+
+        if (token.Type == TokenConstants.EOF || token.Type == NEW_LINE)
+            return false;
+
+        if (text == "(")
+            return ExpressionSegmentContainsFunction(lookaheadIndex + 1);
+
+        if (text == "+" || text == "-")
+            return IsFunctionOperandStart(lookaheadIndex + 1);
+
+        if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(lookaheadIndex))
+            return true;
+
+        return FunctionExpressionStarters.Contains(text);
+    }
+
+    private bool IsFunctionProductExpressionStart(int lookaheadIndex) =>
+        IsFunctionOperandStart(lookaheadIndex)
+        || IsNumberFunctionOperationStart(lookaheadIndex, "*")
+        || IsNumberFunctionOperationStart(lookaheadIndex, "comp");
+
+    private bool IsNumberFunctionOperationStart(int lookaheadIndex, string operation)
+    {
+        var numberEnd = TryGetNumberEnclosedExpressionEnd(lookaheadIndex);
+        return numberEnd > 0
+            && TokenStream.LT(numberEnd).Text == operation
+            && IsFunctionOperandStart(numberEnd + 1);
+    }
+
+    private bool IsNumberEnclosedExpressionStart(int lookaheadIndex)
+    {
+        var token = TokenStream.LT(lookaheadIndex);
+        var text = token.Text;
+
+        if (token.Type == NUMBER_ABS_LITERAL)
+            return true;
+
+        if (IsSignedNumberLiteralStart(lookaheadIndex))
+            return true;
+
+        if (text == "(")
+            return !ExpressionSegmentContainsFunction(lookaheadIndex + 1);
+
+        if (token.Type != VARIABLE_NAME)
+            return false;
+
+        return IsNumberVariable(text)
+            || IsFunctionVariable(text) && TokenStream.LT(lookaheadIndex + 1).Text == "("
+            || NumberReturningFunctionStarters.Contains(text);
+    }
+
+    private int TryGetNumberEnclosedExpressionEnd(int lookaheadIndex)
+    {
+        if (!IsNumberEnclosedExpressionStart(lookaheadIndex))
+            return -1;
+
+        var token = TokenStream.LT(lookaheadIndex);
+        var text = token.Text;
+
+        if (token.Type == NUMBER_ABS_LITERAL)
+            return lookaheadIndex + 1;
+
+        if (IsSignedNumberLiteralStart(lookaheadIndex))
+            return lookaheadIndex + 2;
+
+        if (text == "(")
+            return FindMatchingRightParenthesis(lookaheadIndex);
+
+        var numberReturningCallEnd = TryGetNumberReturningFunctionCallEnd(lookaheadIndex);
+        if (numberReturningCallEnd > 0)
+            return numberReturningCallEnd;
+
+        if (token.Type == VARIABLE_NAME && IsNumberVariable(text))
+            return lookaheadIndex + 1;
+
+        return -1;
+    }
+
+    private int FindMatchingRightParenthesis(int leftParenthesisIndex)
+    {
+        var depth = 0;
+
+        for (var index = leftParenthesisIndex;; index++)
+        {
+            var token = TokenStream.LT(index);
+            var text = token.Text;
+
+            if (token.Type == TokenConstants.EOF)
+                return -1;
+
+            if (text == "(")
+                depth++;
+            else if (text == ")")
+            {
+                depth--;
+                if (depth == 0)
+                    return index + 1;
+            }
+        }
+    }
+
+    private bool ExpressionSegmentContainsFunction(int startIndex)
+    {
+        return ExpressionSegmentContainsFunctionUntil(startIndex, IsExpressionDelimiter);
+    }
+
+    private bool SumOperandContainsFunction(int startIndex)
+    {
+        return ExpressionSegmentContainsFunctionUntil(startIndex, IsSumExpressionDelimiter);
+    }
+
+    private bool ProductOperandContainsFunction(int startIndex)
+    {
+        return ExpressionSegmentContainsFunctionUntil(startIndex, IsProductExpressionDelimiter);
+    }
+
+    // Scans only the current expression segment or operand. 
+    // Number-returning calls are skipped so f(x) and hDev(f, g) stay scalar at their call site.
+    private bool ExpressionSegmentContainsFunctionUntil(int startIndex, Func<string, bool> isDelimiter)
+    {
+        var depth = 0;
+
+        for (var index = startIndex;; index++)
+        {
+            var token = TokenStream.LT(index);
+            var text = token.Text;
+
+            if (token.Type == TokenConstants.EOF || token.Type == NEW_LINE)
+                return false;
+
+            if (depth == 0 && isDelimiter(text))
+                return false;
+
+            var numberReturningCallEnd = TryGetNumberReturningFunctionCallEnd(index);
+            if (numberReturningCallEnd > 0)
+            {
+                index = numberReturningCallEnd - 1;
+                continue;
+            }
+
+            if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(index))
+                return true;
+
+            if (FunctionExpressionStarters.Contains(text))
+                return true;
+
+            if (text == "(")
+                depth++;
+            else if (text == ")")
+            {
+                if (depth == 0)
+                    return false;
+
+                depth--;
+            }
+        }
+    }
+
+    private bool IsExpressionDelimiter(string text) =>
+        text == ","
+        || text == ")"
+        || text == "="
+        || text == "!="
+        || text == "<"
+        || text == "<="
+        || text == ">"
+        || text == ">=";
+
+    private bool IsSumExpressionDelimiter(string text) =>
+        text == "+"
+        || text == "-"
+        || text == "/\\"
+        || text == "\\/"
+        || IsExpressionDelimiter(text);
+
+    private bool IsProductExpressionDelimiter(string text) =>
+        text == "comp"
+        || text == "*"
+        || text == "*_"
+        || text == "*^"
+        || text == "/"
+        || text == "/_"
+        || text == "/^"
+        || text == "div"
+        || IsSumExpressionDelimiter(text);
+
+    private int TryGetNumberReturningFunctionCallEnd(int lookaheadIndex)
+    {
+        var token = TokenStream.LT(lookaheadIndex);
+        var text = token.Text;
+
+        var isNumberReturningFunctionCall =
+            token.Type == VARIABLE_NAME && IsFunctionVariable(text)
+            || NumberReturningFunctionStarters.Contains(text);
+
+        if (!isNumberReturningFunctionCall || TokenStream.LT(lookaheadIndex + 1).Text != "(")
+            return -1;
+
+        return FindMatchingRightParenthesis(lookaheadIndex + 1);
+    }
+
+    private void DeclareVariable(string name, ExpressionContext expression)
+    {
+        var type = TryGetExpressionType(expression);
+        if (type is not null)
+            SetVariableType(name, type.Value);
+    }
+
+    private VariableType? TryGetExpressionType(ExpressionContext expression)
+    {
+        if (expression.functionExpression() is not null)
+            return VariableType.Function;
+
+        if (expression.numberExpression() is not null)
+            return VariableType.Number;
+
+        return null;
+    }
+
+}
+
 // lexer rules
 NEW_LINE : [\r\n]+;
 WHITE_SPACE : [ \t]+ -> skip;
@@ -24,17 +333,17 @@ VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 // parser rules
 program : statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
 statementLine: statement inlineComment? ;
-statement 
-    : assignment 
+statement
+    : assignment
     | expressionCommand
-    | plotCommand 
+    | plotCommand
     | assertion
     | printExpressionCommand
     | comment
     | empty;
-assignment : VARIABLE_NAME ASSIGN expression ;
+assignment : name=VARIABLE_NAME ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
 expressionCommand : expression;
-expression : functionExpression | numberExpression;
+expression : {ExpressionSegmentContainsFunction(1)}? functionExpression | numberExpression;
 comment
     : INLINABLE_COMMENT
     // less precise that INLINABLE_COMMENT, but could not figure out a better way
@@ -44,19 +353,57 @@ empty: ;
 
 // Functions
 functionExpression
-    :  '(' functionExpression ')' #functionBrackets
-    | PLUS functionExpression #functionPositive
-    | MINUS functionExpression #functionNegative
-    | functionExpression ('*'|'*_') functionExpression #functionMinPlusConvolution
-    | functionExpression '*^' functionExpression #functionMaxPlusConvolution
-    | functionExpression ('/'|'/_') functionExpression #functionMinPlusDeconvolution
-    | functionExpression '/^' functionExpression #functionMaxPlusDeconvolution
-    | functionExpression '*' numberEnclosedExpression #functionScalarMultiplicationLeft
-    | numberEnclosedExpression '*' functionExpression #functionScalarMultiplicationRight
-    | functionExpression '/' numberEnclosedExpression #functionScalarDivision
-    | functionExpression op=(PLUS|MINUS|WEDGE|VEE) functionExpression #functionSumSubMinMax
-    | functionExpression op=(PLUS|MINUS|WEDGE|VEE) numberEnclosedExpression #functionSumSubMinMax
-    | functionExpression 'comp' functionExpression #functionComposition
+    : functionSumExpression;
+
+functionSumExpression
+    : functionSumStart functionSumSuffix* #functionSumChain
+    ;
+
+// The start/suffix split preserves left-to-right folding while letting predicates
+// classify mixed scalar/function operands before ANTLR commits to an alternative.
+functionSumStart
+    : {IsFunctionProductExpressionStart(1)}? functionProductExpression #functionSumFunctionStart
+    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev
+    ;
+
+functionSumSuffix
+    : {SumOperandContainsFunction(2)}? op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionSumSubMinMaxSuffix
+    | op=(PLUS|MINUS|WEDGE|VEE) numberEnclosedExpression #functionShiftMinMaxSuffix
+    ;
+
+functionProductExpression
+    : functionProductStart functionProductSuffix* #functionProductChain
+    ;
+
+// Product-level predicates distinguish convolution/composition from scalar
+// multiplication, division, and sampling forms that share the same tokens.
+functionProductStart
+    : {IsFunctionOperandStart(1)}? functionUnaryExpression #functionProductFunctionStart
+    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression '*' functionUnaryExpression #functionScalarMulRev
+    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
+    ;
+
+functionProductSuffix
+    : {ProductOperandContainsFunction(2)}? '*' functionUnaryExpression #functionMinPlusConvolutionSuffix
+    | '*' numberEnclosedExpression #functionScalarMulSuffix
+    | '*_' functionUnaryExpression #functionMinPlusConvolutionSuffix
+    | '*^' functionUnaryExpression #functionMaxPlusConvolutionSuffix
+    | {ProductOperandContainsFunction(2)}? '/' functionUnaryExpression #functionMinPlusDeconvolutionSuffix
+    | '/' numberEnclosedExpression #functionScalarDivSuffix
+    | '/_' functionUnaryExpression #functionMinPlusDeconvolutionSuffix
+    | '/^' functionUnaryExpression #functionMaxPlusDeconvolutionSuffix
+    | {IsFunctionOperandStart(2)}? 'comp' functionUnaryExpression #functionComposition
+    | 'comp' numberEnclosedExpression #functionScalarCompositionSuffix
+    ;
+
+functionUnaryExpression
+    : PLUS functionUnaryExpression #functionPositive
+    | MINUS functionUnaryExpression #functionNegative
+    | functionEnclosedExpression #functionEnclosedExpressionExp
+    ;
+
+functionEnclosedExpression
+    : {ExpressionSegmentContainsFunction(2)}? '(' functionExpression ')' #functionBrackets
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
@@ -67,12 +414,11 @@ functionExpression
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
     | functionConstructor #functionConstructorExp
-    | VARIABLE_NAME #functionVariableExp
+    | {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME #functionVariableExp
     ;
 
-// Function constructors
-functionConstructor 
-    : rateLatency 
+functionConstructor
+    : rateLatency
     | tokenBucket
     | affineFunction
     | stepFunction
@@ -113,50 +459,50 @@ segment
     | segmentLeftClosedRightOpen
     | segmentLeftClosedRightClosed
     ;
-endpoint: '(' numberLiteral ',' numberLiteral ')';
-segmentLeftOpenRightOpen: ']' endpoint numberLiteral? endpoint '[';
-segmentLeftOpenRightClosed: ']' endpoint numberLiteral? endpoint ']';
-segmentLeftClosedRightOpen: '[' endpoint numberLiteral? endpoint '[';
-segmentLeftClosedRightClosed: '[' endpoint numberLiteral? endpoint ']';
+endpoint: '(' numberExpression ',' numberExpression ')';
+segmentLeftOpenRightOpen: ']' endpoint numberExpression? endpoint '[';
+segmentLeftOpenRightClosed: ']' endpoint numberExpression? endpoint ']';
+segmentLeftClosedRightOpen: '[' endpoint numberExpression? endpoint '[';
+segmentLeftClosedRightClosed: '[' endpoint numberExpression? endpoint ']';
 
 // Numbers
-numberExpression 
-    : numberReturningfunctionOperation #numberReturningfunctionOperationExp 
+numberExpression
+    : numberReturningfunctionOperation #numberReturningfunctionOperationExp
     | '(' numberExpression ')' #numberBrackets
     | PLUS numberExpression #numberPositive
     | MINUS numberExpression #numberNegative
+    | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #numberVariableExp
+    | numberLiteral #numberLiteralExp
     | numberExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP) numberExpression #numberMulDiv
     | numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberExpression #numberSumSubMinMax
-    | VARIABLE_NAME #numberVariableExp
-    | numberLiteral #numberLiteralExp
     ;
 
 numberEnclosedExpression
     : numberReturningfunctionOperation #encNumberReturningfunctionOperationExp
-    | '(' numberExpression ')' #encNumberBrackets
-    | VARIABLE_NAME #encNumberVariableExp
+    | {!(ExpressionSegmentContainsFunction(2))}? '(' numberExpression ')' #encNumberBrackets
+    | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #encNumberVariableExp
     | numberLiteral #encNumberLiteralExp
     ;
 
 numberLiteral: (PLUS|MINUS)? NUMBER_ABS_LITERAL;
 
 // Number-returning function operations
-numberReturningfunctionOperation 
+numberReturningfunctionOperation
     : functionValueAt
     | functionLeftLimitAt
     | functionRightLimitAt
-    | functionHorizontalDeviation 
+    | functionHorizontalDeviation
     | functionVerticalDeviation;
-functionValueAt: functionName '(' numberExpression ')';
-functionLeftLimitAt: functionName '(' numberExpression '~'? MINUS ')';
-functionRightLimitAt: functionName '(' numberExpression '~'? PLUS ')';
+functionValueAt: {IsFunctionSampleStart()}? functionName '(' numberExpression ')';
+functionLeftLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpression '~'? MINUS ')';
+functionRightLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpression '~'? PLUS ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
 
 // Plots
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';
 plotArg: functionName | plotOption;
-functionName: VARIABLE_NAME;
+functionName: {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME;
 plotOption
     : 'main' '=' string
     | 'title' '=' string
@@ -176,7 +522,7 @@ string
     | stringVariable
     | numberLiteral;
 stringLiteral: STRING_LITERAL;
-stringVariable: VARIABLE_NAME;
+stringVariable: {IsKnownVariable(CurrentToken.Text)}? VARIABLE_NAME;
 
 interval: '[' numberLiteral ',' numberLiteral ']';
 

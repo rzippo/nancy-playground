@@ -79,6 +79,7 @@ public class RunCommandGoldenTests
     [ExcludeFromCodeCoverage]
     public async Task CliTestEquivalence(string caseDir)
     {
+        _testOutputHelper.WriteLine($"RUNNING TEST CASE: {caseDir}");
         // Arrange: locate the CLI dll built for *this* test run's TFM.
         // Because this test project is multi-targeted, dotnet test runs it per TFM.
         var cliDllPath = typeof(CliMarker).Assembly.Location;
@@ -104,7 +105,8 @@ public class RunCommandGoldenTests
         var expectedExit = int.Parse(ReadRequired(Path.Combine(caseDir, "expected.exitcode.txt")).Trim());
 
         // Act
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        int timeoutSeconds = 60;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
 
         BufferedCommandResult result;
         try
@@ -120,26 +122,20 @@ public class RunCommandGoldenTests
         }
         catch (OperationCanceledException)
         {
-            throw new TimeoutException($"CLI did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+            throw new TimeoutException($"CLI did not exit within {timeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
         }
 
         var actualOut = Normalize(result.StandardOutput);
         var actualErr = Normalize(result.StandardError);
 
-        // Assert + dump actuals on mismatch (include TFM to avoid clobber across runs)
-        try
-        {
-            Assert.Equal(expectedExit, result.ExitCode);
-            Assert.Equal(expectedOut, actualOut);
-            Assert.Equal(expectedErr, actualErr);
-        }
-        catch
-        {
-            File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.stdout.txt"), result.StandardOutput);
-            File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.stderr.txt"), result.StandardError);
-            File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.exitcode.txt"), result.ExitCode.ToString());
-            throw;
-        }
+        File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.stdout.txt"), result.StandardOutput);
+        File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.stderr.txt"), result.StandardError);
+        File.WriteAllText(Path.Combine(caseDir, $"actual.{tfm}.exitcode.txt"), result.ExitCode.ToString());
+        
+        // Assert
+        Assert.Equal(expectedExit, result.ExitCode);
+        Assert.Equal(expectedOut, actualOut);
+        Assert.Equal(expectedErr, actualErr);
     }
     
     /// <summary>

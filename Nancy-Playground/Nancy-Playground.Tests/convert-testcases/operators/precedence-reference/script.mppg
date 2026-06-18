@@ -1,0 +1,42 @@
+x := 2
+y := 3
+z := 4
+f := affine(1, 0)
+g := affine(2, 0)
+h := affine(0, 5)
+
+// Number product/division bind tighter than number sum/min/max.
+nProductBeforeSum := x + y * z
+nProductBeforeMin := x + y /\ z * x
+nLeftAssociativeSumMin := x + y /\ z
+
+// Function product binds tighter than mixed sum.
+productBeforeMixedSum := x + f * y
+mixedProductsBeforeFunctionSum := x * f + y * g
+
+// Product chains are left-associative.
+leftAssociativeScalarProduct := x * f / y
+leftAssociativeFunctionProduct := f * g / x
+
+// Mixed +, -, /\, and \/ share one left-associative sum tier.
+leftAssociativeMixedMin := f + x /\ y
+leftAssociativeNumberLeftMixedMin := x + f /\ y
+leftAssociativeMixedMax := f - x \/ y
+
+// Composition binds tighter than mixed sum.
+compositionRightSum := f comp g + x
+compositionLeftSum := f + x comp g
+
+// Print scalar observations
+nProductBeforeSum
+nProductBeforeMin
+nLeftAssociativeSumMin
+productBeforeMixedSum(10)
+mixedProductsBeforeFunctionSum(10)
+leftAssociativeScalarProduct(10)
+leftAssociativeFunctionProduct(10)
+leftAssociativeMixedMin(10)
+leftAssociativeNumberLeftMixedMin(10)
+leftAssociativeMixedMax(10)
+compositionRightSum(1)
+compositionLeftSum(1)

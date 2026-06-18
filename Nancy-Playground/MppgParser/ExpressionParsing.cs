@@ -21,6 +21,8 @@ public static class ExpressionParsing
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
+        parser.ErrorHandler = new BailErrorStrategy();
+        parser.SeedVariableTypes(state);
 
         var context = parser.expression();
         var visitor = new ExpressionVisitor(state);

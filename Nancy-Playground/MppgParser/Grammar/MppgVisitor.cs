@@ -87,166 +87,235 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitEmpty([NotNull] MppgParser.EmptyContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionMaxPlusDeconvolution</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.functionExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitFunctionMaxPlusDeconvolution([NotNull] MppgParser.FunctionMaxPlusDeconvolutionContext context);
+	Result VisitFunctionExpression([NotNull] MppgParser.FunctionExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionMaxPlusConvolution</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// Visit a parse tree produced by the <c>functionSumChain</c>
+	/// labeled alternative in <see cref="MppgParser.functionSumExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitFunctionMaxPlusConvolution([NotNull] MppgParser.FunctionMaxPlusConvolutionContext context);
+	Result VisitFunctionSumChain([NotNull] MppgParser.FunctionSumChainContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionSumFunctionStart</c>
+	/// labeled alternative in <see cref="MppgParser.functionSumStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionSumFunctionStart([NotNull] MppgParser.FunctionSumFunctionStartContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionShiftMinMaxRev</c>
+	/// labeled alternative in <see cref="MppgParser.functionSumStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionShiftMinMaxRev([NotNull] MppgParser.FunctionShiftMinMaxRevContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionSumSubMinMaxSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionSumSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionSumSubMinMaxSuffix([NotNull] MppgParser.FunctionSumSubMinMaxSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionShiftMinMaxSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionSumSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionShiftMinMaxSuffix([NotNull] MppgParser.FunctionShiftMinMaxSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionProductChain</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionProductChain([NotNull] MppgParser.FunctionProductChainContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionProductFunctionStart</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionProductFunctionStart([NotNull] MppgParser.FunctionProductFunctionStartContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarMulRev</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarMulRev([NotNull] MppgParser.FunctionScalarMulRevContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarCompositionRev</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarCompositionRev([NotNull] MppgParser.FunctionScalarCompositionRevContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMinPlusConvolutionSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMinPlusConvolutionSuffix([NotNull] MppgParser.FunctionMinPlusConvolutionSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarMulSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarMulSuffix([NotNull] MppgParser.FunctionScalarMulSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMaxPlusConvolutionSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMaxPlusConvolutionSuffix([NotNull] MppgParser.FunctionMaxPlusConvolutionSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMinPlusDeconvolutionSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMinPlusDeconvolutionSuffix([NotNull] MppgParser.FunctionMinPlusDeconvolutionSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarDivSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarDivSuffix([NotNull] MppgParser.FunctionScalarDivSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionMaxPlusDeconvolutionSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionMaxPlusDeconvolutionSuffix([NotNull] MppgParser.FunctionMaxPlusDeconvolutionSuffixContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionComposition</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionComposition([NotNull] MppgParser.FunctionCompositionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarCompositionSuffix</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarCompositionSuffix([NotNull] MppgParser.FunctionScalarCompositionSuffixContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionPositive</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionUnaryExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionPositive([NotNull] MppgParser.FunctionPositiveContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionNegative</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionUnaryExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionNegative([NotNull] MppgParser.FunctionNegativeContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionEnclosedExpressionExp</c>
+	/// labeled alternative in <see cref="MppgParser.functionUnaryExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionEnclosedExpressionExp([NotNull] MppgParser.FunctionEnclosedExpressionExpContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionBrackets</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionBrackets([NotNull] MppgParser.FunctionBracketsContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionScalarMultiplicationRight</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionScalarMultiplicationRight([NotNull] MppgParser.FunctionScalarMultiplicationRightContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionLowerPseudoInverse</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionLowerPseudoInverse([NotNull] MppgParser.FunctionLowerPseudoInverseContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionMinPlusDeconvolution</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionMinPlusDeconvolution([NotNull] MppgParser.FunctionMinPlusDeconvolutionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionUpNonDecreasingClosure</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionUpNonDecreasingClosure([NotNull] MppgParser.FunctionUpNonDecreasingClosureContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>functionSubadditiveClosure</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionSubadditiveClosure([NotNull] MppgParser.FunctionSubadditiveClosureContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionComposition</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionComposition([NotNull] MppgParser.FunctionCompositionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionVShift</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionVShift([NotNull] MppgParser.FunctionVShiftContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionRightExt</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionRightExt([NotNull] MppgParser.FunctionRightExtContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionMinPlusConvolution</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionMinPlusConvolution([NotNull] MppgParser.FunctionMinPlusConvolutionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionSumSubMinMax</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionSumSubMinMax([NotNull] MppgParser.FunctionSumSubMinMaxContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionScalarMultiplicationLeft</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionScalarMultiplicationLeft([NotNull] MppgParser.FunctionScalarMultiplicationLeftContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionNonNegativeUpNonDecreasingClosure</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionNonNegativeUpNonDecreasingClosure([NotNull] MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>functionVariableExp</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionVariableExp([NotNull] MppgParser.FunctionVariableExpContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>functionHShift</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionHShift([NotNull] MppgParser.FunctionHShiftContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionVShift</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionVShift([NotNull] MppgParser.FunctionVShiftContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionLowerPseudoInverse</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionLowerPseudoInverse([NotNull] MppgParser.FunctionLowerPseudoInverseContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionUpperPseudoInverse</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionUpperPseudoInverse([NotNull] MppgParser.FunctionUpperPseudoInverseContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>functionScalarDivision</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// Visit a parse tree produced by the <c>functionUpNonDecreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitFunctionScalarDivision([NotNull] MppgParser.FunctionScalarDivisionContext context);
+	Result VisitFunctionUpNonDecreasingClosure([NotNull] MppgParser.FunctionUpNonDecreasingClosureContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionNonNegativeUpNonDecreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionNonNegativeUpNonDecreasingClosure([NotNull] MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>functionLeftExt</c>
-	/// labeled alternative in <see cref="MppgParser.functionExpression"/>.
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionLeftExt([NotNull] MppgParser.FunctionLeftExtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionRightExt</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionRightExt([NotNull] MppgParser.FunctionRightExtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionConstructorExp</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionConstructorExp([NotNull] MppgParser.FunctionConstructorExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionVariableExp</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionVariableExp([NotNull] MppgParser.FunctionVariableExpContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.functionConstructor"/>.
 	/// </summary>

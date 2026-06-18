@@ -1,0 +1,20 @@
+x := 2
+f := affine(1, 1)
+g := affine(2, 0)
+h := affine(3, 0)
+
+functionChain := f comp g comp h
+functionChain_left := (f comp g) comp h
+functionChain_right := f comp (g comp h)
+
+scalarLeftChain := x comp f comp g
+scalarLeftChain_left := (x comp f) comp g
+scalarLeftChain_right := x comp (f comp g)
+
+functionChain(1)
+functionChain_left(1)
+functionChain_right(1)
+
+scalarLeftChain(1)
+scalarLeftChain_left(1)
+scalarLeftChain_right(1)

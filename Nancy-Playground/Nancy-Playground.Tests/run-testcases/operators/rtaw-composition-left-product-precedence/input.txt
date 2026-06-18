@@ -1,0 +1,37 @@
+x := 2
+y := 3
+f := affine(1, 1)
+g := affine(2, 0)
+h := affine(3, 0)
+
+scalarFunctionProductLeftOfComp := x * f comp g
+scalarFunctionProductLeftOfComp_productFirst := (x * f) comp g
+scalarFunctionProductLeftOfComp_compFirst := x * (f comp g)
+
+functionScalarProductLeftOfComp := f * x comp g
+functionScalarProductLeftOfComp_productFirst := (f * x) comp g
+functionScalarProductLeftOfComp_compFirst := f * (x comp g)
+
+functionFunctionProductLeftOfComp := f * g comp h
+functionFunctionProductLeftOfComp_productFirst := (f * g) comp h
+functionFunctionProductLeftOfComp_compFirst := f * (g comp h)
+
+functionDivisionLeftOfComp := f / x comp g
+functionDivisionLeftOfComp_productFirst := (f / x) comp g
+functionDivisionLeftOfComp_compFirst := f / (x comp g)
+
+scalarFunctionProductLeftOfComp(1)
+scalarFunctionProductLeftOfComp_productFirst(1)
+scalarFunctionProductLeftOfComp_compFirst(1)
+
+functionScalarProductLeftOfComp(1)
+functionScalarProductLeftOfComp_productFirst(1)
+functionScalarProductLeftOfComp_compFirst(1)
+
+functionFunctionProductLeftOfComp(1)
+functionFunctionProductLeftOfComp_productFirst(1)
+functionFunctionProductLeftOfComp_compFirst(1)
+
+functionDivisionLeftOfComp(1)
+functionDivisionLeftOfComp_productFirst(1)
+functionDivisionLeftOfComp_compFirst(1)

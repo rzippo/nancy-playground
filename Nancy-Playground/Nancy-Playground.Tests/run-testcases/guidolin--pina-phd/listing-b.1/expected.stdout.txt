@@ -34,15 +34,15 @@ C_T3pp = 4
 C_T4pp = 1
 // Maximum arrival curves for input tasks
 > aT1 := stair ( 0 , P_T1 , C_T1 )
-aT1 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,15,3,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 15, pseudoPeriodHeight: 3)
+aT1 = new StairCurve(3, 15)
 > aT2 := stair ( 0 , P_T2 , C_T2 )
-aT2 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,30,4,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 30, pseudoPeriodHeight: 4)
+aT2 = new StairCurve(4, 30)
 > aT3 := stair ( 0 , P_T3 , C_T3 )
-aT3 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,45,15,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 45, pseudoPeriodHeight: 15)
+aT3 = new StairCurve(15, 45)
 > aT4 := stair ( 0 , P_T4 , C_T4 )
-aT4 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,60,5,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 60, pseudoPeriodHeight: 5)
+aT4 = new StairCurve(5, 60)
 > aT5 := stair ( 0 , P_T5 , C_T5 )
-aT5 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,120,10,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 120, pseudoPeriodHeight: 10)
+aT5 = new StairCurve(10, 120)
 > aT23 := aT2 + aT3
 aT23 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,30,19,0), new Point(30,19), new Segment(30,45,23,0), new Point(45,23), new Segment(45,60,38,0), new Point(60,38), new Segment(60,90,42,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 90, pseudoPeriodHeight: 42)
 // Service curves for all the servers

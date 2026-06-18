@@ -17,6 +17,7 @@
 
     <ItemGroup>
         <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
+        <PackageReference Include="Meziantou.Xunit.v3.ParallelTestFramework" Version="1.0.6" />
         <PackageReference Include="coverlet.collector" Version="10.0.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,6 +36,7 @@
         <None Include="run-testcases\**\*.*" CopyToOutputDirectory="Always" />
         <None Include="convert-testcases\**\*.*" CopyToOutputDirectory="Always" />
         <None Include="plot-testcases\**\*.*" CopyToOutputDirectory="Always" />
+        <None Include="plot-expression-testcases\**\*.*" CopyToOutputDirectory="Always" />
         <None Include="run-mode-testcases\**\*.*" CopyToOutputDirectory="Always" />
     </ItemGroup>
 

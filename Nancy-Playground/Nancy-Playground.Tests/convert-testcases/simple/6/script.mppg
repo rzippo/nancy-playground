@@ -1,0 +1,13 @@
+f := ratency(10, 5)
+x := 3
+fAtX := f(x)
+plusRight := f + x
+plusLeft := x + f
+minusRight := f - x
+minusLeft := x - f
+x
+fAtX
+plusRight(10)
+plusLeft(10)
+minusRight(10)
+minusLeft(10)

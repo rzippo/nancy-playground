@@ -1,12 +1,56 @@
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.NetworkCalculus;
+using Unipi.Nancy.Numerics;
+using Unipi.Nancy.Playground.MppgParser.Statements;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class CurveParsing
 {
     private readonly ITestOutputHelper _testOutputHelper;
+    
+    // test variables
+    private static readonly Rational XValue = new(2);
+    
+    private static Curve BucketFunction() =>
+        new SigmaRhoArrivalCurve(3, 2);
+
+    private static Curve ServiceCurve() =>
+        new RateLatencyServiceCurve(1, 1);
+
+    private static Curve ConstantFunction(Rational value) =>
+        new(
+            new Sequence([
+                new Point(0, value),
+                Segment.Constant(0, 1, value),
+            ]),
+            0,
+            1,
+            0
+        );
+
+    private static Curve AffineFunction(Rational slope, Rational constant) =>
+        new(
+            new Sequence([
+                new Point(0, constant),
+                new Segment(0, 1, constant, slope),
+            ]),
+            0,
+            1,
+            slope
+        );
+
+    private static State StateWithVariables() =>
+        new(
+            [
+                ("f", Expressions.Expressions.FromCurve(BucketFunction(), "f")),
+                ("g", Expressions.Expressions.FromCurve(ServiceCurve(), "g")),
+            ],
+            [
+                ("x", Expressions.Expressions.FromRational(XValue, "x")),
+            ]
+        );
 
     public CurveParsing(ITestOutputHelper testOutputHelper)
     {
@@ -117,6 +161,46 @@ public class CurveParsing
                 12,
                 5
             )
+        ),
+        (
+            "uaf ( [ ( 0 , 0 ) 0 ( 0 , 0 ) ] ] ( 0 , 0 ) - 1 ( 1 , - 1 ) ] ] ( 1 , 0 ) - 1 ( 2 , - 1 ) ] ] ( 2 , - 1 ) 1 ( 3 , 0 ) ] ] ( 3 , 0 ) 0 ( 4 , 0 ) ] ] ( 4 , 0 ) 1 ( 5 , 1 ) ] ] ( 5 , 1 ) - 1 ( 7 , - 1 ) ] ] ( 7 , - 1 ) 1 ( + Infinity , + Infinity ) [ )",
+            new Curve(
+                new Sequence([
+                    Point.Origin(),
+                    new Segment(0, 1, 0, -1),
+                    new Point(1, -1),
+                    new Segment(1, 2, 0, -1),
+                    new Point(2, -1),
+                    new Segment(2, 3, -1, 1),
+                    new Point(3, 0),
+                    new Segment(3, 4, 0, 0),
+                    new Point(4, 0),
+                    new Segment(4, 5, 0, 1),
+                    new Point(5, 1),
+                    new Segment(5, 7, 1, -1),
+                    new Point(7, -1),
+                    new Segment(7, 8, -1, 1)
+                ]),
+                7, 1, 1
+            )
+        ),
+        (
+            "uaf( [(0,0)1(+inf,+inf)[ )",
+            new Curve(
+                new Sequence([
+                    new Point(0, 0),
+                    new Segment(0, 1, 0, 1)
+                ]),
+                0, 1, 1
+            )
+        ),
+        (
+            "ratency(1, +inf)",
+            Curve.PlusInfinite()
+        ),
+        (
+            "step(1, +inf)",
+            new StepCurve(Rational.PlusInfinity, 1)
         )
     ];
 
@@ -132,5 +216,454 @@ public class CurveParsing
         Assert.IsAssignableFrom<CurveExpression>(ie);
         var curve = ((CurveExpression)ie).Value;
         Assert.True(Curve.Equivalent(expected, curve));
+    }
+
+    [Fact]
+    public void ExplicitCurveSegmentsMayUseNumberExpressions()
+    {
+        var state = new State(
+            [
+                ("z", Expressions.Expressions.FromRational(0, "z")),
+                ("lmax", Expressions.Expressions.FromRational(20, "lmax")),
+                ("C", Expressions.Expressions.FromRational(100, "C")),
+                ("idSlA", Expressions.Expressions.FromRational(65, "idSlA")),
+                ("y", Expressions.Expressions.FromRational(new Rational(1, 5), "y")),
+            ]);
+
+        var actual = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse("uaf( [(z,z)z(y,z)]](y,z)idSlA(+inf,+inf)])", state));
+
+        Assert.Equal(65, actual.Value.PseudoPeriodSlope);
+    }
+
+    [Fact]
+    public void UppPeriodMayUseInfiniteRightEndpointForUltimatelyConstantTail()
+    {
+        var actual = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse("upp([(0, 0)0(2.75,0)] ](2.75,0.5)0(3, 0.5)] ](3,1.5)0(5.5, 1.5)] ](5.5, 3)0(7,3)], period(](7, 3)0(+Infinity, 3)]))", new State()));
+
+        var value = actual.ValueAt(100).Compute();
+
+        Assert.Equal(3, value);
+    }
+
+    public static IEnumerable<object[]> MixedScalarCurveOperatorTestCases =>
+        new List<(string mppg, Curve expected)>
+        {
+            ("f * 5", BucketFunction().Scale(new Rational(5))),
+            ("5 * f", BucketFunction().Scale(new Rational(5))),
+            ("f / 5", BucketFunction().Scale(new Rational(1, 5))),
+            ("f + 5", BucketFunction().VerticalShift(new Rational(5))),
+            ("5 + f", BucketFunction().VerticalShift(new Rational(5))),
+            ("f - 5", BucketFunction().VerticalShift(new Rational(-5))),
+            ("5 - f", BucketFunction().Negate().VerticalShift(new Rational(5))),
+            ("f /\\ 5", BucketFunction().Minimum(ConstantFunction(new Rational(5)))),
+            ("5 /\\ f", BucketFunction().Minimum(ConstantFunction(new Rational(5)))),
+            ("f \\/ 5", BucketFunction().Maximum(ConstantFunction(new Rational(5)))),
+            ("5 \\/ f", BucketFunction().Maximum(ConstantFunction(new Rational(5)))),
+            ("f * x", BucketFunction().Scale(XValue)),
+            ("x * f", BucketFunction().Scale(XValue)),
+            ("f / x", BucketFunction().Scale(new Rational(1, 2))),
+            ("f * (x)", BucketFunction().Scale(XValue)),
+            ("(x) * f", BucketFunction().Scale(XValue)),
+            ("f / (x)", BucketFunction().Scale(new Rational(1, 2))),
+            ("f + x", BucketFunction().VerticalShift(XValue)),
+            ("x + f", BucketFunction().VerticalShift(XValue)),
+            ("f - x", BucketFunction().VerticalShift(new Rational(-2))),
+            ("x - f", BucketFunction().Negate().VerticalShift(XValue)),
+            ("f + (x)", BucketFunction().VerticalShift(XValue)),
+            ("f - (x)", BucketFunction().VerticalShift(new Rational(-2))),
+            ("f /\\ x", BucketFunction().Minimum(ConstantFunction(XValue))),
+            ("x /\\ f", BucketFunction().Minimum(ConstantFunction(XValue))),
+            ("f \\/ x", BucketFunction().Maximum(ConstantFunction(XValue))),
+            ("x \\/ f", BucketFunction().Maximum(ConstantFunction(XValue))),
+            ("f /\\ (x)", BucketFunction().Minimum(ConstantFunction(XValue))),
+            ("f \\/ (x)", BucketFunction().Maximum(ConstantFunction(XValue))),
+            ("f + (5)", BucketFunction().VerticalShift(new Rational(5))),
+            ("(5) + f", BucketFunction().VerticalShift(new Rational(5))),
+            ("+f", BucketFunction()),
+            ("-f", BucketFunction().Negate()),
+            ("f + +5", BucketFunction().VerticalShift(new Rational(5))),
+            ("f + -3", BucketFunction().VerticalShift(new Rational(-3))),
+            ("g + (5)", ServiceCurve().VerticalShift(new Rational(5))),
+            ("(5) + g", ServiceCurve().VerticalShift(new Rational(5))),
+            ("f(x) * g", ServiceCurve().Scale(new Rational(7))),
+            ("g * f(x)", ServiceCurve().Scale(new Rational(7))),
+            ("f(x) + g", ServiceCurve().VerticalShift(new Rational(7))),
+            ("g + f(x)", ServiceCurve().VerticalShift(new Rational(7))),
+            ("f(x) - g", ServiceCurve().Negate().VerticalShift(new Rational(7))),
+            ("g - f(x)", ServiceCurve().VerticalShift(new Rational(-7))),
+            ("f(x) /\\ g", ServiceCurve().Minimum(ConstantFunction(new Rational(7)))),
+            ("g /\\ f(x)", ServiceCurve().Minimum(ConstantFunction(new Rational(7)))),
+            ("f(x) \\/ g", ServiceCurve().Maximum(ConstantFunction(new Rational(7)))),
+            ("g \\/ f(x)", ServiceCurve().Maximum(ConstantFunction(new Rational(7)))),
+            ("f(x) comp g", ConstantFunction(new Rational(7))),
+            ("g comp f(x)", ConstantFunction(new Rational(6))),
+            ("f(x) * g + x", ServiceCurve().Scale(new Rational(7)).VerticalShift(XValue)),
+            ("f(x) + g * x", ServiceCurve().Scale(XValue).VerticalShift(new Rational(7))),
+            ("x comp f", ConstantFunction(XValue)),
+            ("f comp x", ConstantFunction(new Rational(7))),
+            ("f + x comp g", BucketFunction().Addition(ConstantFunction(XValue))),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(MixedScalarCurveOperatorTestCases))]
+    public void MixedScalarCurveOperatorsParseToExpectedResult(
+        string mppg,
+        Curve expected)
+    {
+        var state = StateWithVariables();
+
+        var actual = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse(mppg, state));
+
+        Assert.True(Curve.Equivalent(expected, actual.Compute()));
+    }
+
+    [Fact]
+    public void FunctionScalingParsesEquivalentlyWithScalarOnEitherSide()
+    {
+        var state = StateWithVariables();
+        var expected = BucketFunction().Scale(new Rational(3));
+
+        var leftScalar = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse("3 * f", state));
+        var rightScalar = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse("f * 3", state));
+
+        Assert.True(Curve.Equivalent(expected, leftScalar.Compute()));
+        Assert.True(Curve.Equivalent(expected, rightScalar.Compute()));
+        Assert.True(Curve.Equivalent(leftScalar.Compute(), rightScalar.Compute()));
+    }
+
+    public static IEnumerable<object[]> AmbiguousVariableCurveOperatorTestCases =>
+        new List<(string mppg, Curve expected)>
+        {
+            ("f * g", BucketFunction().Convolution(ServiceCurve())),
+            ("f / g", BucketFunction().Deconvolution(ServiceCurve())),
+            ("f + g", BucketFunction().Addition(ServiceCurve())),
+            ("f - g", BucketFunction().Subtraction(ServiceCurve())),
+            ("f /\\ g", BucketFunction().Minimum(ServiceCurve())),
+            ("f \\/ g", BucketFunction().Maximum(ServiceCurve())),
+            ("f *^ g", BucketFunction().MaxPlusConvolution(ServiceCurve())),
+            ("f /^ g", BucketFunction().MaxPlusDeconvolution(ServiceCurve())),
+            ("f comp g", BucketFunction().Composition(ServiceCurve())),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(AmbiguousVariableCurveOperatorTestCases))]
+    public void AmbiguousVariableCurveOperatorsParseToExpectedResult(
+        string mppg,
+        Curve expected)
+    {
+        var state = StateWithVariables();
+
+        var actual = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse(mppg, state));
+
+        Assert.True(Curve.Equivalent(expected, actual.Compute()));
+    }
+
+    private static State StateWithCurveAndTwoNumberVars() =>
+        new(
+            [
+                ("f", Expressions.Expressions.FromCurve(new RateLatencyServiceCurve(10, 5), "f")),
+            ],
+            [
+                ("x", Expressions.Expressions.FromRational(new Rational(3), "x")),
+                ("y", Expressions.Expressions.FromRational(new Rational(4), "y")),
+            ]
+        );
+
+    public static IEnumerable<object[]> CurveAndTwoNumberVarSampleTestCases =>
+        new List<(string mppg, Rational observation, Rational expected)>
+        {
+            ("f + (x + y)", new Rational(10), new Rational(57)),
+            ("f - (x - y)", new Rational(10), new Rational(51)),
+            ("f * (x * y)", new Rational(10), new Rational(600)),
+            ("(x * y) * f", new Rational(10), new Rational(600)),
+            ("f / (x / y)", new Rational(10), new Rational(200, 3)),
+            ("f /\\ (x /\\ y)", new Rational(10), new Rational(3)),
+            ("f \\/ (x \\/ y)", new Rational(10), new Rational(50)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(CurveAndTwoNumberVarSampleTestCases))]
+    public void CurveAndTwoNumberVarExpressionsEvaluateToExpectedSample(
+        string mppg,
+        Rational observation,
+        Rational expected)
+    {
+        var state = StateWithCurveAndTwoNumberVars();
+        var expr = ExpressionParsing.Parse(mppg, state);
+        var curve = Assert.IsAssignableFrom<CurveExpression>(expr);
+        var actual = curve.ValueAt(observation).Compute();
+
+        Assert.Equal(expected, actual);
+    }
+
+    private static State StateWithTwoCurvesAndThreeNumberVars() =>
+        new(
+            [
+                ("f", Expressions.Expressions.FromCurve(new RateLatencyServiceCurve(10, 5), "f")),
+                ("g", Expressions.Expressions.FromCurve(ServiceCurve(), "g")),
+            ],
+            [
+                ("x", Expressions.Expressions.FromRational(new Rational(3), "x")),
+                ("y", Expressions.Expressions.FromRational(new Rational(4), "y")),
+                ("z", Expressions.Expressions.FromRational(new Rational(5), "z")),
+            ]
+        );
+
+    private static State StateWithPrecedenceVariables() =>
+        new(
+            [
+                ("f", Expressions.Expressions.FromCurve(BucketFunction(), "f")),
+                ("g", Expressions.Expressions.FromCurve(ServiceCurve(), "g")),
+            ],
+            [
+                ("x", Expressions.Expressions.FromRational(new Rational(2), "x")),
+                ("y", Expressions.Expressions.FromRational(new Rational(3), "y")),
+                ("z", Expressions.Expressions.FromRational(new Rational(4), "z")),
+            ]
+        );
+
+    private static State StateWithReferencePrecedenceVariables() =>
+        new(
+            [
+                ("f", Expressions.Expressions.FromCurve(AffineFunction(new Rational(1), new Rational(1)), "f")),
+                ("g", Expressions.Expressions.FromCurve(AffineFunction(new Rational(2), new Rational(0)), "g")),
+                ("h", Expressions.Expressions.FromCurve(AffineFunction(new Rational(3), new Rational(0)), "h")),
+            ],
+            [
+                ("x", Expressions.Expressions.FromRational(new Rational(2), "x")),
+                ("y", Expressions.Expressions.FromRational(new Rational(3), "y")),
+            ]
+        );
+
+    public static IEnumerable<object[]> MixedOperatorPrecedenceTestCases =>
+        new List<(string expression, string equivalent, string different, Rational observation)>
+        {
+            ("x + f * y", "x + (f * y)", "(x + f) * y", new Rational(10)),
+            ("f * x + g", "(f * x) + g", "f * (x + g)", new Rational(10)),
+            ("f + x * g", "f + (x * g)", "(f + x) * g", new Rational(10)),
+            ("f + x comp g", "f + (x comp g)", "(f + x) comp g", new Rational(10)),
+            ("f - x comp g", "f - (x comp g)", "(f - x) comp g", new Rational(10)),
+            ("f comp x + g", "(f comp x) + g", "f comp (x + g)", new Rational(10)),
+            ("x comp f + g", "(x comp f) + g", "x comp (f + g)", new Rational(10)),
+            ("f comp g * x", "(f comp g) * x", "f comp (g * x)", new Rational(10)),
+            ("x comp g * y", "(x comp g) * y", "x comp (g * y)", new Rational(10)),
+            ("f comp x * g", "(f comp x) * g", "f comp (x * g)", new Rational(10)),
+            ("f * x comp g", "(f * x) comp g", "f * (x comp g)", new Rational(10)),
+            ("f + x /\\ y", "(f + x) /\\ y", "f + (x /\\ y)", new Rational(10)),
+            ("x + f /\\ y", "(x + f) /\\ y", "x + (f /\\ y)", new Rational(10)),
+            ("f - x \\/ y", "(f - x) \\/ y", "f - (x \\/ y)", new Rational(10)),
+            ("x - f + y", "(x - f) + y", "x - (f + y)", new Rational(10)),
+            ("x /\\ f \\/ y", "(x /\\ f) \\/ y", "x /\\ (f \\/ y)", new Rational(10)),
+            ("f - x /\\ g", "(f - x) /\\ g", "f - (x /\\ g)", new Rational(10)),
+            ("x /\\ f - y", "(x /\\ f) - y", "x /\\ (f - y)", new Rational(10)),
+            ("f \\/ x + g", "(f \\/ x) + g", "f \\/ (x + g)", new Rational(10)),
+            ("f(x) + g * y", "f(x) + (g * y)", "(f(x) + g) * y", new Rational(10)),
+            ("f(x) comp g + y", "(f(x) comp g) + y", "f(x) comp (g + y)", new Rational(10)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(MixedOperatorPrecedenceTestCases))]
+    public void MixedOperatorPrecedenceMatchesExpectedParenthesizedForm(
+        string expression,
+        string equivalent,
+        string different,
+        Rational observation)
+    {
+        var state = StateWithPrecedenceVariables();
+        var actual = ParseCurveValueAt(expression, state, observation);
+        var expected = ParseCurveValueAt(equivalent, state, observation);
+        var unexpected = ParseCurveValueAt(different, state, observation);
+
+        Assert.Equal(expected, actual);
+        Assert.NotEqual(unexpected, actual);
+    }
+
+    public static IEnumerable<object[]> ReferenceProductCompositionPrecedenceTestCases =>
+        new List<(string expression, string equivalent, string different, Rational observation)>
+        {
+            ("f comp g / x", "(f comp g) / x", "f comp (g / x)", new Rational(1)),
+            ("f * x comp g", "(f * x) comp g", "f * (x comp g)", new Rational(1)),
+            ("f * g comp h", "(f * g) comp h", "f * (g comp h)", new Rational(1)),
+            ("f / x comp g", "(f / x) comp g", "f / (x comp g)", new Rational(1)),
+            ("f(x) * g + y", "(f(x) * g) + y", "f(x) * (g + y)", new Rational(10)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(ReferenceProductCompositionPrecedenceTestCases))]
+    public void ReferenceProductCompositionPrecedenceMatchesExpectedParenthesizedForm(
+        string expression,
+        string equivalent,
+        string different,
+        Rational observation)
+    {
+        var state = StateWithReferencePrecedenceVariables();
+        var actual = ParseCurveValueAt(expression, state, observation);
+        var expected = ParseCurveValueAt(equivalent, state, observation);
+        var unexpected = ParseCurveValueAt(different, state, observation);
+
+        Assert.Equal(expected, actual);
+        Assert.NotEqual(unexpected, actual);
+    }
+
+    public static IEnumerable<object[]> ReferenceCompositionAssociativityTestCases =>
+        new List<(string expression, string leftAssociative, string rightAssociative, Rational observation)>
+        {
+            ("f comp g comp h", "(f comp g) comp h", "f comp (g comp h)", new Rational(1)),
+            ("x comp f comp g", "(x comp f) comp g", "x comp (f comp g)", new Rational(1)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(ReferenceCompositionAssociativityTestCases))]
+    public void ReferenceCompositionAssociativityExamplesMatchParenthesizedForms(
+        string expression,
+        string leftAssociative,
+        string rightAssociative,
+        Rational observation)
+    {
+        var state = StateWithReferencePrecedenceVariables();
+        var actual = ParseCurveValueAt(expression, state, observation);
+        var left = ParseCurveValueAt(leftAssociative, state, observation);
+        var right = ParseCurveValueAt(rightAssociative, state, observation);
+
+        Assert.Equal(left, actual);
+        Assert.Equal(right, actual);
+    }
+
+    private static Rational ParseCurveValueAt(string mppg, State state, Rational observation)
+    {
+        var curve = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse(mppg, state));
+
+        return curve.ValueAt(observation).Compute();
+    }
+
+    public static IEnumerable<object[]> TwoCurvesThreeNumberVarSampleTestCases =>
+        new List<(string mppg, Rational observation, Rational expected)>
+        {
+            ("(f + 3) + (x + y)", new Rational(10), new Rational(60)),
+            ("(x + y) + (f + 3)", new Rational(10), new Rational(60)),
+            ("(f + 3) + 5", new Rational(10), new Rational(58)),
+            ("x + f * y", new Rational(10), new Rational(203)),
+            ("x * f / y", new Rational(10), new Rational(75, 2)),
+            ("f + x /\\ y", new Rational(10), new Rational(4)),
+            ("x + f /\\ y", new Rational(10), new Rational(4)),
+            ("f - x \\/ y", new Rational(10), new Rational(47)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(TwoCurvesThreeNumberVarSampleTestCases))]
+    public void TwoCurvesThreeNumberVarExpressionsEvaluateToExpectedSample(
+        string mppg,
+        Rational observation,
+        Rational expected)
+    {
+        var state = StateWithTwoCurvesAndThreeNumberVars();
+        var expr = ExpressionParsing.Parse(mppg, state);
+        var curve = Assert.IsAssignableFrom<CurveExpression>(expr);
+        var actual = curve.ValueAt(observation).Compute();
+
+        Assert.Equal(expected, actual);
+    }
+
+    public static IEnumerable<object[]> TwoCurvesThreeNumberVarCurveTestCases =>
+        new List<(string mppg, Curve expected)>
+        {
+            (
+                "(f + g) + (x + y)",
+                new RateLatencyServiceCurve(10, 5)
+                    .Addition(ServiceCurve())
+                    .VerticalShift(new Rational(7))
+            ),
+            (
+                "f * g / x",
+                new RateLatencyServiceCurve(10, 5)
+                    .Convolution(ServiceCurve())
+                    .Scale(new Rational(1, 3))
+            ),
+            (
+                "f * x + g",
+                new RateLatencyServiceCurve(10, 5)
+                    .Scale(new Rational(3))
+                    .Addition(ServiceCurve())
+            ),
+            (
+                "f + x * g",
+                new RateLatencyServiceCurve(10, 5)
+                    .Addition(ServiceCurve().Scale(new Rational(3)))
+            ),
+            (
+                "f comp g + x",
+                new RateLatencyServiceCurve(10, 5)
+                    .Composition(ServiceCurve())
+                    .Addition(ConstantFunction(new Rational(3)))
+            ),
+            (
+                "f + x comp g",
+                new RateLatencyServiceCurve(10, 5)
+                    .Addition(ConstantFunction(new Rational(3)))
+            ),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(TwoCurvesThreeNumberVarCurveTestCases))]
+    public void TwoCurvesThreeNumberVarExpressionsEvaluateToExpectedCurve(
+        string mppg,
+        Curve expected)
+    {
+        var state = StateWithTwoCurvesAndThreeNumberVars();
+        var expr = ExpressionParsing.Parse(mppg, state);
+        var curve = Assert.IsAssignableFrom<CurveExpression>(expr);
+
+        Assert.True(Curve.Equivalent(expected, curve.Compute()));
+    }
+
+    public static IEnumerable<object[]> FunctionSampleArithmeticTestCases =>
+        new List<(string mppg, Rational expected)>
+        {
+            ("f(10 + 5)", new Rational(33)),
+            ("f(10 - 5)", new Rational(13)),
+            ("f(10 * 5)", new Rational(103)),
+            ("f(3 + 5 ~-)", new Rational(19)),
+            ("f(3 + 5 ~+)", new Rational(19)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(FunctionSampleArithmeticTestCases))]
+    public void FunctionSampleArithmeticEvaluatesToExpectedResult(
+        string mppg,
+        Rational expected)
+    {
+        var state = StateWithVariables();
+        var expr = ExpressionParsing.Parse(mppg, state);
+        var result = Assert.IsAssignableFrom<RationalExpression>(expr);
+
+        Assert.Equal(expected, result.Compute());
+    }
+
+    public static IEnumerable<object[]> StateWithVariablesCurveSampleTestCases =>
+        new List<(string mppg, Rational observation, Rational expected)>
+        {
+            ("f + (10 + 5)", new Rational(10), new Rational(38)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(StateWithVariablesCurveSampleTestCases))]
+    public void StateWithVariablesCurveExpressionsEvaluateToExpectedSample(
+        string mppg,
+        Rational observation,
+        Rational expected)
+    {
+        var state = StateWithVariables();
+        var expr = ExpressionParsing.Parse(mppg, state);
+        var curve = Assert.IsAssignableFrom<CurveExpression>(expr);
+        var actual = curve.ValueAt(observation).Compute();
+
+        Assert.Equal(expected, actual);
     }
 }

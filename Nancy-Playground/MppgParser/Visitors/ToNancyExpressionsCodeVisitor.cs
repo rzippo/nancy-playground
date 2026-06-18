@@ -16,15 +16,23 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 /// </summary>
 class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 {
-    private ExpressionTypeVisitor TypeVisitor { get; set; } = new();
+    private readonly HashSet<string> DeclaredVariables = [];
+
+    public override List<string> VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context) =>
+        context.GetChild(0).Accept(this);
+
+    public override List<string> VisitFunctionEnclosedExpressionExp(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionEnclosedExpressionExpContext context) =>
+        context.GetChild(0).Accept(this);
+
     
     public override List<string> VisitProgram(Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
     {
         var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
-            "#:package Unipi.Nancy.Expressions@1.0.0",
-            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.4",
+            "#:package Unipi.Nancy.Expressions@1.0.3",
+            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.7",
             string.Empty,
             "using System.Globalization;",
             "using System.IO;",
@@ -103,8 +111,9 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         var expressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         
         var expressionCode = expressionContext.Accept(this);
-        var expressionType = expressionContext.Accept(TypeVisitor);
-        var lhs = TypeVisitor.State.ContainsKey(name) ? $"{name}" : $"var {name}";
+        var lhs = DeclaredVariables.Contains(name)
+            ? $"{name}"
+            : $"{GetDeclarationType(expressionContext)} {name}";
         List<string> result;
         if (expressionCode is null || expressionCode.Count == 0)
             // throw new InvalidOperationException("Expression code empty");
@@ -117,16 +126,28 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             result = expressionCode;
         }
 
-        TypeVisitor.State[name] = expressionType;
+        DeclaredVariables.Add(name);
         return result;
     }
+
+    private static string GetDeclarationType(
+        Unipi.MppgParser.Grammar.MppgParser.ExpressionContext expressionContext) =>
+        expressionContext.GetExpressionType() switch
+        {
+            ExpressionType.Function => "CurveExpression",
+            ExpressionType.Number => "RationalExpression",
+            _ => "var"
+        };
 
     public override List<string> VisitExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.ExpressionCommandContext context)
     {
         var expressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         var expression = expressionContext.Accept(this).Single();
 
-        return [$"Console.WriteLine({expression}.Compute());"];
+        if (expressionContext.GetExpressionType() == ExpressionType.Function)
+            return [$"Console.WriteLine(({expression}).Compute().ToCodeString());"];
+        else
+            return [$"Console.WriteLine(({expression}).Compute());"];
     }
 
     public override List<string> VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
@@ -292,6 +313,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
         var leftExpr = leftExpressionCode.Single();
         var rightExpr = rightExpressionCode.Single();
+        var leftType = leftExpressionContext.GetExpressionType();
+        var rightType = rightExpressionContext.GetExpressionType();
 
         // Map assertion operators to C# comparison operators
         var csharpOperator = operatorText switch
@@ -305,22 +328,36 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             _ => "=="
         };
 
-        if(csharpOperator == "==")
+        if (leftType == ExpressionType.Function && rightType == ExpressionType.Number)
         {
-            // for function equality, must use Nancy's Curve.Equivalence to treat different representations of the same curve as equal
-            var leftType = leftExpressionContext.Accept(TypeVisitor);
-            var rightType = rightExpressionContext.Accept(TypeVisitor);
-            if (leftType == ExpressionType.Function && rightType == ExpressionType.Function)
-            {
-                return [
-                    $"Console.WriteLine(Curve.Equivalent({leftExpr}.Compute(), {rightExpr}.Compute()).ToString().ToLower());"
-                ];
-            }
+            leftExpr = $"{leftExpr}.Compute()";
+            rightExpr = ToConstantCurveCode(WrapRationalExpression(rightExpr));
+            rightType = ExpressionType.Function;
+        }
+        else if (leftType == ExpressionType.Number && rightType == ExpressionType.Function)
+        {
+            leftExpr = ToConstantCurveCode(WrapRationalExpression(leftExpr));
+            rightExpr = $"{rightExpr}.Compute()";
+            leftType = ExpressionType.Function;
+        }
+        else
+        {
+            leftExpr = $"{leftExpr}.Compute()";
+            rightExpr = $"{rightExpr}.Compute()";
+        }
+
+        if (leftType == ExpressionType.Function && rightType == ExpressionType.Function)
+        {
+            // For function equality, use Nancy's equivalence to treat different representations of the same curve as equal.
+            if (csharpOperator == "==")
+                return [$"Console.WriteLine(Curve.Equivalent({leftExpr}, {rightExpr}).ToString().ToLower());"];
+            if (csharpOperator == "!=")
+                return [$"Console.WriteLine((!Curve.Equivalent({leftExpr}, {rightExpr})).ToString().ToLower());"];
         }
 
         // In all other cases, C# operators will do the job
         return [
-            $"Console.WriteLine(({leftExpr}.Compute() {csharpOperator} {rightExpr}.Compute()).ToString().ToLower());"
+            $"Console.WriteLine(({leftExpr} {csharpOperator} {rightExpr}).ToString().ToLower());"
         ];
     }
 
@@ -397,194 +434,146 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"( {innerCode} )"];
     }
 
+    public override List<string> VisitEncNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context)
+    {
+        var innerCode = context.numberExpression().Accept(this).Single();
+        return [$"( {innerCode} )"];
+    }
+
     #region Function binary operators
 
-    public override List<string> VisitFunctionSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxContext context)
+    public override List<string> VisitFunctionScalarMulRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
     {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-        var operation = context.op;
+        var first = context.numberEnclosedExpression().Accept(this).Single();
+        var second = context.functionUnaryExpression().Accept(this).Single();
 
-        switch (operation.Type)
+        return [$"{second} * {first}"];
+    }
+
+    public override List<string> VisitFunctionScalarCompositionRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)
+    {
+        var first = context.numberEnclosedExpression().Accept(this).Single();
+        _ = context.functionUnaryExpression().Accept(this).Single();
+
+        return [ConstantCurveExpressionCode(first)];
+    }
+
+    public override List<string> VisitFunctionSumChain(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionSumChainContext context)
+    {
+        var result = context.functionSumStart().Accept(this).Single();
+
+        foreach (var suffix in context.functionSumSuffix())
         {
-            case Unipi.MppgParser.Grammar.MppgParser.PLUS:
+            result = suffix switch
             {
-                return [$"{first} + {second}"];
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.MINUS:
-            {
-                return [$"{first} - {second}"];
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.WEDGE:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Minimum({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                {
-                    var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
-                    return [$"{first}.Minimum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
-                }
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                {
-                    var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
-                    return [$"{second}.Minimum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
-                }
-                else
-                    return [$"RationalExpression.Min({first}, {second})"];
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.VEE:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Maximum({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                {
-                    var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
-                    return [$"{first}.Maximum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
-                }
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                {
-                    var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
-                    return [$"{second}.Maximum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
-                }
-                else
-                    return [$"RationalExpression.Max({first}, {second})"];
-            }
-            
-            default: 
-                throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
+                Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxSuffixContext sum =>
+                    ApplyFunctionFunctionSumCode(result, sum.op.Type, sum.functionProductExpression().Accept(this).Single()),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxSuffixContext shift =>
+                    ApplyFunctionNumberSumCode(result, shift.op.Type, shift.numberEnclosedExpression().Accept(this).Single()),
+                _ => throw new InvalidOperationException($"Unexpected function sum suffix: {suffix.GetType().Name}")
+            };
         }
-    }
-    
-    public override List<string> VisitFunctionMinPlusConvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
-    {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
 
-        var firstType = context.GetChild(0).Accept(TypeVisitor);
-        var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-            return [$"{first}.Convolution({second})"];
-        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first} * {second}"];
-        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second} * {first}"];
-        else
-            return [$"{first} * {second}"];
+        return [result];
     }
 
-    public override List<string> VisitFunctionMaxPlusConvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
+    public override List<string> VisitFunctionShiftMinMaxRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
+        var first = context.numberEnclosedExpression().Accept(this).Single();
+        var second = context.functionProductExpression().Accept(this).Single();
 
-        return [$"{first}.MaxPlusConvolution({second})"];
+        return [ApplyNumberFunctionSumCode(first, context.op.Type, second)];
     }
 
-    public override List<string> VisitFunctionMinPlusDeconvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
+    public override List<string> VisitFunctionProductChain(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionProductChainContext context)
     {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
+        var result = context.functionProductStart().Accept(this).Single();
 
-        var firstType = context.GetChild(0).Accept(TypeVisitor);
-        var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-            return [$"{first}.Deconvolution({second})"];
-        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first} / {second}"];
-        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
-        else
-            return [$"{first} / {second}"];
+        foreach (var suffix in context.functionProductSuffix())
+        {
+            result = suffix switch
+            {
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionSuffixContext convolution =>
+                    $"{result}.Convolution({convolution.functionUnaryExpression().Accept(this).Single()})",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulSuffixContext scalarMul =>
+                    $"{result} * {scalarMul.numberEnclosedExpression().Accept(this).Single()}",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionSuffixContext convolution =>
+                    $"{result}.MaxPlusConvolution({convolution.functionUnaryExpression().Accept(this).Single()})",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionSuffixContext deconvolution =>
+                    $"{result}.Deconvolution({deconvolution.functionUnaryExpression().Accept(this).Single()})",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivSuffixContext scalarDiv =>
+                    $"{result} / {scalarDiv.numberEnclosedExpression().Accept(this).Single()}",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionSuffixContext deconvolution =>
+                    $"{result}.MaxPlusDeconvolution({deconvolution.functionUnaryExpression().Accept(this).Single()})",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext composition =>
+                    $"{result}.Composition({composition.functionUnaryExpression().Accept(this).Single()})",
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionSuffixContext scalarComposition =>
+                    ConstantCurveExpressionCode($"{result}.ValueAt({scalarComposition.numberEnclosedExpression().Accept(this).Single()})"),
+                _ => throw new InvalidOperationException($"Unexpected function product suffix: {suffix.GetType().Name}")
+            };
+        }
+
+        return [result];
     }
 
-    public override List<string> VisitFunctionMaxPlusDeconvolution(Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
+    private string ApplyFunctionFunctionSumCode(string left, int operationType, string right) =>
+        operationType switch
+        {
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => $"{left} + {right}",
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => $"{left} - {right}",
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => $"{left}.Minimum({right})",
+            Unipi.MppgParser.Grammar.MppgParser.VEE => $"{left}.Maximum({right})",
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
+
+    private string ApplyFunctionNumberSumCode(string left, int operationType, string right) =>
+        operationType switch
+        {
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => $"({left}).VerticalShift({right})",
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => $"({left}).VerticalShift(-({right}))",
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => $"{left}.Minimum({ConstantCurveExpressionCode(right)})",
+            Unipi.MppgParser.Grammar.MppgParser.VEE => $"{left}.Maximum({ConstantCurveExpressionCode(right)})",
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
+
+    private string ApplyNumberFunctionSumCode(string left, int operationType, string right) =>
+        operationType switch
+        {
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => $"({right}).VerticalShift({left})",
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => $"({right}).Negate().VerticalShift({left})",
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => $"{right}.Minimum({ConstantCurveExpressionCode(left)})",
+            Unipi.MppgParser.Grammar.MppgParser.VEE => $"{right}.Maximum({ConstantCurveExpressionCode(left)})",
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
+
+    private string ConstantCurveExpressionCode(string value)
     {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-
-        return [$"{first}.MaxPlusDeconvolution({second})"];
-    }
-
-    public override List<string> VisitFunctionComposition(Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext context)
-    {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-
-        return [$"{first}.Composition({second})"];
-    }
-
-    public override List<string> VisitFunctionScalarMultiplicationLeft(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
-    {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-
-        var firstType = context.GetChild(0).Accept(TypeVisitor);
-        var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-            return [$"{first}.Convolution({second})"];
-        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first} * {second}"];
-        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second} * {first}"];
-        else
-            return [$"{first} * {second}"];
-    }
-    
-    public override List<string> VisitFunctionScalarMultiplicationRight(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
-    {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-
-        var firstType = context.GetChild(0).Accept(TypeVisitor);
-        var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-            return [$"{first}.Convolution({second})"];
-        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first} * {second}"];
-        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            return [$"{second} * {first}"];
-        else
-            return [$"{first} * {second}"];
-    }
-
-    public override List<string> VisitFunctionScalarDivision(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivisionContext context)
-    {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
-
-        var firstType = context.GetChild(0).Accept(TypeVisitor);
-        var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-        if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-            return [$"{first}.Deconvolution({second})"];
-        else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-            return [$"{first} / {second}"];
-        else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-            throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
-        else
-            return [$"{first} / {second}"];
+        var wrappedValue = WrapRationalExpression(value);
+        return $"Expressions.FromCurve({ToConstantCurveCode(wrappedValue)})";
     }
 
     #endregion
 
     #region Function unary operators
+
+    public override List<string> VisitFunctionPositive(Unipi.MppgParser.Grammar.MppgParser.FunctionPositiveContext context)
+    {
+        var curve = context.functionUnaryExpression().Accept(this).Single();
+
+        return [curve];
+    }
+
+    public override List<string> VisitFunctionNegative(Unipi.MppgParser.Grammar.MppgParser.FunctionNegativeContext context)
+    {
+        var curve = context.functionUnaryExpression().Accept(this).Single();
+
+        return [$"({curve}).Negate()"];
+    }
 
     public override List<string> VisitFunctionSubadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context)
     {
@@ -799,7 +788,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (expression is ConcreteCurveExpression ce)
         {
             var curve = ce.Value;
-            return [$"Expressions.FromCurve({curve.ToCodeString()}, name: \"uaf\")"];
+            return [$"Expressions.FromCurve({curve.ToCodeString().UseNamedInfinityConstants()}, name: \"uaf\")"];
         }
         else
         {
@@ -816,7 +805,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (expression is ConcreteCurveExpression ce)
         {
             var curve = ce.Value;
-            return [$"Expressions.FromCurve({curve.ToCodeString()}, name: \"upp\")"];
+            return [$"Expressions.FromCurve({curve.ToCodeString().UseNamedInfinityConstants()}, name: \"upp\")"];
         }
         else
         {
@@ -872,6 +861,25 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     
     #region Number binary operators
 
+    public override List<string> VisitNumberPositive(Unipi.MppgParser.Grammar.MppgParser.NumberPositiveContext context)
+    {
+        var value = context.numberExpression().Accept(this).Single();
+
+        return [value];
+    }
+
+    public override List<string> VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
+    {
+        var value = context.numberExpression().Accept(this).Single();
+
+        return value switch
+        {
+            "Expressions.FromRational(Rational.PlusInfinity)" => ["Expressions.FromRational(Rational.MinusInfinity)"],
+            "Expressions.FromRational(Rational.MinusInfinity)" => ["Expressions.FromRational(Rational.PlusInfinity)"],
+            _ => [$"({value}).Negate()"]
+        };
+    }
+
     public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();
@@ -881,35 +889,11 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         switch (operation.Type)
         {
             case Unipi.MppgParser.Grammar.MppgParser.PROD_SIGN:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Convolution({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                    return [$"{first} * {second}"];
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                    return [$"{second} * {first}"];
-                else
-                    return [$"{first} * {second}"];
-            }
+                return [$"{first} * {second}"];
 
             case Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN:
             case Unipi.MppgParser.Grammar.MppgParser.DIV_OP:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Deconvolution({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                    return [$"{first} / {second}"];
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                    throw new InvalidOperationException($"Unexpected expression type: {context.GetJoinedText()}");
-                else
-                    return [$"{first} / {second}"];
-            }
+                return [$"{first} / {second}"];
             
             default: 
                 throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
@@ -926,60 +910,16 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         switch (operation.Type)
         {
             case Unipi.MppgParser.Grammar.MppgParser.PLUS:
-            {
                 return [$"{first} + {second}"];
-            }
 
             case Unipi.MppgParser.Grammar.MppgParser.MINUS:
-            {
                 return [$"{first} - {second}"];
-            }
 
             case Unipi.MppgParser.Grammar.MppgParser.WEDGE:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Minimum({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                {
-                    var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
-                    return [$"{first}.Minimum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
-                }
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                {
-                    var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
-                    return [$"{second}.Minimum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
-                }
-                else
-                    return [$"RationalExpression.Min({first}, {second})"];
-            }
+                return [$"RationalExpression.Min({first}, {second})"];
 
             case Unipi.MppgParser.Grammar.MppgParser.VEE:
-            {
-                var firstType = context.GetChild(0).Accept(TypeVisitor);
-                var secondType = context.GetChild(2).Accept(TypeVisitor);
-        
-                if (firstType == ExpressionType.Function && secondType == ExpressionType.Function)
-                    return [$"{first}.Maximum({second})"];
-                else if (firstType == ExpressionType.Function && secondType == ExpressionType.Number)
-                {
-                    var secondContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var secondWrapped = secondContext is not null ? WrapRationalExpressionIfNeeded(secondContext) : WrapRationalExpression(second);
-                    return [$"{first}.Maximum(new Curve(new Sequence([ new Point(0, {secondWrapped}), Segment.Constant(0, 1, {secondWrapped})]), 0, 1, 0))"];
-                }
-                else if (firstType == ExpressionType.Number && secondType == ExpressionType.Function)
-                {
-                    var firstContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
-                    var firstWrapped = firstContext is not null ? WrapRationalExpressionIfNeeded(firstContext) : WrapRationalExpression(first);
-                    return [$"{second}.Maximum(new Curve(new Sequence([ new Point(0, {firstWrapped}), Segment.Constant(0, 1, {firstWrapped})]), 0, 1, 0))"];
-                }
-                else
-                    return [$"RationalExpression.Max({first}, {second})"];
-            }
+                return [$"RationalExpression.Max({first}, {second})"];
 
             default: throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
         }
@@ -988,6 +928,14 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     #endregion
 
     #region Utility
+
+    private static string ToConstantCurveCode(string value)
+    {
+        if (value == "0")
+            return "Curve.Zero()";
+
+        return $"new Curve(new Sequence([ new Point(0, {value}), Segment.Constant(0, 1, {value})]), 0, 1, 0)";
+    }
 
     private static List<string> CleanupReassignments(List<string> code)
     {

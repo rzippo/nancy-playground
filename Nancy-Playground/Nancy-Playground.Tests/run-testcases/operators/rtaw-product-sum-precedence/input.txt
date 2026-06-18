@@ -1,0 +1,45 @@
+x := 2
+y := 3
+z := 5
+f := affine(2, 1)
+g := affine(1, 4)
+
+numberProductBeforeSum := x + y * z
+numberProductBeforeSum_productFirst := x + (y * z)
+numberProductBeforeSum_sumFirst := (x + y) * z
+
+numberProductBeforeMin := x /\ y * z
+numberProductBeforeMin_productFirst := x /\ (y * z)
+numberProductBeforeMin_minFirst := (x /\ y) * z
+
+scalarLeftProductBeforeSum := x + f * y
+scalarLeftProductBeforeSum_productFirst := x + (f * y)
+scalarLeftProductBeforeSum_sumFirst := (x + f) * y
+
+functionProductBeforeSum := f * x + g
+functionProductBeforeSum_productFirst := (f * x) + g
+functionProductBeforeSum_sumFirst := f * (x + g)
+
+scalarRightProductBeforeSum := f + x * g
+scalarRightProductBeforeSum_productFirst := f + (x * g)
+scalarRightProductBeforeSum_sumFirst := (f + x) * g
+
+numberProductBeforeSum
+numberProductBeforeSum_productFirst
+numberProductBeforeSum_sumFirst
+
+numberProductBeforeMin
+numberProductBeforeMin_productFirst
+numberProductBeforeMin_minFirst
+
+scalarLeftProductBeforeSum(10)
+scalarLeftProductBeforeSum_productFirst(10)
+scalarLeftProductBeforeSum_sumFirst(10)
+
+functionProductBeforeSum(10)
+functionProductBeforeSum_productFirst(10)
+functionProductBeforeSum_sumFirst(10)
+
+scalarRightProductBeforeSum(10)
+scalarRightProductBeforeSum_productFirst(10)
+scalarRightProductBeforeSum_sumFirst(10)

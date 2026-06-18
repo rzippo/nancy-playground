@@ -123,8 +123,17 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             else
             {
                 // MPPG syntax statement
-                var statement = Statement.FromLine(line);
-                programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+                try
+                {
+                    var statement = Statement.FromLine(line, programContext.State);
+                    programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsole.MarkupLine($"[red]Syntax error:[/] {Escape(line)}");
+                    AnsiConsole.MarkupLine($"[red]{Escape(ex.Message)}[/]");
+                    continue;
+                }
 
                 // update session-based autocomplete
                 // could be optimized to be diff-based
@@ -283,7 +292,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // Execute the statement
                 try
                 {
-                    var statement = Statement.FromLine(trimmedLine);
+                    var statement = Statement.FromLine(trimmedLine, programContext.State);
                     programContext.ExecuteStatement(statement, loadFormatter, immediateComputeValue);
                     successCount++;
                 }

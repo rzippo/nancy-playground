@@ -1,5 +1,8 @@
-NC-files/*
+NC-files*
 experiments/*
 *.png
 *.binlog
+benchmark-temp/
 benchmark-results-*.txt
+coveragereport/
+.agents/

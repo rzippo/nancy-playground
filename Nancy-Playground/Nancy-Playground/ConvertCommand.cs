@@ -73,7 +73,16 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         Console.MarkupLine($"[yellow]Output program will be saved in: {nancyFile.FullName}[/]");
 
         var programText = File.ReadAllText(mppgFile.FullName);
-        var code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
+        List<string> code;
+        try
+        {
+            code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
+        }
+        catch (Exception ex)
+        {
+            Console.MarkupLine($"[red]Error:[/] Cannot compile program from {mppgFile.FullName}: {Markup.Escape(ex.Message)}");
+            return 1;
+        }
         var programType = settings.UseNancyExpressions ? "Nancy.Expressions" : "Nancy";
         code.InsertRange(0,[
             $"// Program automatically converted from MPPG syntax to a {programType} program",

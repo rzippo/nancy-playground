@@ -1,4 +1,6 @@
-﻿using Unipi.MppgParser.Grammar;
+using Antlr4.Runtime;
+using Unipi.MppgParser.Grammar;
+using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 
@@ -10,6 +12,15 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 /// </summary>
 public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 {
+    private readonly State _state;
+    private readonly bool _normalizeInfiniteRightEndpoint;
+
+    public ElementsVisitor(State? state = null, bool normalizeInfiniteRightEndpoint = false)
+    {
+        _state = state ?? new State();
+        _normalizeInfiniteRightEndpoint = normalizeInfiniteRightEndpoint;
+    }
+
     public override IEnumerable<Element> VisitSequence(Unipi.MppgParser.Grammar.MppgParser.SequenceContext context)
     {
         var elements = Enumerable.Empty<Element>();
@@ -34,7 +45,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
     public override IEnumerable<Element> VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context)
     {
-        var pointVisitor = new PointVisitor();
+        var pointVisitor = new PointVisitor(_state);
         var point = context.Accept(pointVisitor);
 
         yield return point;
@@ -42,7 +53,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
 
     public override IEnumerable<Element> VisitSegment(Unipi.MppgParser.Grammar.MppgParser.SegmentContext context)
     {
-        if(context.ChildCount != 1)
+        if (context.ChildCount != 1)
             throw new Exception("Expected 1 child expression");
 
         var segmentInnerContext = context.GetChild(0);
@@ -50,249 +61,142 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
+    public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(
+        Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
     {
-        var segmentText = context.GetJoinedText();
+        var (leftPoint, rightPoint, slope, segmentText) = ParseSegment(context);
+        var effectiveRightPoint = NormalizeRightPointIfNeeded(leftPoint, rightPoint, slope);
 
-        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-
-        var pointVisitor = new PointVisitor();
-        var leftPoint = pointVisitor.Visit(leftPointContext);
-        var rightPoint = pointVisitor.Visit(rightPointContext);
-
-        if(leftPoint.Time.IsInfinite)
-            throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-
-        if(slopeContext == null)
+        yield return leftPoint;
+        if (leftPoint.Time < effectiveRightPoint.Time)
         {
-            var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-            yield return leftPoint;
-            yield return segment;
-            if (!rightPoint.Time.IsPlusInfinite)
-                yield return rightPoint;
-        }
-        else
-        {
-            var numberLiteralVisitor = new NumberLiteralVisitor();
-            var slope = numberLiteralVisitor.Visit(slopeContext);
-
-            Rational computedSlope;
-            if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
-            {
-                if(leftPoint.Value == rightPoint.Value)
-                    computedSlope = 0;
-                else
-                    throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
-            }
-            else
-                computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-            if(slope != computedSlope)
-                throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
-
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-
-            yield return leftPoint;
-            yield return segment;
-            if (!rightPoint.Time.IsPlusInfinite)
-                yield return rightPoint;
+            yield return new Segment(leftPoint.Time, effectiveRightPoint.Time, leftPoint.Value, slope);
+            if (!effectiveRightPoint.Time.IsPlusInfinite)
+                yield return effectiveRightPoint;
         }
     }
 
-    public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
+    public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(
+        Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
+    {
+        var (leftPoint, rightPoint, slope, segmentText) = ParseSegment(context);
+        var effectiveRightPoint = NormalizeRightPointIfNeeded(leftPoint, rightPoint, slope);
+
+        yield return leftPoint;
+        if (leftPoint.Time < effectiveRightPoint.Time)
+            yield return new Segment(leftPoint.Time, effectiveRightPoint.Time, leftPoint.Value, slope);
+    }
+
+    public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(
+        Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
+    {
+        var (leftPoint, rightPoint, slope, segmentText) = ParseSegment(context);
+        var effectiveRightPoint = NormalizeRightPointIfNeeded(leftPoint, rightPoint, slope);
+
+        if (leftPoint.Time < effectiveRightPoint.Time)
+        {
+            yield return new Segment(leftPoint.Time, effectiveRightPoint.Time, leftPoint.Value, slope);
+            if (!effectiveRightPoint.Time.IsPlusInfinite)
+                yield return effectiveRightPoint;
+        }
+    }
+
+    public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(
+        Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
+    {
+        var (leftPoint, rightPoint, slope, segmentText) = ParseSegment(context);
+        var effectiveRightPoint = NormalizeRightPointIfNeeded(leftPoint, rightPoint, slope);
+
+        if (leftPoint.Time < effectiveRightPoint.Time)
+            yield return new Segment(leftPoint.Time, effectiveRightPoint.Time, leftPoint.Value, slope);
+    }
+
+    private (Point leftPoint, Point rightPoint, Rational slope, string segmentText) ParseSegment(ParserRuleContext context)
     {
         var segmentText = context.GetJoinedText();
 
         var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
         var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
 
-        var pointVisitor = new PointVisitor();
+        var pointVisitor = new PointVisitor(_state);
         var leftPoint = pointVisitor.Visit(leftPointContext);
         var rightPoint = pointVisitor.Visit(rightPointContext);
 
-        if(leftPoint.Time.IsInfinite)
+        if (leftPoint.Time.IsInfinite)
             throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
 
-        if(slopeContext == null)
+        var slopeFromContext = EvaluateOptionalNumberExpression(slopeContext);
+        var slope = GetSlope(leftPoint, rightPoint, slopeFromContext, segmentText);
+
+        return (leftPoint, rightPoint, slope, segmentText);
+    }
+
+    private Rational? EvaluateOptionalNumberExpression(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext? context)
+    {
+        if (context is null)
+            return null;
+
+        var expressionVisitor = new ExpressionVisitor(_state);
+        var expression = context.Accept(expressionVisitor);
+        if (expression is not RationalExpression rationalExpression)
+            throw new InvalidOperationException("Expected a numeric expression in segment slope.");
+
+        return rationalExpression.Compute();
+    }
+
+    private Point NormalizeRightPointIfNeeded(Point leftPoint, Point rightPoint, Rational slope)
+    {
+        if (!_normalizeInfiniteRightEndpoint || !rightPoint.Time.IsPlusInfinite)
+            return rightPoint;
+
+        return new Point(leftPoint.Time + 1, leftPoint.Value + slope);
+    }
+
+    private Rational GetSlope(Point leftPoint, Point rightPoint, Rational? slopeFromContext, string segmentText)
+    {
+        if (leftPoint.Time == rightPoint.Time)
         {
-            // slope is implicit
-            // this is only allowed when
-            // - both endpoints are finite
-            // - the right endpoint is infinite, but the segment is constant
-            if(rightPoint.Time.IsPlusInfinite)
+            if (leftPoint.Value != rightPoint.Value)
+                throw new InvalidOperationException($"Invalid segment with zero length and different values: {segmentText}");
+            return slopeFromContext ?? 0;
+        }
+
+        if (rightPoint.Time.IsPlusInfinite)
+        {
+            if (slopeFromContext is null)
             {
-                if(leftPoint.Value != rightPoint.Value)
+                if (leftPoint.Value != rightPoint.Value)
                     throw new InvalidOperationException($"Cannot infer slope for segment with infinite right endpoint and different values at endpoints: {segmentText}");
-
-                var segment = new Segment(leftPoint.Time, Rational.PlusInfinity, leftPoint.Value, Rational.Zero);
-
-                yield return leftPoint;
-                yield return segment;
+                return 0;
             }
+
+            var s = slopeFromContext.Value;
+            if (s < 0 && rightPoint.Value != Rational.MinusInfinity)
+                throw new InvalidOperationException($"Specified slope should lead to a minus infinite value at infinite time: {segmentText}");
+            if (s > 0 && rightPoint.Value != Rational.PlusInfinity)
+                throw new InvalidOperationException($"Specified slope should lead to a plus infinite value at infinite time: {segmentText}");
+            if (s == 0 && rightPoint.Value != leftPoint.Value)
+                throw new InvalidOperationException($"Specified slope should lead to a constant value at infinite time: {segmentText}");
+
+            return s;
+        }
+
+        Rational computedSlope;
+        if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
+        {
+            if (leftPoint.Value == rightPoint.Value)
+                computedSlope = 0;
             else
-            {
-                var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-                var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-                yield return leftPoint;
-                yield return segment;
-            }
+                throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}: {segmentText}");
         }
         else
-        {
-            var numberLiteralVisitor = new NumberLiteralVisitor();
-            var slope = numberLiteralVisitor.Visit(slopeContext);
+            computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
 
-            if(rightPoint.Time.IsPlusInfinite)
-            {
-                if(slope < 0 && rightPoint.Value != Rational.MinusInfinity)
-                    throw new InvalidOperationException($"Specified slope should lead to a minus infinite value at infinite time: {segmentText}");
-                else if(slope > 0 && rightPoint.Value != Rational.PlusInfinity)
-                    throw new InvalidOperationException($"Specified slope should lead to a plus infinite value at infinite time: {segmentText}");
-                else if(slope == Rational.Zero && rightPoint.Value != leftPoint.Value)
-                    throw new InvalidOperationException($"Specified slope should lead to a constant value at infinite time: {segmentText}");
-            }
-            else
-            {
-                Rational computedSlope;
-                if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
-                {
-                    if(leftPoint.Value == rightPoint.Value)
-                        computedSlope = 0;
-                    else
-                        throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
-                }
-                else
-                    computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-                if(slope != computedSlope)
-                    throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
-            }
+        if (slopeFromContext is not null && slopeFromContext.Value != computedSlope)
+            throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
 
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-            yield return leftPoint;
-            yield return segment;
-        }
-    }
-
-    public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
-    {
-        var segmentText = context.GetJoinedText();
-
-        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-
-        var pointVisitor = new PointVisitor();
-        var leftPoint = pointVisitor.Visit(leftPointContext);
-        var rightPoint = pointVisitor.Visit(rightPointContext);
-
-        if(leftPoint.Time.IsInfinite)
-            throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-
-        if(slopeContext == null)
-        {
-            var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-            yield return segment;
-            if (!rightPoint.Time.IsPlusInfinite)
-                yield return rightPoint;
-        }
-        else
-        {
-            var numberLiteralVisitor = new NumberLiteralVisitor();
-            var slope = numberLiteralVisitor.Visit(slopeContext);
-
-            Rational computedSlope;
-            if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
-            {
-                if(leftPoint.Value == rightPoint.Value)
-                    computedSlope = 0;
-                else
-                    throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
-            }
-            else
-                computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-            if(slope != computedSlope)
-                throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
-
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-
-            yield return segment;
-            if (!rightPoint.Time.IsPlusInfinite)
-                yield return rightPoint;
-        }
-    }
-
-    public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
-    {
-        var segmentText = context.GetJoinedText();
-
-        var leftPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(0);
-        var slopeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-        var rightPointContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>(1);
-
-        var pointVisitor = new PointVisitor();
-        var leftPoint = pointVisitor.Visit(leftPointContext);
-        var rightPoint = pointVisitor.Visit(rightPointContext);
-
-        if(leftPoint.Time.IsInfinite)
-            throw new InvalidOperationException($"Left endpoint cannot be infinite: {segmentText}");
-
-        if(slopeContext == null)
-        {
-            // slope is implicit
-            // this is only allowed when
-            // - both endpoints are finite
-            // - the right endpoint is infinite, but the segment is constant
-            if(rightPoint.Time.IsPlusInfinite)
-            {
-                if(leftPoint.Value != rightPoint.Value)
-                    throw new InvalidOperationException($"Cannot infer slope for segment with infinite right endpoint and different values at endpoints: {segmentText}");
-
-                var segment = new Segment(leftPoint.Time, Rational.PlusInfinity, leftPoint.Value, Rational.Zero);
-                yield return segment;
-            }
-            else
-            {
-                var slope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-                var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-                yield return segment;
-            }
-        }
-        else
-        {
-            var numberLiteralVisitor = new NumberLiteralVisitor();
-            var slope = numberLiteralVisitor.Visit(slopeContext);
-
-            if(rightPoint.Time.IsPlusInfinite)
-            {
-                if(slope < 0 && rightPoint.Value != Rational.MinusInfinity)
-                    throw new InvalidOperationException($"Specified slope should lead to a minus infinite value at infinite time: {segmentText}");
-                else if(slope > 0 && rightPoint.Value != Rational.PlusInfinity)
-                    throw new InvalidOperationException($"Specified slope should lead to a plus infinite value at infinite time: {segmentText}");
-                else if(slope == Rational.Zero && rightPoint.Value != leftPoint.Value)
-                    throw new InvalidOperationException($"Specified slope should lead to a constant value at infinite time: {segmentText}");
-            }
-            else
-            {
-                Rational computedSlope;
-                if (leftPoint.Value.IsInfinite || rightPoint.Value.IsInfinite)
-                {
-                    if(leftPoint.Value == rightPoint.Value)
-                        computedSlope = 0;
-                    else
-                        throw new InvalidOperationException($"Invalid segment between {leftPoint} and {rightPoint}");
-                }
-                else
-                    computedSlope = (rightPoint.Value - leftPoint.Value) / (rightPoint.Time - leftPoint.Time);
-                if(slope != computedSlope)
-                    throw new InvalidOperationException($"Specified slope does not match the slope computed from the endpoints: {segmentText}");
-            }
-
-            var segment = new Segment(leftPoint.Time, rightPoint.Time, leftPoint.Value, slope);
-            yield return segment;
-        }
+        return slopeFromContext ?? computedSlope;
     }
 }

@@ -1,0 +1,53 @@
+x := 2
+y := 3
+z := 5
+f := affine(2, 1)
+g := affine(1, 4)
+
+numberSumMinLeft := x + y /\ z
+numberSumMinLeft_left := (x + y) /\ z
+numberSumMinLeft_right := x + (y /\ z)
+
+numberSubMaxLeft := z - y \/ x
+numberSubMaxLeft_left := (z - y) \/ x
+numberSubMaxLeft_right := z - (y \/ x)
+
+scalarSumMinLeft := f + x /\ y
+scalarSumMinLeft_left := (f + x) /\ y
+scalarSumMinLeft_right := f + (x /\ y)
+
+numberLeftSumMinLeft := x + f /\ y
+numberLeftSumMinLeft_left := (x + f) /\ y
+numberLeftSumMinLeft_right := x + (f /\ y)
+
+scalarSubMaxLeft := f - x \/ y
+scalarSubMaxLeft_left := (f - x) \/ y
+scalarSubMaxLeft_right := f - (x \/ y)
+
+functionSumMinLeft := f + g /\ x
+functionSumMinLeft_left := (f + g) /\ x
+functionSumMinLeft_right := f + (g /\ x)
+
+numberSumMinLeft
+numberSumMinLeft_left
+numberSumMinLeft_right
+
+numberSubMaxLeft
+numberSubMaxLeft_left
+numberSubMaxLeft_right
+
+scalarSumMinLeft(10)
+scalarSumMinLeft_left(10)
+scalarSumMinLeft_right(10)
+
+numberLeftSumMinLeft(10)
+numberLeftSumMinLeft_left(10)
+numberLeftSumMinLeft_right(10)
+
+scalarSubMaxLeft(10)
+scalarSubMaxLeft_left(10)
+scalarSubMaxLeft_right(10)
+
+functionSumMinLeft(10)
+functionSumMinLeft_left(10)
+functionSumMinLeft_right(10)

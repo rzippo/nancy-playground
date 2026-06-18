@@ -1,4 +1,5 @@
-﻿
+﻿using Unipi.Nancy.Playground.MppgParser.Statements;
+
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class ProgramExecution
@@ -57,5 +58,19 @@ public class ProgramExecution
         {
             _testOutputHelper.WriteLine(line);
         }
+    }
+
+    [Theory]
+    [InlineData("g := ratency(1,1) + 1")]
+    [InlineData("g := 1 + ratency(1,1)")]
+    public void ScalarAndCurveConstructorAssignmentsAreValidPrograms(string programText)
+    {
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+
+        _ = program.ExecuteToStringOutput().ToList();
+        var (_, type) = program.ProgramContext.State.GetVariableType("g");
+        Assert.Equal(ExpressionType.Function, type);
     }
 }

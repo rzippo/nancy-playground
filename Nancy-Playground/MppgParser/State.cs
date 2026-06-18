@@ -52,6 +52,24 @@ public class State
         return names;
     }
 
+    public Dictionary<string, ExpressionType> GetVariableTypes()
+    {
+        var variableTypes = new Dictionary<string, ExpressionType>();
+
+        foreach (var name in FunctionVariables.Keys)
+            variableTypes[name] = ExpressionType.Function;
+
+        foreach (var name in NumberVariables.Keys)
+        {
+            if (variableTypes.ContainsKey(name))
+                throw new InvalidOperationException($"The variabile {name} is present as BOTH function and number!");
+
+            variableTypes[name] = ExpressionType.Number;
+        }
+
+        return variableTypes;
+    }
+
     /// <summary>
     /// Determines the type of a variable based on the provided key.
     /// </summary>

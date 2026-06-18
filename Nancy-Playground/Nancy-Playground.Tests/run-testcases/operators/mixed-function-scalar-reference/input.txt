@@ -1,0 +1,35 @@
+x := 2
+y := 3
+f := bucket(2, 3)
+g := ratency(10, 5)
+
+scalarLeftProduct := x * f
+scalarRightProduct := f * x
+groupedScalarLeftProduct := (x * y) * f
+groupedScalarRightProduct := f * (x * y)
+
+scalarLeftPlus := x + f
+scalarRightPlus := f + x
+groupedScalarLeftPlus := (x + y) + f
+groupedScalarRightPlus := f + (x + y)
+
+scalarLeftMin := x /\ f
+scalarRightMin := f /\ x
+scalarLeftMax := x \/ f
+scalarRightMax := f \/ x
+
+sampleProduct := f(x) * g
+
+scalarLeftProduct(10)
+scalarRightProduct(10)
+groupedScalarLeftProduct(10)
+groupedScalarRightProduct(10)
+scalarLeftPlus(10)
+scalarRightPlus(10)
+groupedScalarLeftPlus(10)
+groupedScalarRightPlus(10)
+scalarLeftMin(10)
+scalarRightMin(10)
+scalarLeftMax(10)
+scalarRightMax(10)
+sampleProduct(10)

@@ -42,6 +42,9 @@ public record class Program
 
     public Program(List<Statement> statements)
     {
+        if (statements.Any(static s => s is null))
+            throw new ArgumentException("Program statements cannot contain null.", nameof(statements));
+
         Statements = statements;
         Text = statements
             .Select(s => s.Text)
@@ -54,9 +57,11 @@ public record class Program
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    public static Program FromTree(Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
+    public static Program FromTree(
+        Unipi.MppgParser.Grammar.MppgParser.ProgramContext context,
+        IReadOnlyList<SyntaxErrorInfo>? syntaxErrors = null)
     {
-        var visitor = new ProgramVisitor();
+        var visitor = new ProgramVisitor(syntaxErrors);
         var program = visitor.Visit(context);
         return program with
         {
@@ -86,7 +91,7 @@ public record class Program
         parser.AddErrorListener(parserListener);
 
         var context = parser.program();
-        var program = FromTree(context);
+        var program = FromTree(context, errors);
         return program with
         {
             Text = text,
@@ -176,6 +181,7 @@ public record class Program
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
+        parser.ErrorHandler = new BailErrorStrategy();
 
         var programContext = parser.program();
         MppgBaseVisitor<List<string>> visitor = useNancyExpressions 

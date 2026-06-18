@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Utility;
@@ -13,9 +14,18 @@ public static class RationalExtensions
     /// </summary>
     public static string ToExplicitCodeString(this Rational r)
     {
+        if (r.IsPlusInfinite)
+            return "Rational.PlusInfinity";
+        if (r.IsMinusInfinite)
+            return "Rational.MinusInfinity";
+
+        var numerator = r.Numerator;
+        if (r.Sign < 0 && numerator > 0)
+            numerator = -numerator;
+
         var sb = new StringBuilder();
         sb.Append("new Rational(");
-        sb.Append(r.Numerator.ToString());
+        sb.Append(numerator.ToString());
         if (r.Denominator != 1)
         {
             sb.Append(", ");
@@ -25,6 +35,12 @@ public static class RationalExtensions
 
         return sb.ToString();
     }
+
+    public static string UseNamedInfinityConstants(this string code) =>
+        Regex.Replace(
+            Regex.Replace(code, @"new Rational\(\s*1\s*,\s*0\s*\)", "Rational.PlusInfinity"),
+            @"new Rational\(\s*-1\s*,\s*0\s*\)",
+            "Rational.MinusInfinity");
 
     /// <summary>
     /// Returns a pretty string representation of the Rational.

@@ -1,0 +1,43 @@
+x := 2
+f := affine(1, 0)
+g := affine(2, 0)
+
+functionCompBeforeSum := f comp g + x
+functionCompBeforeSum_compFirst := (f comp g) + x
+functionCompBeforeSum_sumFirst := f comp (g + x)
+
+scalarCompBeforeSum := f + x comp g
+scalarCompBeforeSum_compFirst := f + (x comp g)
+scalarCompBeforeSum_sumFirst := (f + x) comp g
+
+scalarCompBeforeSub := f - x comp g
+scalarCompBeforeSub_compFirst := f - (x comp g)
+scalarCompBeforeSub_sumFirst := (f - x) comp g
+
+scalarCompBeforeMin := f /\ x comp g
+scalarCompBeforeMin_compFirst := f /\ (x comp g)
+scalarCompBeforeMin_sumFirst := (f /\ x) comp g
+
+scalarCompBeforeMax := f \/ x comp g
+scalarCompBeforeMax_compFirst := f \/ (x comp g)
+scalarCompBeforeMax_sumFirst := (f \/ x) comp g
+
+functionCompBeforeSum(1)
+functionCompBeforeSum_compFirst(1)
+functionCompBeforeSum_sumFirst(1)
+
+scalarCompBeforeSum(1)
+scalarCompBeforeSum_compFirst(1)
+scalarCompBeforeSum_sumFirst(1)
+
+scalarCompBeforeSub(1)
+scalarCompBeforeSub_compFirst(1)
+scalarCompBeforeSub_sumFirst(1)
+
+scalarCompBeforeMin(1)
+scalarCompBeforeMin_compFirst(1)
+scalarCompBeforeMin_sumFirst(1)
+
+scalarCompBeforeMax(1)
+scalarCompBeforeMax_compFirst(1)
+scalarCompBeforeMax_sumFirst(1)

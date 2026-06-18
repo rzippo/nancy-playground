@@ -1,5 +1,7 @@
 ﻿using Unipi.MppgParser.Grammar;
+using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
@@ -9,17 +11,23 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 /// </summary>
 public class PointVisitor : MppgBaseVisitor<Point>
 {
+    private readonly State _state;
+
+    public PointVisitor(State? state = null)
+    {
+        _state = state ?? new State();
+    }
+
     public override Point VisitEndpoint(Unipi.MppgParser.Grammar.MppgParser.EndpointContext context)
     {
         if (context.ChildCount != 5)
             throw new Exception("Expected 5 child expression");
 
-        var timeContext = context.GetChild(1);
-        var valueContext = context.GetChild(3);
+        var timeContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var valueContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(1);
 
-        var numberLiteralVisitor = new NumberLiteralVisitor();
-        var time = numberLiteralVisitor.Visit(timeContext);
-        var value = numberLiteralVisitor.Visit(valueContext);
+        var time = EvaluateNumberExpression(timeContext);
+        var value = EvaluateNumberExpression(valueContext);
 
         return new Point(time, value);
     }
@@ -33,5 +41,16 @@ public class PointVisitor : MppgBaseVisitor<Point>
         var point = endpointContext.Accept(this);
 
         return point;
+    }
+
+    private Rational EvaluateNumberExpression(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext context)
+    {
+        var expressionVisitor = new ExpressionVisitor(_state);
+        var expression = context.Accept(expressionVisitor);
+        if (expression is not RationalExpression rationalExpression)
+            throw new InvalidOperationException("Expected a numeric expression in point endpoint.");
+
+        return rationalExpression.Compute();
     }
 }

@@ -1,0 +1,35 @@
+x := 2
+f := affine(2, 1)
+g := affine(1, 4)
+
+negativeFunctionBeforeSum := -f + x
+negativeFunctionBeforeSum_unaryFirst := (-f) + x
+negativeFunctionBeforeSum_groupNegated := -(f + x)
+
+negativeFunctionBeforeMin := -f /\ x
+negativeFunctionBeforeMin_unaryFirst := (-f) /\ x
+negativeFunctionBeforeMin_groupNegated := -(f /\ x)
+
+negativeLiteralBeforeFunctionSum := -2 + f
+negativeLiteralBeforeFunctionSum_unaryFirst := (-2) + f
+negativeLiteralBeforeFunctionSum_groupNegated := -(2 + f)
+
+negativeFunctionBeforeMax := -f \/ x
+negativeFunctionBeforeMax_unaryFirst := (-f) \/ x
+negativeFunctionBeforeMax_groupNegated := -(f \/ x)
+
+negativeFunctionBeforeSum(10)
+negativeFunctionBeforeSum_unaryFirst(10)
+negativeFunctionBeforeSum_groupNegated(10)
+
+negativeFunctionBeforeMin(10)
+negativeFunctionBeforeMin_unaryFirst(10)
+negativeFunctionBeforeMin_groupNegated(10)
+
+negativeLiteralBeforeFunctionSum(10)
+negativeLiteralBeforeFunctionSum_unaryFirst(10)
+negativeLiteralBeforeFunctionSum_groupNegated(10)
+
+negativeFunctionBeforeMax(10)
+negativeFunctionBeforeMax_unaryFirst(10)
+negativeFunctionBeforeMax_groupNegated(10)

@@ -1,0 +1,4 @@
+d := 2
+f := affine(1, 0)
+g := vshift(f, d)
+plot(f, g, main = "shift " + d, xlab = "time", ylab = "value", xlim = [0, 4], ylim = [0, 6], out = "coverage", gui = "no")

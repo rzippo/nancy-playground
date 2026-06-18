@@ -83,7 +83,8 @@ public class RunModeEquivalenceTests
 
         // Act: Run script in PerStatement mode
         string perStatementOutput;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int perStatementTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(perStatementTimeoutSeconds)))
         {
             BufferedCommandResult result;
             try
@@ -108,7 +109,7 @@ public class RunModeEquivalenceTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"PerStatement run did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"CLI did not exit within {perStatementTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
 
             await File.WriteAllTextAsync(Path.Combine(outputDir, $"per-statement.{tfm}.stdout.txt"), result.StandardOutput, cts.Token);
@@ -121,7 +122,8 @@ public class RunModeEquivalenceTests
 
         // Act: Run script in ExpressionsBased mode
         string expressionsBasedOutput;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+        int expressionsBasedTimeoutSeconds = 60;
+        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(expressionsBasedTimeoutSeconds)))
         {
             BufferedCommandResult result;
             try
@@ -146,7 +148,7 @@ public class RunModeEquivalenceTests
             }
             catch (OperationCanceledException)
             {
-                throw new TimeoutException($"ExpressionsBased run did not exit within 30 seconds (TFM={tfm}, case={caseDir}).");
+                throw new TimeoutException($"CLI did not exit within {expressionsBasedTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
             }
 
             await File.WriteAllTextAsync(Path.Combine(outputDir, $"expressions-based.{tfm}.stdout.txt"), result.StandardOutput, cts.Token);

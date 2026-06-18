@@ -1,0 +1,14 @@
+f := ratency(10, 5)
+g := bucket(3, 2)
+
++f
+-g
+f + +5
+f + -3
+g + (5)
+(5) + g
+f(10)
+g(f(10))
+hDev(f, g + 5)
+hDev(f + (0), f)
+vDev(+f, f + (0))

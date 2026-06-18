@@ -1,0 +1,42 @@
+x := 2
+f := affine(1, 1)
+g := affine(2, 0)
+h := affine(3, 0)
+
+divisionRightOfComp := f comp g / x
+divisionRightOfComp_compFirst := (f comp g) / x
+divisionRightOfComp_productFirst := f comp (g / x)
+
+minPlusConvolutionRightOfComp := f comp g *_ h
+minPlusConvolutionRightOfComp_compFirst := (f comp g) *_ h
+minPlusConvolutionRightOfComp_productFirst := f comp (g *_ h)
+
+maxPlusConvolutionRightOfComp := f comp g *^ h
+maxPlusConvolutionRightOfComp_compFirst := (f comp g) *^ h
+maxPlusConvolutionRightOfComp_productFirst := f comp (g *^ h)
+
+minPlusDeconvolutionRightOfComp := f comp g /_ h
+minPlusDeconvolutionRightOfComp_compFirst := (f comp g) /_ h
+minPlusDeconvolutionRightOfComp_productFirst := f comp (g /_ h)
+
+maxPlusDeconvolutionRightOfComp := f comp g /^ h
+maxPlusDeconvolutionRightOfComp_compFirst := (f comp g) /^ h
+
+divisionRightOfComp(1)
+divisionRightOfComp_compFirst(1)
+divisionRightOfComp_productFirst(1)
+
+minPlusConvolutionRightOfComp(1)
+minPlusConvolutionRightOfComp_compFirst(1)
+minPlusConvolutionRightOfComp_productFirst(1)
+
+maxPlusConvolutionRightOfComp(1)
+maxPlusConvolutionRightOfComp_compFirst(1)
+maxPlusConvolutionRightOfComp_productFirst(1)
+
+minPlusDeconvolutionRightOfComp(1)
+minPlusDeconvolutionRightOfComp_compFirst(1)
+minPlusDeconvolutionRightOfComp_productFirst(1)
+
+maxPlusDeconvolutionRightOfComp(1)
+maxPlusDeconvolutionRightOfComp_compFirst(1)

@@ -14,6 +14,13 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         State = state ?? new();
     }
 
+    public override IExpression VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context) =>
+        context.GetChild(0).Accept(this);
+
+    public override IExpression VisitFunctionEnclosedExpressionExp(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionEnclosedExpressionExpContext context) =>
+        context.GetChild(0).Accept(this);
+
     public override IExpression VisitFunctionVariableExp(Unipi.MppgParser.Grammar.MppgParser.FunctionVariableExpContext context)
     {
         var name = context.GetText();
@@ -26,6 +33,7 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
             return State.GetNumberVariable(name);
     }
 
+    
     public override IExpression VisitNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.NumberVariableExpContext context)
     {
         var name = context.GetText();
@@ -52,14 +60,18 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
 
     public override IExpression VisitNumberLiteralExp(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralExpContext context)
     {
-        var numberLiteralVisitor = new NumberLiteralVisitor();
-        var value = numberLiteralVisitor.Visit(context);
-
-        var valueExp = Expressions.Expressions.FromRational(value, "");
-        return valueExp;
+        var numberLiteralContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        return ParseNumberLiteral(numberLiteralContext);
     }
 
     public override IExpression VisitEncNumberLiteralExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberLiteralExpContext context)
+    {
+        var numberLiteralContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
+        return ParseNumberLiteral(numberLiteralContext);
+    }
+
+    private static IExpression ParseNumberLiteral(
+        Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var numberLiteralVisitor = new NumberLiteralVisitor();
         var value = numberLiteralVisitor.Visit(context);
@@ -67,4 +79,5 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
         var valueExp = Expressions.Expressions.FromRational(value, "");
         return valueExp;
     }
+
 }

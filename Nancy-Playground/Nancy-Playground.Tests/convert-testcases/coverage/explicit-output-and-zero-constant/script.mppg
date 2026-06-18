@@ -1,0 +1,7 @@
+f := bucket(2, 3)
+zero_min := f /\ 0
+zero_max := 0 \/ f
+
+1 + 2 * 3
+assert(zero_min(5) = 0)
+assert(zero_max(5) = f(5))

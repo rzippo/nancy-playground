@@ -1,0 +1,88 @@
+// Test case for edge cases and epsilon
+e := epsilon
+z := zero
+r1 := ratency(1, 0)
+r2 := ratency(0, 2)
+r3 := ratency(0, 0)
+a1 := affine(2, 0)
+a2 := affine(0, 2)
+s1 := step(0, 10)
+t1 := stair(0, 3, 4)
+d1 := delay(0)
+
+// uaf with negative slope
+f_uaf := uaf ( [ ( 0 , 0 ) 0 ( 0 , 0 ) ] ] ( 0 , 0 ) - 1 ( 1 , - 1 ) ] ] ( 1 , 0 ) - 1 ( 2 , - 1 ) ] ] ( 2 , - 1 ) 1 ( 3 , 0 ) ] ] ( 3 , 0 ) 0 ( 4 , 0 ) ] ] ( 4 , 0 ) 1 ( 5 , 1 ) ] ] ( 5 , 1 ) - 1 ( 7 , - 1 ) ] ] ( 7 , - 1 ) 1 ( + Infinity , + Infinity ) [ )
+
+// upp with ultimately constant tail
+f_upp := upp([(0, 0)0(2.75,0)] ](2.75,0.5)0(3, 0.5)] ](3,1.5)0(5.5, 1.5)] ](5.5, 3)0(7,3)], period(](7, 3)0(+Infinity, 3)]))
+
+// Mixed scalar operators and unary signs
+f := ratency(1, 2)
+v1 := f + +5
+v2 := f + -3
+v3 := +f
+v4 := -f
+
+// Function application with arithmetic in argument
+v5 := f(10 + 5)
+v6 := f(10 - 5)
+v7 := f(10 * 5)
+
+// Limit samples
+v5_left := f(10 -)
+v5_right := f(10 +)
+v5_left_alt := f(10 ~-)
+v5_right_alt := f(10 ~+)
+
+// Precedence with composition and mixed ops
+x := 2
+g := bucket(2, 3)
+v8 := f + x comp g
+v9 := f(x) * g + x
+
+// Infinite literals
+inf1 := +inf
+inf2 := -inf
+inf3 := infinity
+inf4 := Infinity
+
+// hdev / vdev
+h1 := hdev(f, g)
+v10 := vdev(f, g)
+
+// uaf with +inf slope
+f_uaf_inf := uaf( [(0,0)1(+inf,+inf)[ )
+
+// print some values to verify
+e
+z
+r1
+r2
+r3
+a1
+a2
+s1
+t1
+d1
+f_uaf(10)
+f_upp(100)
+v1(10)
+v2(10)
+v3(10)
+v4(10)
+v5
+v6
+v7
+v5_left
+v5_right
+v5_left_alt
+v5_right_alt
+v8(10)
+v9(10)
+inf1
+inf2
+inf3
+inf4
+h1
+v10
+f_uaf_inf(100)

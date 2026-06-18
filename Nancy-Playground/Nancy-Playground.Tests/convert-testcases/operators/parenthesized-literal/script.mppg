@@ -1,0 +1,3 @@
+f := ratency(10, 5)
+hDev(f + (0), f)
+vDev(+f, f + (0))

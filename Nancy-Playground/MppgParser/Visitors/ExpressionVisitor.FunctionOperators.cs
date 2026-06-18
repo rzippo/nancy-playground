@@ -29,422 +29,138 @@ public partial class ExpressionVisitor
         return context.GetChild(1).Accept(this);
     }
 
-    public override IExpression VisitFunctionMinPlusConvolution(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionContext context)
+    public override IExpression VisitFunctionScalarMulRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-        var isNotationAmbiguous =  context.GetChild(1).GetText() == "*";
+        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        var curve = (CurveExpression)context.functionUnaryExpression().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
-        {
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
-                return curveExp;
-            }
-            case (RationalExpression lRE, RationalExpression rRE) when isNotationAmbiguous:
-            {
-                // this was mis-parsed: rational product
-                var rationalExp = RationalExpression.Product(lRE, rRE);
-                return rationalExp;
-            }
-            case (CurveExpression lCE, RationalExpression rRE) when isNotationAmbiguous:
-            {
-                // this was mis-parsed: function scalar multiplication
-                var curveExp = lCE.Scale(rRE);
-                return curveExp;
-            }
-            case (RationalExpression lRE, CurveExpression rCE) when isNotationAmbiguous:
-            {
-                // this was mis-parsed: function scalar multiplication
-                var curveExp = rCE.Scale(lRE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
+        return curve.Scale(scalar);
     }
 
-    public override IExpression VisitFunctionMaxPlusConvolution(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionContext context)
+    public override IExpression VisitFunctionScalarCompositionRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
+        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        _ = context.functionUnaryExpression().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
-        {
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                var curveExp = Expressions.Expressions.MaxPlusConvolution(lCE, rCE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
+        return ConstantCurveExpression(scalar);
     }
 
-    public override IExpression VisitFunctionMinPlusDeconvolution(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionContext context)
+    public override IExpression VisitFunctionSumChain(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionSumChainContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-        var isNotationAmbiguous =  context.GetChild(1).GetText() == "/";
+        IExpression result = context.functionSumStart().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
+        foreach (var suffix in context.functionSumSuffix())
         {
-            case (CurveExpression lCE, CurveExpression rCE):
+            result = suffix switch
             {
-                var curveExp = Expressions.Expressions.Deconvolution(lCE, rCE);
-                return curveExp;
-            }
-            case (RationalExpression lRE, RationalExpression rRE) when isNotationAmbiguous:
-            {
-                // this was mis-parsed: rational division
-                var rationalExp = RationalExpression.Division(lRE, rRE);
-                return rationalExp;
-            }
-            case (CurveExpression lCE, RationalExpression rRE) when isNotationAmbiguous:
-            {
-                // this was mis-parsed: function scalar division
-                var curveExp = lCE.Scale(rRE.Invert());
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
+                Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxSuffixContext sum =>
+                    ApplyFunctionFunctionSum((CurveExpression)result, sum.op.Type,
+                        (CurveExpression)sum.functionProductExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxSuffixContext shift =>
+                    ApplyFunctionNumberSum((CurveExpression)result, shift.op.Type,
+                        (RationalExpression)shift.numberEnclosedExpression().Accept(this)),
+                _ => throw new InvalidOperationException($"Unexpected function sum suffix: {suffix.GetType().Name}")
+            };
         }
+
+        return result;
     }
 
-    public override IExpression VisitFunctionMaxPlusDeconvolution(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionContext context)
+    public override IExpression VisitFunctionShiftMinMaxRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
+        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        var curve = (CurveExpression)context.functionProductExpression().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
-        {
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                var curveExp = Expressions.Expressions.MaxPlusDeconvolution(lCE, rCE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
+        return ApplyNumberFunctionSum(scalar, context.op.Type, curve);
     }
 
-    public override IExpression VisitFunctionComposition(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext context)
+    public override IExpression VisitFunctionProductChain(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionProductChainContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
+        IExpression result = context.functionProductStart().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
+        foreach (var suffix in context.functionProductSuffix())
         {
-            case (CurveExpression lCE, CurveExpression rCE):
+            result = suffix switch
             {
-                var curveExp = Expressions.Expressions.Composition(lCE, rCE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionSuffixContext convolution =>
+                    Expressions.Expressions.Convolution((CurveExpression)result,
+                        (CurveExpression)convolution.functionUnaryExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulSuffixContext scalarMul =>
+                    ((CurveExpression)result).Scale(
+                        (RationalExpression)scalarMul.numberEnclosedExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionSuffixContext convolution =>
+                    Expressions.Expressions.MaxPlusConvolution((CurveExpression)result,
+                        (CurveExpression)convolution.functionUnaryExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionSuffixContext deconvolution =>
+                    Expressions.Expressions.Deconvolution((CurveExpression)result,
+                        (CurveExpression)deconvolution.functionUnaryExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivSuffixContext scalarDiv =>
+                    ((CurveExpression)result).Scale(
+                        ((RationalExpression)scalarDiv.numberEnclosedExpression().Accept(this)).Invert()),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionSuffixContext deconvolution =>
+                    Expressions.Expressions.MaxPlusDeconvolution((CurveExpression)result,
+                        (CurveExpression)deconvolution.functionUnaryExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext composition =>
+                    Expressions.Expressions.Composition((CurveExpression)result,
+                        (CurveExpression)composition.functionUnaryExpression().Accept(this)),
+                Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionSuffixContext scalarComposition =>
+                    ConstantCurveExpression(
+                        ((CurveExpression)result).ValueAt(
+                            (RationalExpression)scalarComposition.numberEnclosedExpression().Accept(this))),
+                _ => throw new InvalidOperationException($"Unexpected function product suffix: {suffix.GetType().Name}")
+            };
         }
+
+        return result;
     }
 
-    public override IExpression VisitFunctionScalarMultiplicationLeft(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationLeftContext context)
-    {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
+    private static IExpression ApplyFunctionFunctionSum(
+        CurveExpression left,
+        int operationType,
+        CurveExpression right) =>
+        operationType switch
         {
-            case (CurveExpression lCE, RationalExpression rRE):
-            {
-                var curveExp = lCE.Scale(rRE);
-                return curveExp;
-            }
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                // this was mis-parsed: function min-plus convolution
-                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
-                return curveExp;
-            }
-            case (RationalExpression lRE, RationalExpression rRE):
-            {
-                // this was mis-parsed: rational product
-                var rationalExp = RationalExpression.Product(lRE, rRE);
-                return rationalExp;
-            }
-            case (RationalExpression lRE, CurveExpression rCE):
-            {
-                // this was mis-parsed: function scalar multiplication
-                var curveExp = rCE.Scale(lRE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
-    }
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => Expressions.Expressions.Addition(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => Expressions.Expressions.Subtraction(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => Expressions.Expressions.Minimum(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.VEE => Expressions.Expressions.Maximum(left, right),
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
 
-    public override IExpression VisitFunctionScalarMultiplicationRight(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMultiplicationRightContext context)
-    {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
+    private static IExpression ApplyFunctionNumberSum(
+        CurveExpression left,
+        int operationType,
+        RationalExpression right) =>
+        operationType switch
         {
-            case (CurveExpression lCE, RationalExpression rRE):
-            {
-                var curveExp = lCE.Scale(rRE);
-                return curveExp;
-            }
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                // this was mis-parsed: function min-plus convolution
-                var curveExp = Expressions.Expressions.Convolution(lCE, rCE);
-                return curveExp;
-            }
-            case (RationalExpression lRE, RationalExpression rRE):
-            {
-                // this was mis-parsed: rational product
-                var rationalExp = RationalExpression.Product(lRE, rRE);
-                return rationalExp;
-            }
-            case (RationalExpression lRE, CurveExpression rCE):
-            {
-                // this was mis-parsed: function scalar multiplication
-                var curveExp = rCE.Scale(lRE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
-    }
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => Expressions.Expressions.VerticalShift(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => Expressions.Expressions.VerticalShift(left, right.Negate()),
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => Expressions.Expressions.Minimum(left, new PureConstantCurve(right.Compute())),
+            Unipi.MppgParser.Grammar.MppgParser.VEE => Expressions.Expressions.Maximum(left, new PureConstantCurve(right.Compute())),
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
 
-    public override IExpression VisitFunctionScalarDivision(
-        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivisionContext context)
-    {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-
-        switch (ilE, irE)
+    private static IExpression ApplyNumberFunctionSum(
+        RationalExpression left,
+        int operationType,
+        CurveExpression right) =>
+        operationType switch
         {
-            case (CurveExpression lCE, RationalExpression rRE):
-            {
-                var curveExp = lCE.Scale(rRE.Invert());
-                return curveExp;
-            }
-            case (RationalExpression lRE, RationalExpression rRE):
-            {
-                // this was mis-parsed: rational division
-                var rationalExp = RationalExpression.Division(lRE, rRE);
-                return rationalExp;
-            }
-            case (CurveExpression lCE, CurveExpression rCE):
-            {
-                // this was mis-parsed: function min-plus deconvolution
-                var curveExp = Expressions.Expressions.Deconvolution(lCE, rCE);
-                return curveExp;
-            }
-            default:
-            {
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-        }
-    }
+            Unipi.MppgParser.Grammar.MppgParser.PLUS => Expressions.Expressions.VerticalShift(right, left),
+            Unipi.MppgParser.Grammar.MppgParser.MINUS => Expressions.Expressions.VerticalShift(right.Negate(), left),
+            Unipi.MppgParser.Grammar.MppgParser.WEDGE => Expressions.Expressions.Minimum(right, new PureConstantCurve(left.Compute())),
+            Unipi.MppgParser.Grammar.MppgParser.VEE => Expressions.Expressions.Maximum(right, new PureConstantCurve(left.Compute())),
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
 
-    public override IExpression VisitFunctionSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxContext context)
-    {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-        var operation = context.op;
-
-        switch (operation.Type)
-        {
-            case Unipi.MppgParser.Grammar.MppgParser.PLUS:
-            {
-                switch (ilE, irE)
-                {
-                    case (CurveExpression lCE, CurveExpression rCE):
-                    {
-                        var curveExp = Expressions.Expressions.Addition(lCE, rCE);
-                        return curveExp;
-                    }
-                    case (CurveExpression lCE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var curveExp = Expressions.Expressions.VerticalShift(lCE, rRE);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, CurveExpression rCE):
-                    {
-                        // this was mis-parsed
-                        var curveExp = Expressions.Expressions.VerticalShift(rCE, lRE);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var rationalExp = RationalExpression.Addition(lRE, rRE);
-                        return rationalExp;
-                    }
-                    default:
-                    {
-                        throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-                    }
-                }
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.MINUS:
-            {
-                switch (ilE, irE)
-                {
-                    case (CurveExpression lCE, CurveExpression rCE):
-                    {
-                        var curveExp = Expressions.Expressions.Subtraction(lCE, rCE);
-                        return curveExp;
-                    }
-                    case (CurveExpression lCE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var curveExp = Expressions.Expressions.VerticalShift(lCE, rRE.Negate());
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, CurveExpression rCE):
-                    {
-                        // this was mis-parsed
-                        var curveExp = Expressions.Expressions.VerticalShift(rCE, lRE.Negate());
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var rationalExp = RationalExpression.Subtraction(lRE, rRE);
-                        return rationalExp;
-                    }
-                    default:
-                    {
-                        throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-                    }
-                }
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.WEDGE:
-            {
-                switch (ilE, irE)
-                {
-                    case (CurveExpression lCE, CurveExpression rCE):
-                    {
-                        var curveExp = Expressions.Expressions.Minimum(lCE, rCE);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var rationalExp = RationalExpression.Min(lRE, rRE);
-                        return rationalExp;
-                    }
-                    case (CurveExpression lCE, RationalExpression rRE):
-                    {
-                        var constantCurve = new PureConstantCurve(rRE.Compute());
-                        var curveExp = Expressions.Expressions.Minimum(lCE, constantCurve);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, CurveExpression rCE):
-                    {
-                        var constantCurve = new PureConstantCurve(lRE.Compute());
-                        var curveExp = Expressions.Expressions.Minimum(rCE, constantCurve);
-                        return curveExp;
-                    }
-                    default:
-                    {
-                        throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-                    }
-                }
-            }
-                
-            case Unipi.MppgParser.Grammar.MppgParser.VEE:
-            {
-                switch (ilE, irE)
-                {
-                    case (CurveExpression lCE, CurveExpression rCE):
-                    {
-                        var curveExp = Expressions.Expressions.Maximum(lCE, rCE);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, RationalExpression rRE):
-                    {
-                        // this was mis-parsed
-                        var rationalExp = RationalExpression.Max(lRE, rRE);
-                        return rationalExp;
-                    }
-                    case (CurveExpression lCE, RationalExpression rRE):
-                    {
-                        var constantCurve = new PureConstantCurve(rRE.Compute());
-                        var curveExp = Expressions.Expressions.Maximum(lCE, constantCurve);
-                        return curveExp;
-                    }
-                    case (RationalExpression lRE, CurveExpression rCE):
-                    {
-                        var constantCurve = new PureConstantCurve(lRE.Compute());
-                        var curveExp = Expressions.Expressions.Maximum(rCE, constantCurve);
-                        return curveExp;
-                    }
-                    default:
-                    {
-                        throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-                    }
-                }
-            }
-            
-            default: 
-                throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
-        }
-    }
-    
+    private static CurveExpression ConstantCurveExpression(RationalExpression value) =>
+        Expressions.Expressions.FromCurve(new PureConstantCurve(value.Compute()));
+	    
     public override IExpression VisitFunctionSubadditiveClosure(
         Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context)
     {

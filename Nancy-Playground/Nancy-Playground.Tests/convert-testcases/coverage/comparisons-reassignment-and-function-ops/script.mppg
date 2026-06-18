@@ -1,0 +1,23 @@
+// Covers conversion constructs that need runtime parity, not just generated text.
+
+x := 1 // first rational assignment
+x := x + 2 // reassignment should stay mutable in generated code
+
+f := ratency(1, 1) // first curve assignment
+f := affine(1, 0) // reassignment should stay mutable in generated code
+
+min_curve := 0 /\ f
+max_curve := f \/ 3
+shifted := vshift(f, 3)
+upper_inverse := up_inv(f)
+left_continuous := left-ext(f)
+
+assert(x = 3)
+assert(x != 2)
+assert(1 < 2)
+assert(3 > 2)
+assert(min_curve(4) = 0)
+assert(max_curve(4) = 4)
+assert(shifted(2) = 5)
+assert(upper_inverse(2) = 2)
+assert(left_continuous(2) = 2)

@@ -149,7 +149,7 @@ $csprojContent = @"
     <ProjectReference Include="$mappingProject" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Unipi.Nancy.Expressions" Version="1.0.1" />
+    <PackageReference Include="Unipi.Nancy.Expressions" Version="1.0.3" />
   </ItemGroup>
 </Project>
 "@

@@ -1,11 +1,11 @@
 > T4 := 60
 T4 = 60
 > A1 := stair ( 0 , 60 , 35 )
-A1 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,60,35,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 60, pseudoPeriodHeight: 35)
+A1 = new StairCurve(35, 60)
 > A2 := stair ( 0 , 5 , 2 )
-A2 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,5,2,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 5, pseudoPeriodHeight: 2)
+A2 = new StairCurve(2, 5)
 > A4 := stair ( 0 , T4 , 12 )
-A4 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,60,12,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 60, pseudoPeriodHeight: 12)
+A4 = new StairCurve(12, 60)
 > C := affine ( 1 , 0 )
 C = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
 > D1 := C + ( A1 - C ) * zero
