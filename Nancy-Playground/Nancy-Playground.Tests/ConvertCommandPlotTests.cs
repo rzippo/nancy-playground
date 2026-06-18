@@ -282,6 +282,12 @@ public class ConvertCommandPlotTests
 
             Assert.Equal(runHash, convertHash);
         }
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 
     /// <summary>
@@ -448,6 +454,12 @@ public class ConvertCommandPlotTests
             _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
 
             Assert.Equal(runHash, convertHash);
+        }
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
         }
     }
 }

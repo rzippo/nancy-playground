@@ -242,6 +242,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandFinalResult, programFinalResult);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 
     /// <summary>
@@ -371,6 +377,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandFinalResult, programFinalResult);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
     
     /// <summary>
@@ -520,6 +532,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandFinalResult, programFinalResult);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 
     /// <summary>
@@ -655,6 +673,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandFinalResult, programFinalResult);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 
     /// <summary>
@@ -802,6 +826,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 
     /// <summary>
@@ -931,6 +961,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
     
     /// <summary>
@@ -1079,6 +1115,12 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
     
     /// <summary>
@@ -1209,5 +1251,11 @@ public class ConvertCommandOutputTests
 
         // Finally: check that both results are the same
         AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
+
+        // Cleanup: delete the build output to save space
+        if (Directory.Exists(buildDir))
+        {
+            Directory.Delete(buildDir, true);
+        }
     }
 }
