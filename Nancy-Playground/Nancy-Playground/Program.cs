@@ -30,7 +30,7 @@ public class Program
     [
         CliVersionLine,
         // todo: add reference to the maintainer somewhere?
-        "[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.1016/j.softx.2022.101178[/][/]"
+        "[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.4230/LIPIcs.ECRTS.2026.5[/][/]"
     ];
 
     public static int Main(string[] args)
