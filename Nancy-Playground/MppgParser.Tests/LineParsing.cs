@@ -82,6 +82,15 @@ public class LineParsing
                 ("D4", Expressions.Expressions.FromCurve(Curve.Zero(), "D4"))
             ],
             []
+        ),
+        (
+            "x + y * z",
+            [],
+            [
+                ("x", Expressions.Expressions.FromRational(2, "x")),
+                ("y", Expressions.Expressions.FromRational(3, "y")),
+                ("z", Expressions.Expressions.FromRational(4, "z")),
+            ]
         )
     ];
 
