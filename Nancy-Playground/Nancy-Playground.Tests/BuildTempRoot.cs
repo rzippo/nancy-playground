@@ -68,7 +68,7 @@ static class BuildTempRoot
         {
             var freeBytes = new DriveInfo(root).AvailableFreeSpace;
             if (freeBytes < RequiredFreeBytes)
-                return $"has {freeBytes / (1024 * 1024)} MB free, less than the {RequiredFreeBytes / (1024 * 1024)} MB needed";
+                return $"has {ToMegabytes(freeBytes)} MB free, less than the {ToMegabytes(RequiredFreeBytes)} MB needed";
         }
         catch (Exception e)
         {
@@ -81,10 +81,19 @@ static class BuildTempRoot
     }
 
     /// <summary>
+    /// Formats a size in bytes as megabytes, for the messages.
+    /// </summary>
+    private static string ToMegabytes(long bytes) => $"{bytes / 1024d / 1024d:F0}";
+
+    /// <summary>
     /// True if a file in the given folder can be executed, which is also what loading a native library requires.
     /// </summary>
     private static bool CanExecuteFrom(string root)
     {
+        // execute permissions, and the noexec mounts that deny them, are a Unix concept
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
+            return true;
+
         var probePath = System.IO.Path.Combine(root, $"exec-probe-{Guid.NewGuid():N}.sh");
         try
         {
