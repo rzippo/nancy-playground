@@ -29,13 +29,13 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         if (settings.Version)
         {
-            AnsiConsole.MarkupLine(Program.CliVersionLine);
+            Console.MarkupLine(Program.CliVersionLine);
             return 0;
         }
 
         if (!settings.MuteWelcomeMessage)
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
-                AnsiConsole.MarkupLine(cliWelcomeLine);
+                Console.MarkupLine(cliWelcomeLine);
 
         var programContext = new ProgramContext();
 
@@ -45,17 +45,16 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         // todo: make this configurable
         var plotsRoot = Environment.CurrentDirectory;
 
-        var syntaxVersion = programContext.SyntaxVersion;
-
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
+                Console = Console,
                 // todo: make this configurable
-                PlotFormatter = new ScottPlotFormatter(plotsRoot),
+                PlotFormatter = new ScottPlotFormatter(plotsRoot) { Console = Console },
                 // PlotFormatter = new XPlotPlotFormatter(plotsRoot),
-                TikzPlotFormatter = new TikzPlotFormatter(plotsRoot),
+                TikzPlotFormatter = new TikzPlotFormatter(plotsRoot) { Console = Console },
                 PrintInputAsConfirmation = true,
                 EchoInput = echoInput
             },
@@ -73,7 +72,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var totalComputationTime = TimeSpan.Zero;
 
         // CLI welcome message
-        AnsiConsole.MarkupLine("[green]Interactive mode: type in your commands. Use [blue]!help[/] to read the manual.[/]");
+        Console.MarkupLine("[green]Interactive mode: type in your commands. Use [blue]!help[/] to read the manual.[/]");
 
         while (true)
         {
@@ -81,19 +80,19 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             if (input == null)
             {
                 // end of input: behave as if the user quit
-                AnsiConsole.MarkupLine("[green]Bye.[/]");
+                Console.MarkupLine("[green]Bye.[/]");
                 break;
             }
 
             var line = input.Trim();
             if (string.IsNullOrWhiteSpace(line))
-                AnsiConsole.WriteLine();
+                Console.WriteLine();
             else if (line.StartsWith("!"))
             {
                 // interactive mode command
                 if (line.StartsWith("!quit") || line.StartsWith("!exit"))
                 {
-                    AnsiConsole.MarkupLine("[green]Bye.[/]");
+                    Console.MarkupLine("[green]Bye.[/]");
                     break;
                 }
                 else if (line.StartsWith("!export") || line.StartsWith("!save"))
@@ -122,11 +121,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     if (clearHistory)
                     {
                         lineEditor.ClearHistory();
-                        AnsiConsole.MarkupLine("[green]Session cleared. All variables, executed lines, and command history have been reset.[/]");
+                        Console.MarkupLine("[green]Session cleared. All variables, executed lines, and command history have been reset.[/]");
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
+                        Console.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
                     }
                 }
                 else if (line.StartsWith("!help") || line.StartsWith("!manual"))
@@ -145,21 +144,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // MPPG syntax statement
                 try
                 {
-                    var statement = Statement.FromLine(line, programContext.State, syntaxVersion);
+                    var statement = Statement.FromLine(line, programContext.State, programContext.SyntaxVersion);
 
                     // Handle version directives in interactive mode
                     if (statement is VersionDirectiveStatement vds)
                     {
-                        if (vds.IsDuplicate)
-                        {
-                            AnsiConsole.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Active version: {Escape(syntaxVersion.ToString())}.");
-                        }
-                        else
-                        {
-                            syntaxVersion = vds.Version;
-                            programContext.SyntaxVersion = syntaxVersion;
-                            AnsiConsole.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
-                        }
+                        ApplyVersionDirective(vds, programContext);
                         continue;
                     }
 
@@ -167,8 +157,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine($"[red]Syntax error:[/] {Escape(line)}");
-                    AnsiConsole.MarkupLine($"[red]{Escape(ex.Message)}[/]");
+                    Console.MarkupLine($"[red]Syntax error:[/] {Escape(line)}");
+                    Console.MarkupLine($"[red]{Escape(ex.Message)}[/]");
                     continue;
                 }
 
@@ -182,6 +172,33 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     }
 
     /// <summary>
+    /// Applies a syntax version directive to the session, if it is still in the preamble.
+    /// </summary>
+    /// <remarks>
+    /// The session stays at one version, so that its exported program behaves the same when run again.
+    /// </remarks>
+    private void ApplyVersionDirective(VersionDirectiveStatement vds, ProgramContext programContext)
+    {
+        var activeVersion = Escape(programContext.SyntaxVersion.ToString());
+
+        if (programContext.SyntaxVersionDirectiveApplied)
+        {
+            Console.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Only the first one is applied. Active version: {activeVersion}. Use [blue]!clear[/] to start a new session.");
+            return;
+        }
+
+        if (!programContext.CanApplySyntaxVersionDirective)
+        {
+            Console.MarkupLine($"[yellow]WARNING:[/] A syntax version directive is only applied before any other statement. Active version: {activeVersion}. Use [blue]!clear[/] to start a new session.");
+            return;
+        }
+
+        programContext.SyntaxVersion = vds.Version;
+        programContext.SyntaxVersionDirectiveApplied = true;
+        Console.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
+    }
+
+    /// <summary>
     /// Exports the current program to a file.
     /// </summary>
     /// <param name="args"></param>
@@ -190,7 +207,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         if (args.Length != 1)
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] !export requires exactly one argument: the output file path.");
+            Console.MarkupLine("[red]Error:[/] !export requires exactly one argument: the output file path.");
             return;
         }
 
@@ -200,11 +217,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             var statementLines = Enumerable.Select(programContext.StatementHistory, s => s.Text);
 
             File.WriteAllLines(outputPath, statementLines);
-            AnsiConsole.MarkupLine($"[green]Program exported successfully to[/] [blue]{Escape(outputPath)}[/].");
+            Console.MarkupLine($"[green]Program exported successfully to[/] [blue]{Escape(outputPath)}[/].");
         }
         catch (Exception e)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
+            Console.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
         }
     }
 
@@ -217,7 +234,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         if (args.Length != 1)
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] !convert requires exactly one argument: the output file path.");
+            Console.MarkupLine("[red]Error:[/] !convert requires exactly one argument: the output file path.");
             return;
         }
 
@@ -237,11 +254,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             ]);
 
             File.WriteAllLines(outputPath, (IEnumerable<string>)programNancyCode);
-            AnsiConsole.MarkupLine($"[green]Program converted successfully to[/] [blue]{Escape(outputPath)}[/].");
+            Console.MarkupLine($"[green]Program converted successfully to[/] [blue]{Escape(outputPath)}[/].");
         }
         catch (Exception e)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
+            Console.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
         }
     }
 
@@ -257,7 +274,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         if (args.Length == 0)
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] !load requires at least one argument: the input file path.");
+            Console.MarkupLine("[red]Error:[/] !load requires at least one argument: the input file path.");
             return;
         }
 
@@ -279,7 +296,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         if (string.IsNullOrWhiteSpace(filePath))
         {
-            AnsiConsole.MarkupLine("[red]Error:[/] !load requires a file path argument.");
+            Console.MarkupLine("[red]Error:[/] !load requires a file path argument.");
             return;
         }
 
@@ -288,7 +305,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             var file = new FileInfo(filePath);
             if (!file.Exists)
             {
-                AnsiConsole.MarkupLine($"[red]Error:[/] File [blue]{Escape(filePath)}[/] not found.");
+                Console.MarkupLine($"[red]Error:[/] File [blue]{Escape(filePath)}[/] not found.");
                 return;
             }
 
@@ -297,6 +314,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             {
                 AnsiConsoleStatementFormatter ansi => new AnsiConsoleStatementFormatter()
                 {
+                    Console = ansi.Console,
                     PlotFormatter = ansi.PlotFormatter,
                     TikzPlotFormatter = ansi.TikzPlotFormatter,
                     PrintInputAsConfirmation = ansi.PrintInputAsConfirmation,
@@ -310,9 +328,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             int successCount = 0;
             int errorCount = 0;
             var loadedLines = new List<string>();
-            var loadSyntaxVersion = programContext.SyntaxVersion;
 
-            AnsiConsole.MarkupLine($"[green]Loading program from[/] [blue]{Escape(filePath)}[/]...");
+            Console.MarkupLine($"[green]Loading program from[/] [blue]{Escape(filePath)}[/]...");
 
             foreach (var line in lines)
             {
@@ -332,21 +349,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // Execute the statement
                 try
                 {
-                    var statement = Statement.FromLine(trimmedLine, programContext.State, loadSyntaxVersion);
+                    var statement = Statement.FromLine(trimmedLine, programContext.State, programContext.SyntaxVersion);
 
                     // Handle version directives in loaded programs
                     if (statement is VersionDirectiveStatement vds)
                     {
-                        if (vds.IsDuplicate)
-                        {
-                            AnsiConsole.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Active version: {Escape(loadSyntaxVersion.ToString())}.");
-                        }
-                        else
-                        {
-                            loadSyntaxVersion = vds.Version;
-                            programContext.SyntaxVersion = loadSyntaxVersion;
-                            AnsiConsole.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
-                        }
+                        ApplyVersionDirective(vds, programContext);
                         continue;
                     }
 
@@ -355,8 +363,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 }
                 catch (Exception ex)
                 {
-                    AnsiConsole.MarkupLine($"[red]Error executing line:[/] {Escape(trimmedLine)}");
-                    AnsiConsole.MarkupLine($"[red]{Escape(ex.Message)}[/]");
+                    Console.MarkupLine($"[red]Error executing line:[/] {Escape(trimmedLine)}");
+                    Console.MarkupLine($"[red]{Escape(ex.Message)}[/]");
                     errorCount++;
                 }
             }
@@ -367,19 +375,19 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             if (addToHistory && loadedLines.Count > 0)
             {
                 lineEditor.AddToHistory(loadedLines);
-                AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed, {loadedLines.Count} lines added to history");
+                Console.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed, {loadedLines.Count} lines added to history");
             }
             else
             {
-                AnsiConsole.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed");
+                Console.MarkupLine($"[green]Program loaded:[/] {successCount} statements executed");
             }
 
             if (errorCount > 0)
-                AnsiConsole.MarkupLine($"[yellow]Warnings:[/] {errorCount} errors encountered");
+                Console.MarkupLine($"[yellow]Warnings:[/] {errorCount} errors encountered");
         }
         catch (Exception e)
         {
-            AnsiConsole.MarkupLine($"[red]Error:[/] Could not load program from [blue]{Escape(filePath)}[/]: {Escape(e.Message)}");
+            Console.MarkupLine($"[red]Error:[/] Could not load program from [blue]{Escape(filePath)}[/]: {Escape(e.Message)}");
         }
     }
 }

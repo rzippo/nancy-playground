@@ -10,30 +10,30 @@ public partial class InteractiveCommand
     private void PrintHelp(string[] args)
     {
         if (args.Length > 0)
-            PrintSearchLong(NancyPlaygroundDocs.HelpDocument, args);
+            PrintSearchLong(Console, NancyPlaygroundDocs.HelpDocument, args);
         else
-            PrintShort(NancyPlaygroundDocs.HelpDocument);
+            PrintShort(Console, NancyPlaygroundDocs.HelpDocument);
     }
 
     /// <summary>
     /// Prints all sections and items of a HelpDocument in a short, colored form.
     /// </summary>
-    public static void PrintShort(HelpDocument doc)
+    public static void PrintShort(IAnsiConsole console, HelpDocument doc)
     {
         if (!string.IsNullOrWhiteSpace(doc.Preamble))
         {
-            AnsiConsole.MarkupLine($"[grey]{Escape(doc.Preamble.Trim())}[/]");
-            AnsiConsole.WriteLine();
+            console.MarkupLine($"[grey]{Escape(doc.Preamble.Trim())}[/]");
+            console.WriteLine();
         }
 
         foreach (var section in doc.Sections)
         {
-            PrintSectionShort(section);
-            AnsiConsole.WriteLine();
+            PrintSectionShort(console, section);
+            console.WriteLine();
         }
     }
 
-    public static void PrintSearchLong(HelpDocument doc, IReadOnlyList<string> args)
+    public static void PrintSearchLong(IAnsiConsole console, HelpDocument doc, IReadOnlyList<string> args)
     {
         static string NormalizeQuery(string s)
         {
@@ -77,87 +77,87 @@ public partial class InteractiveCommand
         {
             // if (!string.IsNullOrWhiteSpace(doc.Preamble))
             // {
-            //     AnsiConsole.MarkupLine($"[grey]{Escape(doc.Preamble.Trim())}[/]");
-            //     AnsiConsole.WriteLine();
+            //     console.MarkupLine($"[grey]{Escape(doc.Preamble.Trim())}[/]");
+            //     console.WriteLine();
             // }
             foreach (var section in searchMatches)
-                PrintSectionLong(section);
+                PrintSectionLong(console, section);
         }
         else
-            AnsiConsole.MarkupLine($"[yellow]No match found for the given keywords.[/]");
+            console.MarkupLine($"[yellow]No match found for the given keywords.[/]");
     }
 
-    private static void PrintSectionShort(HelpSection section)
+    private static void PrintSectionShort(IAnsiConsole console, HelpSection section)
     {
         var tagText = section.Tags is { Count: > 0 }
             ? $" [grey]({Escape(string.Join(", ", section.Tags))})[/]"
             : string.Empty;
 
-        // AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]{tagText}");
-        AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
+        // console.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]{tagText}");
+        console.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
 
         if (!string.IsNullOrWhiteSpace(section.Description))
         {
-            AnsiConsole.MarkupLine($"[dim]{Escape(section.Description)}[/]");
+            console.MarkupLine($"[dim]{Escape(section.Description)}[/]");
         }
 
         foreach (var item in section.Items)
         {
-            PrintItemShort(item);
+            PrintItemShort(console, item);
         }
     }
 
-    private static void PrintItemShort(HelpItem item)
+    private static void PrintItemShort(IAnsiConsole console, HelpItem item)
     {
         var tagText = item.Tags is { Count: > 0 }
             ? $" [grey]({Escape(string.Join(", ", item.Tags))})[/]"
             : string.Empty;
 
         // Item name + optional tags
-        // AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/]{tagText}");
-        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
+        // console.MarkupLine($"  [cyan]- {Escape(item.Name)}[/]{tagText}");
+        console.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
 
         // One-line short description (truncated)
         if (!string.IsNullOrWhiteSpace(item.Description))
         {
             // var shortDesc = TruncateSingleLine(item.Description, 80);
-            // AnsiConsole.MarkupLine($"    [dim]{Escape(shortDesc)}[/]");
-            AnsiConsole.MarkupLine($"    [dim]{Escape(item.Description)}[/]");
+            // console.MarkupLine($"    [dim]{Escape(shortDesc)}[/]");
+            console.MarkupLine($"    [dim]{Escape(item.Description)}[/]");
         }
     }
 
-    private static void PrintSectionLong(HelpSection section)
+    private static void PrintSectionLong(IAnsiConsole console, HelpSection section)
     {
-        AnsiConsole.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
+        console.MarkupLine($"[bold yellow]{Escape(section.Name)}[/]");
 
         // does printing tags make sense? Make it an option?
         // var tagText = section.Tags is { Count: > 0 }
         //     ? $" [grey]({Escape(string.Join(", ", section.Tags))})[/]"
         //     : string.Empty;
-        // AnsiConsole.MarkupLine(tagText);
+        // console.MarkupLine(tagText);
 
         if (!string.IsNullOrWhiteSpace(section.Description))
-            AnsiConsole.MarkupLine($"[dim]{Escape(section.Description)}[/]");
+            console.MarkupLine($"[dim]{Escape(section.Description)}[/]");
 
         foreach (var item in section.Items)
-            PrintItemLong(item);
+            PrintItemLong(console, item);
     }
 
-    private static void PrintItemLong(HelpItem item)
+    private static void PrintItemLong(IAnsiConsole console, HelpItem item)
     {
-        AnsiConsole.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
+        console.MarkupLine($"  [cyan]- {Escape(item.Name)}[/] {MarkupFormats(item.Formats)}");
 
         // does printing tags make sense? Make it an option?
 
         // var tagText = item.Tags is { Count: > 0 }
         //     ? $" [grey]({Escape(string.Join(", ", item.Tags))})[/]"
         //     : string.Empty;
-        // AnsiConsole.MarkupLine(tagText);
+        // console.MarkupLine(tagText);
 
         var description = item.LongDescription.IsNullOrWhiteSpace() ? item.Description : item.LongDescription;
         var descriptionLines = description.Split("\n");
         foreach (var descriptionLine in descriptionLines)
-            AnsiConsole.MarkupLine($"    [dim]{Escape(descriptionLine)}[/]");
+            console.MarkupLine($"    [dim]{Escape(descriptionLine)}[/]");
     }
 
     private static string TruncateSingleLine(string text, int maxLength)
