@@ -11,6 +11,18 @@ public class ProgramContext
 
     public SyntaxVersion SyntaxVersion { get; set; } = SyntaxVersion.Latest;
 
+    /// <summary>
+    /// True once a syntax version directive has been applied to this context.
+    /// </summary>
+    public bool SyntaxVersionDirectiveApplied { get; set; } = false;
+
+    /// <summary>
+    /// True while a syntax version directive can still be applied, i.e. before any statement is executed.
+    /// This matches whole-program parsing, where only a directive in the preamble is applied, so that a session behaves the same once exported and run again.
+    /// </summary>
+    public bool CanApplySyntaxVersionDirective =>
+        !SyntaxVersionDirectiveApplied && StatementHistory.Count == 0;
+
     public StatementOutput? ExecuteStatement(
         Statement statement,
         IStatementFormatter formatter,
