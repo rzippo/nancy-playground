@@ -66,6 +66,9 @@ public class Program
             config.AddCommand<ConvertCommand>("convert")
                 .WithDescription("Converts a .mppg file to a Nancy program");
 
+            config.AddCommand<ManualCommand>("manual")
+                .WithDescription("Shows the MPPG syntax manual and exits. Optionally filter by a search query.");
+
 #if USE_PLAYWRIGHT
             config.AddCommand<SetupCommand>("setup")
                 .WithDescription("Initializes dependencies. Required to enable exporting plots to images.");

@@ -6,6 +6,7 @@ public partial class InteractiveCommand
     [
         // higher-order commands
         "!help",
+        "!manual",
         "!clihelp",
         "!quit",
         "!exit",
@@ -75,7 +76,7 @@ public partial class InteractiveCommand
         },
         new ContextualKeywords
         {
-            Enablers = ["!help"],
+            Enablers = ["!help", "!manual"],
             Keywords = NancyPlaygroundDocs.HelpDocument
                 .Sections
                 .SelectMany(section => section.Tags)

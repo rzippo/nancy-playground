@@ -109,7 +109,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                         AnsiConsole.MarkupLine("[green]Session cleared. All variables and executed lines have been reset.[/]");
                     }
                 }
-                else if (line.StartsWith("!help"))
+                else if (line.StartsWith("!help") || line.StartsWith("!manual"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
                     PrintHelp(args);
