@@ -270,7 +270,7 @@ Valid `args` are the following.
 | `ylim` | Range for y-axis. | ✅ |
 | `xlab` | Label for x axis. | ✅ |
 | `ylab` | Label for y axis. | ✅ |
-| `out` | Name of png file to save plot to. | ✅ |
+| `out` | Name of png file to save plot to. The `.png` extension is enforced, so it can be omitted. | ✅ |
 | `grid ="no"` | Remove grid from plot. | ❌ |
 | `bg ="no"` | Use white background instead of default grey. | ❌ |
 | `gui ="no"` | Custom option, enables or skips rendering via GUI. | ✅ |
@@ -288,6 +288,30 @@ of numbers, variables and strings for labels
 - `plot(service2,service1,xlim=[-0.3,15],ylim=[-0.3,15])`
 - `plot(f1, main="f1 for J=" +J +"Jitter", xlim=[-0.5, 5], xlab="time", ylab="packets", out = "image.png")`
 - `plot(xlim=[-0.3,15], ylim=[-0.3,15], service2, service1)`
+
+## TikZ plots ✅
+
+> Custom addition, requires syntax version 1.1 or later.
+
+`plotTikz(f1, ..., args)`
+
+Plot the functions `f1, f2, ...` as [TikZ](https://tikz.dev/) code, to be compiled with LaTeX, instead of an image.
+The code is printed to the console, unless the `out` option is used to write it to file.
+
+The `args` are the same as `plot`, with these differences.
+
+| Arg | Description | Implemented |
+|----|----|----|
+| `main`, `title` | The graph title. Not supported by Nancy.Plots.Tikz. | ❌ |
+| `xlab`, `ylab` | Labels for the axes. Nancy.Plots.Tikz always uses _time_ and _data_. | ❌ |
+| `out` | Name of the file to save the TikZ code to. The `.tex` extension is enforced, so it can be omitted, while `.tikz` is also accepted. | ✅ |
+| `gui ="no"` | No effect, as no GUI is used. | ❌ |
+
+### Examples
+- `plotTikz(f1)`
+- `plotTikz(f1, f2)`
+- `plotTikz(service2,service1,xlim=[-0.3,15],ylim=[-0.3,15])`
+- `plotTikz(f1, main="f1 for J=" +J +"Jitter", xlab="time", ylab="packets", out = "plot.tex")`
 
 ## Asserts
 
@@ -315,3 +339,4 @@ There seems _not_ to be any support for complex logic like `and`, `or` and `not`
 | Expression | Description | Implemented |
 | ---- | ---- | ---- |
 | printExpression(f) | Prints out the _expression_ of f. | ✅ |
+| plotTikz(f1, ..., args) | Plots the functions as TikZ code, see [TikZ plots](#tikz-plots-). | ✅ |

@@ -2,5 +2,5 @@
 - [ ] In run mode, use script's parent folder as current directory when exporting to image
   - [ ] Make this configurable, with the above as default behavior
   - [ ] Let also interactive mode specify the directory where exports should be saved
-- [ ] Add plot to TiKZ
+- [x] Add plot to TiKZ, as the `plotTikz` command
   - [ ] Integrate with [`tikz-to-pdf`](https://github.com/rzippo/tikz-to-pdf)?

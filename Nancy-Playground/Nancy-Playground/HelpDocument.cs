@@ -639,8 +639,8 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
             new HelpSection
             {
                 Name = "Plots",
-                Description = "Plotting functions using plot(f1, f2, ..., args).",
-                Tags = ["plots", "graph", "visualization", "plot", "functions", "syntax"],
+                Description = "Plotting functions using plot(f1, f2, ..., args), as an image or as TikZ code.",
+                Tags = ["plots", "graph", "visualization", "plot", "plotTikz", "tikz", "functions", "syntax"],
                 Items =
                 [
                     new HelpItem
@@ -665,7 +665,7 @@ Supported args:
 - `ylim=[min, max]`: y-axis range.
 - `xlab="text"`: label for x-axis.
 - `ylab="text"`: label for y-axis.
-- `out="file.png"`: save to PNG file.
+- `out="file.png"`: save to PNG file. The .png extension is enforced, so it can be omitted.
 - `grid="no"`: disable grid. (Not implemented)
 - `bg="no"`: white background instead of grey. (Not implemented)
 - `gui="no"`: custom flag to enable/skip GUI rendering.
@@ -678,6 +678,33 @@ plot(f1, main="f1 for J=" +J +"Jitter", xlim=[-0.5, 5], xlab="time", ylab="packe
 plot(xlim=[-0.3, 15], ylim=[-0.3, 15], service2, service1)
 """,
                         Tags = ["plots", "plot", "graph", "visualization", "xlim", "ylim", "xlab", "ylab", "gui", "out"]
+                    },
+
+                    new HelpItem
+                    {
+                        Name = "plotTikz",
+                        Formats = ["plotTikz(f1, f2, ..., args)"],
+                        Description = "Plots one or more function variables as TikZ code, to be compiled with LaTeX, instead of an image.",
+                        LongDescription = """
+General form:
+- `plotTikz(f1, f2, ..., args)`
+
+It requires syntax version 1.1 or later.
+
+The code is printed to the console, unless `out` is used to write it to file.
+The arguments are the same as `plot`, with these differences:
+- `main`, `title`: graph title. (Not supported by Nancy.Plots.Tikz)
+- `xlab`, `ylab`: labels for the axes. (Nancy.Plots.Tikz always uses "time" and "data")
+- `out="file.tex"`: save the TikZ code to file. The .tex extension is enforced, so it can be omitted, while .tikz is also accepted.
+- `gui="no"`: no effect, as no GUI is used.
+""",
+                        Examples = """
+plotTikz(f1)
+plotTikz(f1, f2)
+plotTikz(service2, service1, xlim=[-0.3, 15], ylim=[-0.3, 15])
+plotTikz(f1, main="f1 for J=" +J +"Jitter", xlab="time", ylab="packets", out="plot.tex")
+""",
+                        Tags = ["plots", "plotTikz", "tikz", "latex", "graph", "visualization", "xlim", "ylim", "xlab", "ylab", "out"]
                     }
                 ]
             },
