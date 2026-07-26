@@ -1,0 +1,6 @@
+--output-mode
+    NancyNew
+--run-mode
+    ExpressionsBased
+--on-error
+    Stop
