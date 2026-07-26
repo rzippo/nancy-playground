@@ -6,14 +6,18 @@ on:
     branches:
       - master
     paths:
-      - "Nancy-Playground/Nancy-Playground/*"
-      - "Nancy-Playground/Nancy-Playground.Tests/*"
+      - "Nancy-Playground/Nancy-Playground/**"
+      - "Nancy-Playground/Nancy-Playground.Tests/**"
+      - "Nancy-Playground/MppgParser/**"
+      - "Nancy-Playground/MppgParser.Tests/**"
   pull_request:
     branches:
       - master
     paths:
-      - "Nancy-Playground/Nancy-Playground/*"
-      - "Nancy-Playground/Nancy-Playground.Tests/*"
+      - "Nancy-Playground/Nancy-Playground/**"
+      - "Nancy-Playground/Nancy-Playground.Tests/**"
+      - "Nancy-Playground/MppgParser/**"
+      - "Nancy-Playground/MppgParser.Tests/**"
 
 jobs:
   Nancy-Playground-test:
@@ -24,6 +28,7 @@ jobs:
       SOLUTION: "Nancy-Playground/Nancy-Playground.sln"
       NANCY_PLAYGROUND: "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
       NANCY_PLAYGROUND_TESTS: "Nancy-Playground/Nancy-Playground.Tests/Nancy-Playground.Tests.csproj"
+      MPPG_PARSER_TESTS: "Nancy-Playground/MppgParser.Tests/MppgParser.Tests.csproj"
 
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +44,14 @@ jobs:
       - name: Build Nancy-Playground
         run: dotnet build $NANCY_PLAYGROUND --configuration $BUILD_CONFIG
 
+      - name: Build MppgParser.Tests
+        run: dotnet build $MPPG_PARSER_TESTS --configuration $BUILD_CONFIG
+
       - name: Build Nancy-Playground.Tests
         run: dotnet build $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
+
+      - name: Test MppgParser
+        run: dotnet test --project $MPPG_PARSER_TESTS --configuration $BUILD_CONFIG
 
       - name: Test Nancy-Playground
         run: dotnet test --project $NANCY_PLAYGROUND_TESTS --configuration $BUILD_CONFIG
