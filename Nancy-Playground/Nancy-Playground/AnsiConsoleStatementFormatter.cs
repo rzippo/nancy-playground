@@ -14,6 +14,12 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     public IPlotFormatter? PlotFormatter { get; init; }
 
     /// <summary>
+    /// Used to render <c>plotTikz</c> commands.
+    /// If null, TikZ plots are disabled.
+    /// </summary>
+    public TikzPlotFormatter? TikzPlotFormatter { get; init; }
+
+    /// <summary>
     /// If true, the statement text is printed in gray, as confirmation to a prompt above (e.g., in interactive mode).
     /// If false, it is instead printed in $mainColor (e.g., in run mode). 
     /// </summary>
@@ -140,6 +146,23 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case EmptyStatement es:
             {
                 // do nothing
+                break;
+            }
+
+            // must be matched before PlotCommand, of which it is a subtype
+            case PlotTikzCommand plotTikz:
+            {
+                if(TikzPlotFormatter is not null)
+                {
+                    var plotOutput = (PlotOutput) output;
+                    if (plotOutput.Time > TimeSpan.Zero && PrintTimePerStatement)
+                    {
+                        Console.MarkupLineInterpolated(FormatStatementTime(plotOutput.Time).Concat($"[grey]Plot inputs computed.[/]"));
+                    }
+                    TikzPlotFormatter.FormatTikzPlot(plotOutput);
+                }
+                else
+                    Console.MarkupLineInterpolated($"[yellow]Plots disabled.[/]");
                 break;
             }
 

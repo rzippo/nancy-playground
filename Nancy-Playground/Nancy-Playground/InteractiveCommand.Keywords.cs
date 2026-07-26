@@ -43,6 +43,7 @@ public partial class InteractiveCommand
         "zDev",
         // "maxBacklogPeriod", not implemented yet
         "plot",
+        "plotTikz",
         "assert",
         "printExpression"
     ];
@@ -59,7 +60,7 @@ public partial class InteractiveCommand
         },
         new ContextualKeywords
         {
-            Enablers = ["plot"],
+            Enablers = ["plot", "plotTikz"],
             Keywords =
             [
                 "main",

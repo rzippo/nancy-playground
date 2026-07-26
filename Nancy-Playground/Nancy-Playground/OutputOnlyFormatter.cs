@@ -13,6 +13,7 @@ namespace Unipi.Nancy.Playground.Cli;
 public class OutputOnlyFormatter : IStatementFormatter
 {
     public IPlotFormatter? PlotFormatter { get; init; }
+    public TikzPlotFormatter? TikzPlotFormatter { get; init; }
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
     public void FormatStatementPreamble(Statement statement)
@@ -38,6 +39,15 @@ public class OutputOnlyFormatter : IStatementFormatter
                 break;
             }
             
+            // must be matched before PlotCommand, of which it is a subtype
+            case PlotTikzCommand plotTikz:
+            {
+                if(TikzPlotFormatter is not null)
+                    // we do not control the output of the TikzPlotFormatter
+                    TikzPlotFormatter.FormatTikzPlot((PlotOutput) output);
+                break;
+            }
+
             case PlotCommand plot:
             {
                 if(PlotFormatter is not null)

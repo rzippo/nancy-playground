@@ -55,6 +55,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // todo: make this configurable
                 PlotFormatter = new ScottPlotFormatter(plotsRoot),
                 // PlotFormatter = new XPlotPlotFormatter(plotsRoot),
+                TikzPlotFormatter = new TikzPlotFormatter(plotsRoot),
                 PrintInputAsConfirmation = true,
                 EchoInput = echoInput
             },
@@ -297,6 +298,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 AnsiConsoleStatementFormatter ansi => new AnsiConsoleStatementFormatter()
                 {
                     PlotFormatter = ansi.PlotFormatter,
+                    TikzPlotFormatter = ansi.TikzPlotFormatter,
                     PrintInputAsConfirmation = ansi.PrintInputAsConfirmation,
                     PrintTimePerStatement = ansi.PrintTimePerStatement,
                     EchoInput = true

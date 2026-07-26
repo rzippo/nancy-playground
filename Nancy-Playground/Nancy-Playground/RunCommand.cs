@@ -147,18 +147,26 @@ public class RunCommand : Command<RunCommand.Settings>
             };
         // add option to use XPlotPlotFormatter?
 
+        // TikZ plots are code, not images: their output is deterministic, hence they are not disabled by --deterministic
+        var tikzPlotFormatter = new TikzPlotFormatter(plotsRoot)
+        {
+            Console = Console
+        };
+
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.ExplicitPrintsOnly => new OutputOnlyFormatter()
             {
                 Console = Console,
                 PlotFormatter = plotFormatter,
+                TikzPlotFormatter = tikzPlotFormatter,
             },
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 Console = Console,
                 PlotFormatter = plotFormatter,
+                TikzPlotFormatter = tikzPlotFormatter,
                 PrintTimePerStatement = !settings.Deterministic,
                 PrintInputAsConfirmation = false,
                 EchoInput = echoInput
