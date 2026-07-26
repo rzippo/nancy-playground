@@ -6,6 +6,7 @@ using CliWrap;
 using CliWrap.Buffered;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
+using static Unipi.Nancy.Playground.Cli.Tests.BuildDiagnostics;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
@@ -212,7 +213,9 @@ public class ConvertCommandPlotTests
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
-        Assert.Equal(0, buildResult.ExitCode);
+        Assert.True(
+            buildResult.ExitCode == 0,
+            BuildFailureMessage(buildResult));
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
@@ -393,7 +396,9 @@ public class ConvertCommandPlotTests
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
-        Assert.Equal(0, buildResult.ExitCode);
+        Assert.True(
+            buildResult.ExitCode == 0,
+            BuildFailureMessage(buildResult));
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
