@@ -205,7 +205,9 @@ public class ConvertCommandPlotTests
         }
         
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -214,79 +216,81 @@ public class ConvertCommandPlotTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Act: Run the converted C# program to generate plots
-        string convertPlotPaths;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Act: Run the converted C# program to generate plots
+            string convertPlotPaths;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithWorkingDirectory(convertOutputDir)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithWorkingDirectory(convertOutputDir)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                convertPlotPaths = programResult.StandardOutput;
             }
-            catch (OperationCanceledException)
+
+            // Assert: Verify that plot files exist and have matching content
+            var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
+            var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
+
+            _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
+            _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
+
+            // Both runs should produce the same number of plot files
+            Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
+
+            // Compare each plot file by hash
+            for (int i = 0; i < runPlotFiles.Count; i++)
             {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                var runPlotFile = runPlotFiles[i];
+                var convertPlotFile = convertPlotFiles[i];
+
+                // Extract just the filename for comparison (paths may differ)
+                var runFileName = Path.GetFileName(runPlotFile);
+                var convertFileName = Path.GetFileName(convertPlotFile);
+
+                Assert.Equal(runFileName, convertFileName);
+
+                // Get full paths
+                var runFilePath = Path.Combine(runOutputDir, runFileName);
+                var convertFilePath = Path.Combine(convertOutputDir, convertFileName);
+
+                Assert.True(File.Exists(runFilePath), $"Run plot file not found: {runFilePath}");
+                Assert.True(File.Exists(convertFilePath), $"Convert plot file not found: {convertFilePath}");
+
+                // Compare file hashes
+                var runHash = await ComputeFileHashAsync(runFilePath);
+                var convertHash = await ComputeFileHashAsync(convertFilePath);
+
+                _testOutputHelper.WriteLine($"Plot file: {runFileName}");
+                _testOutputHelper.WriteLine($"  Run hash:     {runHash}");
+                _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
+
+                Assert.Equal(runHash, convertHash);
             }
-            
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            convertPlotPaths = programResult.StandardOutput;
         }
-
-        // Assert: Verify that plot files exist and have matching content
-        var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
-        var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
-
-        _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
-        _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
-
-        // Both runs should produce the same number of plot files
-        Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
-
-        // Compare each plot file by hash
-        for (int i = 0; i < runPlotFiles.Count; i++)
+        catch
         {
-            var runPlotFile = runPlotFiles[i];
-            var convertPlotFile = convertPlotFiles[i];
-
-            // Extract just the filename for comparison (paths may differ)
-            var runFileName = Path.GetFileName(runPlotFile);
-            var convertFileName = Path.GetFileName(convertPlotFile);
-
-            Assert.Equal(runFileName, convertFileName);
-
-            // Get full paths
-            var runFilePath = Path.Combine(runOutputDir, runFileName);
-            var convertFilePath = Path.Combine(convertOutputDir, convertFileName);
-
-            Assert.True(File.Exists(runFilePath), $"Run plot file not found: {runFilePath}");
-            Assert.True(File.Exists(convertFilePath), $"Convert plot file not found: {convertFilePath}");
-
-            // Compare file hashes
-            var runHash = await ComputeFileHashAsync(runFilePath);
-            var convertHash = await ComputeFileHashAsync(convertFilePath);
-
-            _testOutputHelper.WriteLine($"Plot file: {runFileName}");
-            _testOutputHelper.WriteLine($"  Run hash:     {runHash}");
-            _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
-
-            Assert.Equal(runHash, convertHash);
-        }
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
-        {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 
@@ -382,7 +386,9 @@ public class ConvertCommandPlotTests
         Assert.Equal(0, convertCommandResult.ExitCode);
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -391,75 +397,77 @@ public class ConvertCommandPlotTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Act: Run the converted C# program to generate plots (from here on, identical to the CLI test)
-        string convertPlotPaths;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Act: Run the converted C# program to generate plots (from here on, identical to the CLI test)
+            string convertPlotPaths;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithWorkingDirectory(convertOutputDir)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithWorkingDirectory(convertOutputDir)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                Assert.Equal(0, programResult.ExitCode);
+                convertPlotPaths = programResult.StandardOutput;
             }
-            catch (OperationCanceledException)
+
+            // Assert: Verify that plot files exist and have matching content
+            var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
+            var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
+
+            _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
+            _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
+
+            // Both runs should produce the same number of plot files
+            Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
+
+            // Compare each plot file by hash
+            for (int i = 0; i < runPlotFiles.Count; i++)
             {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                var runPlotFile = runPlotFiles[i];
+                var convertPlotFile = convertPlotFiles[i];
+
+                // Extract just the filename for comparison (paths may differ)
+                var runFileName = Path.GetFileName(runPlotFile);
+                var convertFileName = Path.GetFileName(convertPlotFile);
+
+                Assert.Equal(runFileName, convertFileName);
+
+                // Get full paths
+                var runFilePath = Path.Combine(runOutputDir, runFileName);
+                var convertFilePath = Path.Combine(convertOutputDir, convertFileName);
+
+                Assert.True(File.Exists(runFilePath), $"Run plot file not found: {runFilePath}");
+                Assert.True(File.Exists(convertFilePath), $"Convert plot file not found: {convertFilePath}");
+
+                // Compare file hashes
+                var runHash = await ComputeFileHashAsync(runFilePath);
+                var convertHash = await ComputeFileHashAsync(convertFilePath);
+
+                _testOutputHelper.WriteLine($"Plot file: {runFileName}");
+                _testOutputHelper.WriteLine($"  Run hash:     {runHash}");
+                _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
+
+                Assert.Equal(runHash, convertHash);
             }
-
-            Assert.Equal(0, programResult.ExitCode);
-            convertPlotPaths = programResult.StandardOutput;
         }
-
-        // Assert: Verify that plot files exist and have matching content
-        var runPlotFiles = ExtractPlotPaths(runOutputDir).ToList();
-        var convertPlotFiles = ExtractPlotPaths(convertOutputDir).ToList();
-
-        _testOutputHelper.WriteLine($"Run plot files: [ {string.Join(", ", runPlotFiles)} ]");
-        _testOutputHelper.WriteLine($"Convert plot files: [ {string.Join(", ", convertPlotFiles)} ]");
-
-        // Both runs should produce the same number of plot files
-        Assert.Equal(runPlotFiles.Count, convertPlotFiles.Count);
-
-        // Compare each plot file by hash
-        for (int i = 0; i < runPlotFiles.Count; i++)
+        catch
         {
-            var runPlotFile = runPlotFiles[i];
-            var convertPlotFile = convertPlotFiles[i];
-
-            // Extract just the filename for comparison (paths may differ)
-            var runFileName = Path.GetFileName(runPlotFile);
-            var convertFileName = Path.GetFileName(convertPlotFile);
-
-            Assert.Equal(runFileName, convertFileName);
-
-            // Get full paths
-            var runFilePath = Path.Combine(runOutputDir, runFileName);
-            var convertFilePath = Path.Combine(convertOutputDir, convertFileName);
-
-            Assert.True(File.Exists(runFilePath), $"Run plot file not found: {runFilePath}");
-            Assert.True(File.Exists(convertFilePath), $"Convert plot file not found: {convertFilePath}");
-
-            // Compare file hashes
-            var runHash = await ComputeFileHashAsync(runFilePath);
-            var convertHash = await ComputeFileHashAsync(convertFilePath);
-
-            _testOutputHelper.WriteLine($"Plot file: {runFileName}");
-            _testOutputHelper.WriteLine($"  Run hash:     {runHash}");
-            _testOutputHelper.WriteLine($"  Convert hash: {convertHash}");
-
-            Assert.Equal(runHash, convertHash);
-        }
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
-        {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 }

@@ -202,7 +202,9 @@ public class ConvertCommandOutputTests
         }
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -211,42 +213,44 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program
-        string programFinalResult;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program
+            string programFinalResult;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                        throw new InvalidOperationException("No result from the program!");
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
-                                    throw new InvalidOperationException("No result from the program!");
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandFinalResult, programFinalResult);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandFinalResult, programFinalResult);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 
@@ -337,7 +341,9 @@ public class ConvertCommandOutputTests
         Assert.Equal(0, convertCommandResult.ExitCode);
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -346,42 +352,44 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program (from here on, identical to the CLI test)
-        string programFinalResult;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program (from here on, identical to the CLI test)
+            string programFinalResult;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                        throw new InvalidOperationException("No result from the program!");
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
-                                    throw new InvalidOperationException("No result from the program!");
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandFinalResult, programFinalResult);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandFinalResult, programFinalResult);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
     
@@ -492,7 +500,9 @@ public class ConvertCommandOutputTests
         }
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -501,42 +511,44 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program
-        string programFinalResult;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program
+            string programFinalResult;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                        throw new InvalidOperationException("No result from the program!");
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
-                                    throw new InvalidOperationException("No result from the program!");
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandFinalResult, programFinalResult);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandFinalResult, programFinalResult);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 
@@ -633,7 +645,9 @@ public class ConvertCommandOutputTests
         Assert.Equal(0, convertCommandResult.ExitCode);
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -642,42 +656,44 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program (from here on, identical to the CLI test)
-        string programFinalResult;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program (from here on, identical to the CLI test)
+            string programFinalResult;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
+                                        throw new InvalidOperationException("No result from the program!");
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programFinalResult = LastNonEmptyLine(programResult.StandardOutput) ?? 
-                                    throw new InvalidOperationException("No result from the program!");
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandFinalResult, programFinalResult);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandFinalResult, programFinalResult);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 
@@ -787,7 +803,9 @@ public class ConvertCommandOutputTests
         }
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -796,41 +814,43 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program
-        string programExplicitPrints;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program
+            string programExplicitPrints;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programExplicitPrints = Normalize(programResult.StandardOutput);
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programExplicitPrints = Normalize(programResult.StandardOutput);
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 
@@ -922,7 +942,9 @@ public class ConvertCommandOutputTests
         Assert.Equal(0, convertCommandResult.ExitCode);
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -931,41 +953,43 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program (from here on, identical to the CLI test)
-        string programExplicitPrints;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program (from here on, identical to the CLI test)
+            string programExplicitPrints;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programExplicitPrints = Normalize(programResult.StandardOutput);
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programExplicitPrints = Normalize(programResult.StandardOutput);
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
     
@@ -1076,7 +1100,9 @@ public class ConvertCommandOutputTests
         }
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -1085,41 +1111,43 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program
-        string programExplicitPrints;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program
+            string programExplicitPrints;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programExplicitPrints = Normalize(programResult.StandardOutput);
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programExplicitPrints = Normalize(programResult.StandardOutput);
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
     
@@ -1212,7 +1240,9 @@ public class ConvertCommandOutputTests
         Assert.Equal(0, convertCommandResult.ExitCode);
 
         // Build the converted program (no timeout - handles NuGet restore)
-        var buildDir = Path.Combine(outputDir, "build-output");
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
             .WithArguments(["build", programPath, "-o", buildDir])
             .WithValidation(CommandResultValidation.None)
@@ -1221,41 +1251,43 @@ public class ConvertCommandOutputTests
         var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
         Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
 
-        // Arrange: run the converted program (from here on, identical to the CLI test)
-        string programExplicitPrints;
-        int convertedProgramTimeoutSeconds = 60;
-        using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+        try
         {
-            BufferedCommandResult programResult;
-            try
+            // Arrange: run the converted program (from here on, identical to the CLI test)
+            string programExplicitPrints;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
             {
-                var dotnetProgramArgs = new List<string> { dllPath };
+                BufferedCommandResult programResult;
+                try
+                {
+                    var dotnetProgramArgs = new List<string> { dllPath };
 
-                programResult = await CliWrap.Cli.Wrap("dotnet")
-                    .WithArguments(dotnetProgramArgs)
-                    .WithValidation(CommandResultValidation.None)
-                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments(dotnetProgramArgs)
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programExplicitPrints = Normalize(programResult.StandardOutput);
             }
-            catch (OperationCanceledException)
-            {
-                throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
-            }
 
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
-            await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
-
-            Assert.Equal(0, programResult.ExitCode);
-            programExplicitPrints = Normalize(programResult.StandardOutput);
+            // Finally: check that both results are the same
+            AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
         }
-
-        // Finally: check that both results are the same
-        AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
-
-        // Cleanup: delete the build output to save space
-        if (Directory.Exists(buildDir))
+        catch
         {
-            Directory.Delete(buildDir, true);
+            buildScope.MarkFailed();
+            throw;
         }
     }
 }
