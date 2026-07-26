@@ -75,9 +75,37 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
 
     public override Statement? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
-        var text = context.GetJoinedText();
-        var args = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>();
+        var (variableNames, settings) = ParsePlotArgs(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(), PlotOutputKind.Image);
 
+        return new PlotCommand
+        {
+            FunctionsToPlot = variableNames,
+            Text = context.GetJoinedText(),
+            Settings = settings
+        };
+    }
+
+    public override Statement? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context)
+    {
+        var (variableNames, settings) = ParsePlotArgs(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(), PlotOutputKind.Tikz);
+
+        return new PlotTikzCommand
+        {
+            FunctionsToPlot = variableNames,
+            Text = context.GetJoinedText(),
+            Settings = settings
+        };
+    }
+
+    /// <summary>
+    /// Parses the arguments shared by <c>plot</c> and <c>plotTikz</c>, i.e. the functions to plot and the plot settings.
+    /// </summary>
+    /// <param name="args">The argument contexts of the plot command.</param>
+    /// <param name="outputKind">The kind of output of the plot command, which determines the extension of the <c>out</c> option.</param>
+    private static (List<Expression> FunctionsToPlot, PlotSettings Settings) ParsePlotArgs(
+        Unipi.MppgParser.Grammar.MppgParser.PlotArgContext[] args,
+        PlotOutputKind outputKind)
+    {
         var functionNameContexts = args
             .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0))
             .Where(ctx => ctx != null);
@@ -179,10 +207,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
 
                 case "out":
                 {
-                    var outPath = argString.EndsWith(".png") ? argString : $"{argString}.png";
                     settings = settings with
                     {
-                        OutPath = outPath
+                        OutPath = PlotOutPath.Resolve(argString, outputKind)
                     };
                     break;
                 }
@@ -235,12 +262,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             }
         }
 
-        return new PlotCommand
-        {
-            FunctionsToPlot = variableNames,
-            Text = text,
-            Settings = settings
-        };
+        return (variableNames, settings);
     }
 
     public override Statement? VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)

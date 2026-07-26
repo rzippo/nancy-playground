@@ -353,6 +353,11 @@ grammar Mppg;
         return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
     }
 
+    private bool AllowsPlotTikz()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
+    }
+
 }
 
 // lexer rules
@@ -389,6 +394,7 @@ statement
     : assignment
     | expressionCommand
     | plotCommand
+    | {AllowsPlotTikz()}? plotTikzCommand
     | assertion
     | {AllowsPrintExpression()}? printExpressionCommand
     | versionDirective
@@ -554,6 +560,7 @@ functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionE
 
 // Plots
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';
+plotTikzCommand: 'plotTikz' '(' plotArg (',' plotArg)* ')';
 plotArg: functionName | plotOption;
 functionName: {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME;
 plotOption

@@ -26,4 +26,18 @@ public static class IParseTreeExtensions
     {
         return string.Join(separator, GetChildText(tree));
     }
+
+    /// <summary>
+    /// True if any of the given statement lines is a <c>plotTikz</c> command,
+    /// i.e. the program needs Nancy.Plots.Tikz.
+    /// </summary>
+    public static bool UsesTikzPlots(
+        this IEnumerable<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext> statementLineContexts
+    )
+    {
+        return statementLineContexts
+            .Select(line => line.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0))
+            .Where(statement => statement is not null)
+            .Any(statement => statement.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext>(0) is not null);
+    }
 }

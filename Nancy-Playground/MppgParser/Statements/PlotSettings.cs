@@ -30,7 +30,8 @@ public record PlotSettings
     public ComputableString YLabel { get; init; } = new();
 
     /// <summary>
-    /// Name of the png file to save the plot to.
+    /// Name of the file to save the plot to.
+    /// Its extension depends on the plot command used, i.e. .png for <c>plot</c> and .tex for <c>plotTikz</c>.
     /// </summary>
     public string OutPath { get; init; } = string.Empty;
 

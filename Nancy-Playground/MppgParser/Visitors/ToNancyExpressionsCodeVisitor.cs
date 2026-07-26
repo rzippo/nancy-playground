@@ -34,6 +34,10 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         List<string> code = [
             "#:package Unipi.Nancy.Expressions@1.0.3",
             "#:package Unipi.Nancy.Plots.ScottPlot@1.0.7",
+        ];
+        if (statementLineContexts.UsesTikzPlots())
+            code.Add("#:package Unipi.Nancy.Plots.Tikz@1.0.7");
+        code.AddRange([
             string.Empty,
             "using System.Globalization;",
             "using System.IO;",
@@ -42,10 +46,14 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             "using Unipi.Nancy.MinPlusAlgebra;",
             "using Unipi.Nancy.Numerics;",
             "using Unipi.Nancy.Plots.ScottPlot;",
+        ]);
+        if (statementLineContexts.UsesTikzPlots())
+            code.Add("using Unipi.Nancy.Plots.Tikz;");
+        code.AddRange([
             string.Empty,
             "CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;",
-        ];
-        
+        ]);
+
         foreach (var statementLineContext in statementLineContexts)
         {
             var statementLineCode = statementLineContext.Accept(this);
@@ -157,33 +165,110 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
     public override List<string> VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
-        var text = context.GetJoinedText();
-        var args = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>();
+        var (functionsToPlot, argsDict, outPath) = ParsePlotArgs(
+            context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
+            PlotOutputKind.Image);
 
+        var lines = new List<string>();
+        // Need to extract Curve objects from CurveExpression for plotting
+        lines.Add("var plotBytes = ScottPlots.ToScottPlotImage(");
+        lines.Add($"\t[{functionsToPlot.Select(f => $"{f}.Compute()").JoinText(", ")}],");
+        lines.Add("\tsettings: new ScottPlotSettings(){");
+
+        // now print the parsed arguments for ScottPlotSettings
+        lines.AddRange(
+            argsDict
+                .Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+                .Select(kv => $"\t\t{kv.Key} = {kv.Value},")
+        );
+
+        lines.Add("\t}");
+        lines.Add(");");
+
+        if (!string.IsNullOrWhiteSpace(outPath))
+        {
+            lines.Add($"Console.WriteLine(Path.GetFullPath(\"{outPath}\"));");
+            lines.Add($"File.WriteAllBytes(\"{outPath}\", plotBytes);");
+        }
+        else
+        {
+            lines.Add($"var plotTmpPath = Path.GetTempPath() + Guid.NewGuid().ToString() + \".png\";");
+            lines.Add($"Console.WriteLine(plotTmpPath);");
+            lines.Add($"File.WriteAllBytes(plotTmpPath, plotBytes);");
+        }
+
+        return lines;
+    }
+
+    public override List<string> VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context)
+    {
+        var (functionsToPlot, argsDict, outPath) = ParsePlotArgs(
+            context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
+            PlotOutputKind.Tikz);
+
+        var lines = new List<string>();
+        // Need to extract Curve objects from CurveExpression for plotting
+        lines.Add("var plotTikzCode = TikzPlots.ToTikzPlotCode(");
+        lines.Add($"\t[{functionsToPlot.Select(f => $"{f}.Compute()").JoinText(", ")}],");
+        lines.Add($"\t[{functionsToPlot.Select(f => $"\"{f}\"").JoinText(", ")}],");
+        lines.Add("\tsettings: new TikzPlotSettings(){");
+
+        // now print the parsed arguments for TikzPlotSettings
+        lines.AddRange(
+            argsDict
+                .Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
+                .Select(kv => $"\t\t{kv.Key} = {kv.Value},")
+        );
+
+        lines.Add("\t}");
+        lines.Add(");");
+
+        if (!string.IsNullOrWhiteSpace(outPath))
+        {
+            lines.Add($"Console.WriteLine(Path.GetFullPath(\"{outPath}\"));");
+            lines.Add($"File.WriteAllText(\"{outPath}\", plotTikzCode);");
+        }
+        else
+        {
+            // the TikZ code is the output of the command
+            lines.Add($"Console.WriteLine(plotTikzCode);");
+        }
+
+        return lines;
+    }
+
+    /// <summary>
+    /// Parses the arguments shared by <c>plot</c> and <c>plotTikz</c>,
+    /// i.e. the functions to plot and the plot settings, the latter as C# code for each property.
+    /// </summary>
+    /// <param name="args">The argument contexts of the plot command.</param>
+    /// <param name="outputKind">The kind of output of the plot command, which determines the extension of the <c>out</c> option.</param>
+    private (List<string> FunctionsToPlot, Dictionary<string, string> Settings, string OutPath) ParsePlotArgs(
+        Unipi.MppgParser.Grammar.MppgParser.PlotArgContext[] args,
+        PlotOutputKind outputKind)
+    {
         var functionNameContexts = args
             .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.FunctionNameContext>(0))
             .Where(ctx => ctx != null);
         var plotOptionContexts = args
             .Select(arg => arg.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext>(0))
             .Where(ctx => ctx != null);
-        
+
         var functionsToPlot = functionNameContexts
             .Select(ctx => ctx.GetText())
             .ToList();
-        
-        var lines = new List<string>();
-        // Need to extract Curve objects from CurveExpression for plotting
-        lines.Add("var plotBytes = ScottPlots.ToScottPlotImage(");
-        lines.Add($"\t[{functionsToPlot.Select(f => $"{f}.Compute()").JoinText(", ")}],");
-        lines.Add("\tsettings: new ScottPlotSettings(){");
-        
+
         var outPath = string.Empty;
 
-        // populate then print dictionary, to mimic default values of PlotSettings
         var argsDict = new Dictionary<string, string>();
-        argsDict["Title"] = "string.Empty";
-        argsDict["XLabel"] = "string.Empty";
-        argsDict["YLabel"] = "string.Empty";
+        if (outputKind == PlotOutputKind.Image)
+        {
+            // populate then print dictionary, to mimic default values of PlotSettings
+            // this is skipped for TikZ plots, as Nancy.Plots.Tikz has its own defaults for these
+            argsDict["Title"] = "string.Empty";
+            argsDict["XLabel"] = "string.Empty";
+            argsDict["YLabel"] = "string.Empty";
+        }
 
         foreach (var plotArgContext in plotOptionContexts)
         {
@@ -247,19 +332,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
                 case "out":
                 {
-                    outPath = argString.EndsWith(".png") ? argString : $"{argString}.png";
+                    outPath = PlotOutPath.Resolve(argString, outputKind);
                     break;
                 }
 
                 case "grid":
                 {
-                    // option not implemented in Nancy.Plots.ScottPlot
+                    // option not implemented in Nancy.Plots
                     break;
                 }
 
                 case "bg":
                 {
-                    // option not implemented in Nancy.Plots.ScottPlot
+                    // option not implemented in Nancy.Plots
                     break;
                 }
 
@@ -268,36 +353,14 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
                     // option not meaningful in convert
                     break;
                 }
-                
+
                 default:
                     // do nothing
                     break;
             }
         }
 
-        // now print the parsed arguments for ScottPlotSettings
-        lines.AddRange(
-            argsDict
-                .Where(kv => !string.IsNullOrWhiteSpace(kv.Value))
-                .Select(kv => $"\t\t{kv.Key} = {kv.Value},")
-        );
-
-        lines.Add("\t}");
-        lines.Add(");");
-
-        if (!string.IsNullOrWhiteSpace(outPath))
-        {
-            lines.Add($"Console.WriteLine(Path.GetFullPath(\"{outPath}\"));");
-            lines.Add($"File.WriteAllBytes(\"{outPath}\", plotBytes);");
-        }
-        else
-        {
-            lines.Add($"var plotTmpPath = Path.GetTempPath() + Guid.NewGuid().ToString() + \".png\";");
-            lines.Add($"Console.WriteLine(plotTmpPath);");
-            lines.Add($"File.WriteAllBytes(plotTmpPath, plotBytes);");
-        }
-
-        return lines;
+        return (functionsToPlot, argsDict, outPath);
     }
 
     public override List<string> VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
