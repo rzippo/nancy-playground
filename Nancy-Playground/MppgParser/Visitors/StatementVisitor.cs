@@ -8,10 +8,12 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public class StatementVisitor : MppgBaseVisitor<Statement?>
 {
     private readonly SyntaxErrorInfo? _syntaxError;
+    private readonly SyntaxVersion _syntaxVersion;
 
-    public StatementVisitor(SyntaxErrorInfo? syntaxError = null)
+    public StatementVisitor(SyntaxErrorInfo? syntaxError = null, SyntaxVersion syntaxVersion = default)
     {
         _syntaxError = syntaxError;
+        _syntaxVersion = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
     }
 
     public override Statement? VisitStatementLine([NotNull] Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
@@ -59,7 +61,14 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new Comment { Text = text };
     }
 
-    public override Statement? VisitEmpty([NotNull] Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
+    public override Statement? VisitVersionDirective(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext context)
+    {
+        var text = context.GetJoinedText();
+        SyntaxVersion.TryParseShebang(text, out var version);
+        return new VersionDirectiveStatement(version) { Text = text };
+    }
+
+    public override Statement? VisitEmpty(Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
     {
         return new EmptyStatement();
     }

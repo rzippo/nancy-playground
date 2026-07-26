@@ -36,6 +36,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         // todo: make this configurable
         var plotsRoot = Environment.CurrentDirectory;
 
+        var syntaxVersion = programContext.SyntaxVersion;
+
         IStatementFormatter formatter = settings.OutputMode switch
         {
             OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
@@ -125,7 +127,24 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // MPPG syntax statement
                 try
                 {
-                    var statement = Statement.FromLine(line, programContext.State);
+                    var statement = Statement.FromLine(line, programContext.State, syntaxVersion);
+
+                    // Handle version directives in interactive mode
+                    if (statement is VersionDirectiveStatement vds)
+                    {
+                        if (vds.IsDuplicate)
+                        {
+                            AnsiConsole.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Active version: {Escape(syntaxVersion.ToString())}.");
+                        }
+                        else
+                        {
+                            syntaxVersion = vds.Version;
+                            programContext.SyntaxVersion = syntaxVersion;
+                            AnsiConsole.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
+                        }
+                        continue;
+                    }
+
                     programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
                 }
                 catch (Exception ex)
@@ -272,6 +291,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             int successCount = 0;
             int errorCount = 0;
             var loadedLines = new List<string>();
+            var loadSyntaxVersion = programContext.SyntaxVersion;
 
             AnsiConsole.MarkupLine($"[green]Loading program from[/] [blue]{Escape(filePath)}[/]...");
 
@@ -279,8 +299,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             {
                 var trimmedLine = line.Trim();
 
-                // Skip empty lines and comments
-                if (string.IsNullOrWhiteSpace(trimmedLine) || trimmedLine.StartsWith("//"))
+                // Skip empty lines and regular comments (but not shebangs)
+                if (string.IsNullOrWhiteSpace(trimmedLine) || 
+                    (trimmedLine.StartsWith("//") && !trimmedLine.StartsWith("#!syntax")))
                     continue;
 
                 // Track the line for history if requested
@@ -292,7 +313,24 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // Execute the statement
                 try
                 {
-                    var statement = Statement.FromLine(trimmedLine, programContext.State);
+                    var statement = Statement.FromLine(trimmedLine, programContext.State, loadSyntaxVersion);
+
+                    // Handle version directives in loaded programs
+                    if (statement is VersionDirectiveStatement vds)
+                    {
+                        if (vds.IsDuplicate)
+                        {
+                            AnsiConsole.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Active version: {Escape(loadSyntaxVersion.ToString())}.");
+                        }
+                        else
+                        {
+                            loadSyntaxVersion = vds.Version;
+                            programContext.SyntaxVersion = loadSyntaxVersion;
+                            AnsiConsole.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
+                        }
+                        continue;
+                    }
+
                     programContext.ExecuteStatement(statement, loadFormatter, immediateComputeValue);
                     successCount++;
                 }

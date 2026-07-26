@@ -9,14 +9,15 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
-/// <summary>
-/// Converts an MPPG program to C# code that uses Nancy.Expressions constructs.
-/// Equivalent to <see cref="ToNancyCodeVisitor"/> but generates code that works with
-/// Nancy.Expressions API (CurveExpression, RationalExpression) instead of direct Curve/Rational objects.
-/// </summary>
 class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 {
     private readonly HashSet<string> DeclaredVariables = [];
+    private readonly SyntaxVersion _syntaxVersion;
+
+    public ToNancyExpressionsCodeVisitor(SyntaxVersion syntaxVersion = default)
+    {
+        _syntaxVersion = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
+    }
 
     public override List<string> VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context) =>
         context.GetChild(0).Accept(this);
@@ -69,6 +70,10 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         if (statementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.EmptyContext>(0) is not null)
         {
             return [];
+        }
+        if (statementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext>(0) is not null)
+        {
+            return [$"// {context.GetJoinedText()}"];
         }
         if (statementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.CommentContext>(0) is not null)
         {

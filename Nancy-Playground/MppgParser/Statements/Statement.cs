@@ -17,12 +17,18 @@ public abstract record class Statement
 
     public static Statement FromLine(string line, State? state = null)
     {
+        return FromLine(line, state, SyntaxVersion.Latest);
+    }
+
+    public static Statement FromLine(string line, State? state, SyntaxVersion syntaxVersion)
+    {
         var inputStream = CharStreams.fromString(line);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         parser.ErrorHandler = new BailErrorStrategy();
         parser.SeedVariableTypes(state);
+        parser.SetSyntaxVersion(syntaxVersion.Major, syntaxVersion.Minor);
 
         var context = parser.statement();
         var visitor = new StatementVisitor();

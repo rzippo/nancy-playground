@@ -25,6 +25,11 @@ public record class Program
     public List<SyntaxErrorInfo> Errors { get; init; }
 
     /// <summary>
+    /// The syntax version declared by the program (via #!syntax shebang) or Latest if unspecified.
+    /// </summary>
+    public SyntaxVersion SyntaxVersion { get; init; } = SyntaxVersion.Latest;
+
+    /// <summary>
     /// The current program counter.
     /// </summary>
     public int ProgramCounter { get; private set; } = 0;
@@ -56,16 +61,23 @@ public record class Program
     /// Parses the MPPG program from its parse tree and returns the corresponding Program object.
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="syntaxErrors"></param>
+    /// <param name="syntaxVersion"></param>
     /// <returns></returns>
     public static Program FromTree(
         Unipi.MppgParser.Grammar.MppgParser.ProgramContext context,
-        IReadOnlyList<SyntaxErrorInfo>? syntaxErrors = null)
+        IReadOnlyList<SyntaxErrorInfo>? syntaxErrors = null,
+        SyntaxVersion syntaxVersion = default)
     {
-        var visitor = new ProgramVisitor(syntaxErrors);
+        if (syntaxVersion == default)
+            syntaxVersion = SyntaxVersion.Latest;
+
+        var visitor = new ProgramVisitor(syntaxErrors, syntaxVersion);
         var program = visitor.Visit(context);
         return program with
         {
-            Text = context.GetJoinedText()
+            Text = context.GetJoinedText(),
+            SyntaxVersion = syntaxVersion
         };
     }
 
@@ -91,7 +103,9 @@ public record class Program
         parser.AddErrorListener(parserListener);
 
         var context = parser.program();
-        var program = FromTree(context, errors);
+        var (major, minor) = parser.SyntaxVersion;
+        var syntaxVersion = SyntaxVersion.FromParts(major, minor);
+        var program = FromTree(context, errors, syntaxVersion);
         return program with
         {
             Text = text,
@@ -184,9 +198,11 @@ public record class Program
         parser.ErrorHandler = new BailErrorStrategy();
 
         var programContext = parser.program();
+        var (major, minor) = parser.SyntaxVersion;
+        var syntaxVersion = SyntaxVersion.FromParts(major, minor);
         MppgBaseVisitor<List<string>> visitor = useNancyExpressions 
-            ? new ToNancyExpressionsCodeVisitor()
-            : new ToNancyCodeVisitor();
+            ? new ToNancyExpressionsCodeVisitor(syntaxVersion)
+            : new ToNancyCodeVisitor(syntaxVersion);
         var code = programContext.Accept(visitor);
 
         return code;

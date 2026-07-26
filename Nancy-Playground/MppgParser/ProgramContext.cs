@@ -9,6 +9,8 @@ public class ProgramContext
 
     public List<Statement> StatementHistory { get; init; } =  new ();
 
+    public SyntaxVersion SyntaxVersion { get; set; } = SyntaxVersion.Latest;
+
     public StatementOutput? ExecuteStatement(
         Statement statement,
         IStatementFormatter formatter,

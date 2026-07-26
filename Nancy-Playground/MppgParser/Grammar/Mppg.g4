@@ -307,6 +307,52 @@ grammar Mppg;
         return null;
     }
 
+    // Syntax versioning
+    private int _syntaxVersionMajor = 1;
+    private int _syntaxVersionMinor = 1;
+    private bool _versionDirectiveSeen = false;
+    private bool _inPreamble = false;
+
+    public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
+
+    public void SetSyntaxVersion(int major, int minor)
+    {
+        _syntaxVersionMajor = major;
+        _syntaxVersionMinor = minor;
+    }
+
+    private bool IsVersionDirective()
+    {
+        if (TokenStream.LA(1) != INLINABLE_COMMENT)
+            return false;
+        return TokenStream.LT(1).Text.StartsWith("#!syntax");
+    }
+
+    private void ParseVersionFromShebang(string shebang)
+    {
+        if (!_inPreamble || _versionDirectiveSeen)
+            return;
+        _versionDirectiveSeen = true;
+
+        var parts = shebang.Split(new char[]{' ', '\t'}, System.StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 3 && parts[2].Contains('.'))
+        {
+            var versionParts = parts[2].Split('.');
+            if (versionParts.Length == 2
+                && int.TryParse(versionParts[0], out var major)
+                && int.TryParse(versionParts[1], out var minor))
+            {
+                _syntaxVersionMajor = major;
+                _syntaxVersionMinor = minor;
+            }
+        }
+    }
+
+    private bool AllowsPrintExpression()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
+    }
+
 }
 
 // lexer rules
@@ -331,14 +377,21 @@ INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 
 // parser rules
-program : statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
+program : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
+preamble 
+@init { _inPreamble = true; }
+@after { _inPreamble = false; }
+    : preambleStatement (NEW_LINE preambleStatement)* NEW_LINE?;
+preambleStatement : versionDirective;
+versionDirective : {IsVersionDirective()}? c=comment { ParseVersionFromShebang($c.text); };
 statementLine: statement inlineComment? ;
 statement
     : assignment
     | expressionCommand
     | plotCommand
     | assertion
-    | printExpressionCommand
+    | {AllowsPrintExpression()}? printExpressionCommand
+    | versionDirective
     | comment
     | empty;
 assignment : name=VARIABLE_NAME ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
