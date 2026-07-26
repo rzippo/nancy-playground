@@ -10,7 +10,7 @@ public class InteractiveLineEditorTests
     public void ReadLine_SimpleText_ReturnsTypedText()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushTextWithEnter("hello world");
+        testConsole.Input.PushTypedLine("hello world");
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -18,13 +18,34 @@ public class InteractiveLineEditorTests
         Assert.Equal("hello world", result);
     }
 
+    [Theory]
+    // characters whose code collides with a navigation key: '(' with DownArrow, ')' with Select, '.' with Delete
+    [InlineData("f := ratency(1, 3)")]
+    [InlineData("plotTikz(f, xlim = [-0.3, 15], out = \"chart.tex\")")]
+    [InlineData("hdev(ac, sc)")]
+    // '%' collides with LeftArrow, '#' with End, '$' with Home, '&' with UpArrow
+    [InlineData("% a comment")]
+    [InlineData("#!syntax version 1.1")]
+    [InlineData("!load /tmp/script.mppg")]
+    [InlineData("f := uaf( [(0,0)1(+inf,+inf)[ )")]
+    public void ReadLine_MppgSyntax_ReturnsTypedText(string typed)
+    {
+        var testConsole = new TestConsole();
+        testConsole.Input.PushTypedLine(typed);
+
+        var editor = new LineEditor(console: testConsole);
+        var result = editor.ReadLine();
+
+        Assert.Equal(typed, result);
+    }
+
     [Fact]
     public void ReadLine_MultipleLines_EachReturnsCorrectText()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushTextWithEnter("line one");
-        testConsole.Input.PushTextWithEnter("line two");
-        testConsole.Input.PushTextWithEnter("!quit");
+        testConsole.Input.PushTypedLine("line one");
+        testConsole.Input.PushTypedLine("line two");
+        testConsole.Input.PushTypedLine("!quit");
 
         var editor = new LineEditor(console: testConsole);
 
@@ -37,9 +58,9 @@ public class InteractiveLineEditorTests
     public void ReadLine_Backspace_DeletesLastCharacter()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushText("ax");
-        testConsole.Input.PushKey(ConsoleKey.Backspace);
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("ax");
+        testConsole.Input.PushEditingKey(ConsoleKey.Backspace);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -51,7 +72,7 @@ public class InteractiveLineEditorTests
     public void ReadLine_EmptyInput_ReturnsEmptyString()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -63,10 +84,10 @@ public class InteractiveLineEditorTests
     public void ReadLine_HistoryNavigation_RecallsPreviousLines()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushTextWithEnter("first command");
-        testConsole.Input.PushKey(ConsoleKey.UpArrow);
-        testConsole.Input.PushKey(ConsoleKey.Enter);
-        testConsole.Input.PushTextWithEnter("!quit");
+        testConsole.Input.PushTypedLine("first command");
+        testConsole.Input.PushEditingKey(ConsoleKey.UpArrow);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedLine("!quit");
 
         var editor = new LineEditor(console: testConsole);
 
@@ -79,11 +100,11 @@ public class InteractiveLineEditorTests
     public void ReadLine_BackspaceThenRetype_CorrectOutput()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushText("hella");
-        testConsole.Input.PushKey(ConsoleKey.Backspace);
-        testConsole.Input.PushKey(ConsoleKey.Backspace);
-        testConsole.Input.PushText("lo");
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("hella");
+        testConsole.Input.PushEditingKey(ConsoleKey.Backspace);
+        testConsole.Input.PushEditingKey(ConsoleKey.Backspace);
+        testConsole.Input.PushTypedText("lo");
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -96,10 +117,10 @@ public class InteractiveLineEditorTests
     {
         var testConsole = new TestConsole();
         // Type "ab", LeftArrow (cursor after 'a', before 'b'), Delete, Enter → "b" removed, result "a"
-        testConsole.Input.PushText("ab");
-        testConsole.Input.PushKey(ConsoleKey.LeftArrow);
-        testConsole.Input.PushKey(ConsoleKey.Delete);
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("ab");
+        testConsole.Input.PushEditingKey(ConsoleKey.LeftArrow);
+        testConsole.Input.PushEditingKey(ConsoleKey.Delete);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -112,12 +133,12 @@ public class InteractiveLineEditorTests
     {
         var testConsole = new TestConsole();
         // Type "hello", Home (cursor to start), Delete (removes 'h'), End (cursor to end), type " world", Enter
-        testConsole.Input.PushText("hello");
-        testConsole.Input.PushKey(ConsoleKey.Home);
-        testConsole.Input.PushKey(ConsoleKey.Delete);
-        testConsole.Input.PushKey(ConsoleKey.End);
-        testConsole.Input.PushText(" world");
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("hello");
+        testConsole.Input.PushEditingKey(ConsoleKey.Home);
+        testConsole.Input.PushEditingKey(ConsoleKey.Delete);
+        testConsole.Input.PushEditingKey(ConsoleKey.End);
+        testConsole.Input.PushTypedText(" world");
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         var result = editor.ReadLine();
@@ -129,9 +150,9 @@ public class InteractiveLineEditorTests
     public void ReadLine_SetSessionKeywords_AutocompletesOnTab()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushText("a");
-        testConsole.Input.PushKey(ConsoleKey.Tab);
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("a");
+        testConsole.Input.PushEditingKey(ConsoleKey.Tab);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         editor.SetSessionKeywords(["alpha", "beta", "gamma"]);
@@ -145,11 +166,11 @@ public class InteractiveLineEditorTests
     public void ReadLine_TabCycling_CyclesThroughMatches()
     {
         var testConsole = new TestConsole();
-        testConsole.Input.PushText("b");
-        testConsole.Input.PushKey(ConsoleKey.Tab); // "beta"
-        testConsole.Input.PushKey(ConsoleKey.Tab); // "banana"
-        testConsole.Input.PushKey(ConsoleKey.Tab); // back to "beta"
-        testConsole.Input.PushKey(ConsoleKey.Enter);
+        testConsole.Input.PushTypedText("b");
+        testConsole.Input.PushEditingKey(ConsoleKey.Tab); // "beta"
+        testConsole.Input.PushEditingKey(ConsoleKey.Tab); // "banana"
+        testConsole.Input.PushEditingKey(ConsoleKey.Tab); // back to "beta"
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
 
         var editor = new LineEditor(console: testConsole);
         editor.SetSessionKeywords(["beta", "banana"]);
@@ -163,10 +184,10 @@ public class InteractiveLineEditorTests
     public void InteractiveCommand_VersionDirective_IsAppliedToSubsequentLines()
     {
         var console = new TestConsole();
-        console.Input.PushTextWithEnter("#!syntax version 1.0");
-        console.Input.PushTextWithEnter("a := 5");
-        console.Input.PushTextWithEnter("a");
-        console.Input.PushTextWithEnter("!quit");
+        console.Input.PushTypedLine("#!syntax version 1.0");
+        console.Input.PushTypedLine("a := 5");
+        console.Input.PushTypedLine("a");
+        console.Input.PushTypedLine("!quit");
 
         var app = new CommandAppTester(console: console);
         app.Configure(config =>
@@ -177,7 +198,7 @@ public class InteractiveLineEditorTests
         var result = app.Run(["interactive", "--mute-welcome-message"]);
 
         Assert.Equal(0, result.ExitCode);
-        // The version directive line should produce a confirmation in the output
-        // The assignment and expression should work normally
+        Assert.Contains("Syntax version set to 1.0.", console.Output);
+        Assert.Contains("a = 5", console.Output);
     }
 }
