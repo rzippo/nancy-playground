@@ -11,6 +11,15 @@ namespace Unipi.Nancy.Playground.Cli;
 [ExcludeFromCodeCoverage]
 public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 {
+    private IAnsiConsole Console { get; } = AnsiConsole.Console;
+
+    public InteractiveCommand() { }
+
+    public InteractiveCommand(IAnsiConsole console)
+    {
+        Console = console;
+    }
+
     public sealed class Settings : CommonExecutionSettings
     {
 
@@ -59,7 +68,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             _ => false
         };
 
-        var lineEditor = new LineEditor(Keywords, ContextualKeywords());
+        var lineEditor = new LineEditor(Keywords, ContextualKeywords(), Console);
         var totalComputationTime = TimeSpan.Zero;
 
         // CLI welcome message
@@ -67,7 +76,15 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         while (true)
         {
-            var line = lineEditor.ReadLine().Trim();
+            var input = lineEditor.ReadLine();
+            if (input == null)
+            {
+                // end of input: behave as if the user quit
+                AnsiConsole.MarkupLine("[green]Bye.[/]");
+                break;
+            }
+
+            var line = input.Trim();
             if (string.IsNullOrWhiteSpace(line))
                 AnsiConsole.WriteLine();
             else if (line.StartsWith("!"))

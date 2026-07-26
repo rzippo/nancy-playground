@@ -1,14 +1,16 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Spectre.Console;
 
 namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
 /// Handles user input, with a navigable history of previous commands.
+/// Uses IAnsiConsole for I/O so it can be tested with Spectre's TestConsole.
 /// </summary>
-[ExcludeFromCodeCoverage]
 public class LineEditor
 {
+    private readonly IAnsiConsole _console;
+
     /// <summary>
     /// History of entered commands.
     /// </summary>
@@ -31,15 +33,17 @@ public class LineEditor
     /// </summary>
     private readonly List<string> _sessionKeywords = [];
 
-    public LineEditor()
+    public LineEditor(IAnsiConsole? console = null)
     {
+        _console = console ?? AnsiConsole.Console;
     }
 
     public LineEditor(
-        IEnumerable<string> keywords, 
-        IEnumerable<ContextualKeywords>? contextualKeywords = null
-    )
+        IEnumerable<string> keywords,
+        IEnumerable<ContextualKeywords>? contextualKeywords = null,
+        IAnsiConsole? console = null)
     {
+        _console = console ?? AnsiConsole.Console;
         _keywords.AddRange(keywords.Distinct());
         if (contextualKeywords != null)
             _contextualKeywords.AddRange(contextualKeywords.Distinct());
@@ -79,7 +83,6 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(ContextualKeywords contextualKeywords)
     {
-        // todo: check for duplicates?
         _contextualKeywords.Add(contextualKeywords);
     }
 
@@ -101,7 +104,6 @@ public class LineEditor
     /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
-        // todo: check for duplicates?
         foreach (var ck in contextualKeywords)
             _contextualKeywords.Add(ck);
     }
@@ -117,27 +119,18 @@ public class LineEditor
 
     /// <summary>
     /// Reads a line from the console with command history support.
-    /// Works similarly to Console.ReadLine(), but supports:
-    /// - Up/Down arrow to navigate history
-    /// - Left/Right, Home, End, Backspace, Delete
-    /// - Ctrl+Left / Ctrl+Right to move by word
+    /// Supports Up/Down arrow, Left/Right, Home/End, Backspace/Delete,
+    /// Ctrl+Left/Ctrl+Right, Tab autocomplete.
+    /// Uses carriage-return-based line editing — no absolute cursor positioning.
     /// </summary>
-    public string ReadLine()
+    /// <returns>The line that was read, or <c>null</c> if the input ended (EOF).</returns>
+    public string? ReadLine()
     {
         var buffer = new StringBuilder();
-        // Cursor position. Does not count preamble.
         int cursor = 0;
 
         const string linePreamble = "> ";
-        int linePreambleOffset = linePreamble.Length;
-        int lineLeftBoundary = Console.CursorLeft;
-        int cursorLeftBoundary = Console.CursorLeft + linePreambleOffset;
 
-        // Starting cursor position (after your prompt)
-        int startLeft = cursorLeftBoundary;
-        int startTop = Console.CursorTop;
-
-        // Characters previously printed out. Does not count preamble.
         int renderedLength = 0;
 
         List<string> completionMatches = [];
@@ -145,17 +138,28 @@ public class LineEditor
         int completionWordStart = 0;
         int completionWordLength = 0;
 
-        // first render: empty prompt with preamble
         Render();
 
         while (true)
         {
-            var keyInfo = Console.ReadKey(intercept: true);
+            ConsoleKeyInfo? nullableKey;
+            try
+            {
+                nullableKey = _console.Input.ReadKey(intercept: true);
+            }
+            catch (InvalidOperationException)
+            {
+                // no more input available (redirected stdin, or exhausted test input)
+                return null;
+            }
+            if (nullableKey == null)
+                return null;
+
+            var keyInfo = nullableKey.Value;
 
             bool ctrl = (keyInfo.Modifiers & ConsoleModifiers.Control) != 0;
             bool isTab = keyInfo.Key == ConsoleKey.Tab;
 
-            // Any non-Tab key resets the autocomplete cycling state
             if (!isTab)
             {
                 completionMatches = [];
@@ -165,15 +169,16 @@ public class LineEditor
             switch (keyInfo.Key)
             {
                 case ConsoleKey.Enter:
-                    Console.SetCursorPosition(startLeft + buffer.Length, startTop);
-                    Console.WriteLine(); // Move to next line
+                    GoToEndOfLine();
+                    RawWrite(Environment.NewLine);
+                    Flush();
 
                     string line = buffer.ToString();
 
                     if (!string.IsNullOrWhiteSpace(line))
                     {
                         _history.Add(line);
-                        _historyIndex = _history.Count; // one past last
+                        _historyIndex = _history.Count;
                     }
 
                     return line;
@@ -202,7 +207,7 @@ public class LineEditor
                         if (newPos != cursor)
                         {
                             cursor = newPos;
-                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                            SetCursor();
                         }
                     }
                     else
@@ -210,7 +215,7 @@ public class LineEditor
                         if (cursor > 0)
                         {
                             cursor--;
-                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                            SetCursor();
                         }
                     }
                     break;
@@ -222,7 +227,7 @@ public class LineEditor
                         if (newPos != cursor)
                         {
                             cursor = newPos;
-                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                            SetCursor();
                         }
                     }
                     else
@@ -230,19 +235,19 @@ public class LineEditor
                         if (cursor < buffer.Length)
                         {
                             cursor++;
-                            Console.SetCursorPosition(startLeft + cursor, startTop);
+                            SetCursor();
                         }
                     }
                     break;
 
                 case ConsoleKey.Home:
                     cursor = 0;
-                    Console.SetCursorPosition(startLeft, startTop);
+                    SetCursor();
                     break;
 
                 case ConsoleKey.End:
                     cursor = buffer.Length;
-                    Console.SetCursorPosition(startLeft + cursor, startTop);
+                    SetCursor();
                     break;
 
                 case ConsoleKey.UpArrow:
@@ -271,7 +276,6 @@ public class LineEditor
                         }
                         else
                         {
-                            // Past the end means "empty new line"
                             _historyIndex = _history.Count;
                             buffer.Clear();
                         }
@@ -283,18 +287,16 @@ public class LineEditor
 
                 case ConsoleKey.Tab:
                     {
-                        // If we already have matches, cycle through them
                         if (completionMatches is { Count: > 0 })
                         {
                             completionIndex = (completionIndex + 1) % completionMatches.Count;
                         }
                         else
                         {
-                            // First Tab press for this word: compute matches
                             int wordStart = FindPreviousWordStart(cursor);
                             int wordLen = cursor - wordStart;
 
-                            if(wordLen <= 0)
+                            if (wordLen <= 0)
                                 break;
                             var activeKeywords = GetActiveKeywords(buffer.ToString(0, wordStart));
 
@@ -307,9 +309,7 @@ public class LineEditor
                             foreach (var kw in activeKeywords)
                             {
                                 if (kw.StartsWith(currentWord, StringComparison.OrdinalIgnoreCase))
-                                {
                                     matches.Add(kw);
-                                }
                             }
 
                             if (matches.Count == 0)
@@ -321,7 +321,6 @@ public class LineEditor
                             completionWordLength = wordLen;
                         }
 
-                        // Apply the current completion
                         string completion = completionMatches[completionIndex];
 
                         buffer.Remove(completionWordStart, completionWordLength);
@@ -345,33 +344,44 @@ public class LineEditor
             }
         }
 
-        // local functions
-
-        // Renders the current buffer and positions the cursor correctly
+        // Redraws the whole input line, then puts the cursor back where it belongs.
         void Render()
         {
-            // Go back to where input starts
-            Console.SetCursorPosition(lineLeftBoundary, startTop);
-
-            Console.Write(linePreamble);
             string text = buffer.ToString();
-            Console.Write(text);
+
+            RawWrite("\r");
+            RawWrite(linePreamble);
+            RawWrite(text);
 
             // Clear any leftover characters from previous render.
             // Both operands do not count preamble, so diff is coherent.
             int extra = renderedLength - text.Length;
             if (extra > 0)
-            {
-                Console.Write(new string(' ', extra));
-            }
+                RawWrite(new string(' ', extra));
 
             renderedLength = text.Length;
 
-            // Put cursor in correct position
-            Console.SetCursorPosition(startLeft + cursor, startTop);
+            SetCursor();
         }
 
-        // Finds the start index of the previous word before the given position
+        // Moves the cursor to its current position by redrawing the line up to it.
+        // Rewriting the same characters is visually a no-op, and avoids needing
+        // absolute positioning or ANSI escapes.
+        void SetCursor()
+        {
+            RawWrite("\r");
+            RawWrite(linePreamble);
+            RawWrite(buffer.ToString(0, cursor));
+            Flush();
+        }
+
+        void GoToEndOfLine()
+        {
+            RawWrite("\r");
+            RawWrite(linePreamble);
+            RawWrite(buffer.ToString());
+        }
+
         int FindPreviousWordStart(int position)
         {
             if (position <= 0 || buffer.Length == 0)
@@ -379,18 +389,15 @@ public class LineEditor
 
             int i = position - 1;
 
-            // Skip non-word characters immediately to the left
             while (i >= 0 && !IsWordChar(buffer[i]))
                 i--;
 
-            // Move left until start of word
             while (i >= 0 && IsWordChar(buffer[i]))
                 i--;
 
             return Math.Max(i + 1, 0);
         }
 
-        // Finds the end index of the next word after the given position
         int FindNextWordEnd(int position)
         {
             int len = buffer.Length;
@@ -399,24 +406,32 @@ public class LineEditor
 
             int i = position;
 
-            // Skip non-word characters immediately to the right
             while (i < len && !IsWordChar(buffer[i]))
                 i++;
 
-            // Move right until end of word
             while (i < len && IsWordChar(buffer[i]))
                 i++;
 
             return i;
         }
 
-        // Determines if a character is considered part of a word
         bool IsWordChar(char c)
         {
-            char[] punctuation = [ '.', ',', ';', ':', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '=' ];
+            char[] punctuation = ['.', ',', ';', ':', '?', '-', '(', ')', '[', ']', '{', '}', '<', '>', '/', '\\', '\'', '\"', '='];
             return !char.IsWhiteSpace(c) && !punctuation.Contains(c);
         }
     }
+
+    /// <summary>
+    /// Writes text straight to the console's underlying writer.
+    /// <see cref="AnsiConsoleExtensions.Write(IAnsiConsole, string)"/> cannot be used for line
+    /// editing, as it normalizes control characters — a lone '\r' becomes a line break.
+    /// </summary>
+    private void RawWrite(string text)
+        => _console.Profile.Out.Writer.Write(text);
+
+    private void Flush()
+        => _console.Profile.Out.Writer.Flush();
 
     /// <summary>
     /// Removes a history entry at the given index.
@@ -428,8 +443,6 @@ public class LineEditor
             return false;
 
         _history.RemoveAt(index);
-
-        // Reset history index to "one past the end"
         _historyIndex = _history.Count;
         return true;
     }
@@ -484,7 +497,7 @@ public class LineEditor
                 _history.Add(line);
             }
         }
-        _historyIndex = _history.Count; // one past last
+        _historyIndex = _history.Count;
     }
 
     /// <summary>
@@ -499,19 +512,15 @@ public class LineEditor
     /// <summary>
     /// Gets the list of active keywords for autocomplete, given the current line before the cursor.
     /// </summary>
-    /// <param name="currentLineBeforeCursor"></param>
-    /// <returns></returns>
     private List<string> GetActiveKeywords(string currentLineBeforeCursor)
     {
         var result = new List<string>();
-        // Always-available keywords
         result.AddRange(_keywords);
         result.AddRange(_sessionKeywords);
 
         if (_contextualKeywords.Count == 0 || string.IsNullOrWhiteSpace(currentLineBeforeCursor))
             return result;
 
-        // For each contextual keyword, check if any enabler token appeared earlier in this line
         foreach (var ck in _contextualKeywords)
         {
             bool enabled = false;
@@ -536,7 +545,6 @@ public class LineEditor
     }
 }
 
-[ExcludeFromCodeCoverage]
 public record ContextualKeywords
 {
     public List<string> Enablers { get; init; } = [];
