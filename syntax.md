@@ -340,3 +340,13 @@ There seems _not_ to be any support for complex logic like `and`, `or` and `not`
 | ---- | ---- | ---- |
 | printExpression(f) | Prints out the _expression_ of f. | ✅ |
 | plotTikz(f1, ..., args) | Plots the functions as TikZ code, see [TikZ plots](#tikz-plots-). | ✅ |
+
+### Syntax version
+
+`#!syntax version X.Y`
+
+Selects the syntax version used for the program, defaulting to the latest.
+It is applied only as the first line of the program, and only once: any later directive is reported as a duplicate and ignored.
+
+In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
+Use `!clear` to start a new session, and with it select a new version.
