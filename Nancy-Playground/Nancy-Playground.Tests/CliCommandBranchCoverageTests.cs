@@ -151,6 +151,74 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void RunDeterministicPlotTikzPrintsTikzCode()
+    {
+        using var script = TemporaryScript.Create(
+            """
+            f := affine(1, 0)
+            plotTikz(f)
+            """);
+
+        // TikZ plots are code, not images, hence they are not disabled by --deterministic
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("\\begin{tikzpicture}", output);
+        Assert.Contains("\\end{tikzpicture}", output);
+    }
+
+    [Fact]
+    public void RunPlotTikzWithOutWritesFileWithTexExtension()
+    {
+        using var script = TemporaryScript.Create(
+            """
+            f := affine(1, 0)
+            plotTikz(f, out = "chart.png")
+            """);
+        using var root = TemporaryDirectory.Create();
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--plots-root", root.Path
+        ]);
+
+        Assert.Equal(0, exitCode);
+        // the wrong extension is replaced, and the confirmation reports the file actually written
+        var codePath = Path.Combine(root.Path, "chart.tex");
+        Assert.True(File.Exists(codePath));
+        Assert.False(File.Exists(Path.Combine(root.Path, "chart.png")));
+        Assert.Contains("chart.tex", output);
+        Assert.Contains("\\begin{tikzpicture}", File.ReadAllText(codePath));
+    }
+
+    [Fact]
+    public void RunPlotTikzWithoutFunctionsReportsNothingToPlot()
+    {
+        using var script = TemporaryScript.Create(
+            """
+            plotTikz(xlim = [0, 10])
+            """);
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("No functions to plot.", output);
+    }
+
+    [Fact]
     public void ConvertVersionPrintsVersionAndExitsZero()
     {
         var (exitCode, output) = InvokeConvertCommand(new ConvertCommand.Settings

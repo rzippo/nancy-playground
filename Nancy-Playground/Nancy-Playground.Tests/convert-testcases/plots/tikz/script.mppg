@@ -1,0 +1,7 @@
+// TikZ plots are printed to the console, and produce no image or GUI,
+// hence the converted program can be run and compared like any other.
+ac := bucket(2, 2)
+sc := ratency(3, 1)
+plotTikz(ac, sc, xlim=[0, 10])
+// last result to compare, computed after the plot
+hdev(ac, sc)

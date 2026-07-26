@@ -53,6 +53,90 @@ public class SyntaxVersioning
     }
 
     [Fact]
+    public void NoShebang_AllowsPlotTikz()
+    {
+        const string programText = """
+        f := ratency(1, 3)
+        plotTikz(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is PlotTikzCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_RejectsPlotTikz()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 3)
+        plotTikz(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.DoesNotContain(program.Statements, s => s is PlotTikzCommand);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_AllowsPlot()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 3)
+        plot(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Contains(program.Statements, s => s is PlotCommand and not PlotTikzCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_1_AllowsPlotTikz()
+    {
+        const string programText = """
+        #!syntax version 1.1
+        f := ratency(1, 3)
+        plotTikz(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 1), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is PlotTikzCommand);
+    }
+
+    [Fact]
+    public void InteractiveMode_VersionV1_1_AllowsPlotTikz()
+    {
+        var state = new State();
+        state.Add("f", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "f"));
+
+        var statement = Statement.FromLine("plotTikz(f)", state, SyntaxVersion.V1_1);
+        Assert.IsType<PlotTikzCommand>(statement);
+    }
+
+    [Fact]
+    public void InteractiveMode_VersionV1_0_RejectsPlotTikz()
+    {
+        var state = new State();
+        state.Add("f", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "f"));
+
+        Assert.ThrowsAny<Exception>(() => Statement.FromLine("plotTikz(f)", state, SyntaxVersion.V1_0));
+    }
+
+    [Fact]
     public void PreambleShebangV2_0_AllowsPrintExpression()
     {
         const string programText = """

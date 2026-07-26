@@ -256,6 +256,51 @@ public class CodeConversion
         Assert.Contains("plotTmpPath", fullCode);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PlotTikzConversionEmitsTikzCodeAndDependency(bool useNancyExpressions)
+    {
+        var code = Program.ToNancyCode(
+            """
+            f := affine(1, 0)
+            g := ratency(1, 3)
+            plotTikz(f, g, xlim = [0, 10], out = "coverage")
+            plotTikz(f)
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains("#:package Unipi.Nancy.Plots.Tikz@1.0.7", fullCode);
+        Assert.Contains("using Unipi.Nancy.Plots.Tikz;", fullCode);
+        Assert.Contains("TikzPlots.ToTikzPlotCode(", fullCode);
+        // the names of the functions to plot are passed explicitly, to be used in the legend
+        Assert.Contains("[\"f\", \"g\"]", fullCode);
+        Assert.Contains("XLimit = new Interval(0, 10)", fullCode);
+        // an extensionless out path gets the .tex extension, and the code is written there
+        Assert.Contains("File.WriteAllText(\"coverage.tex\", plotTikzCode);", fullCode);
+        // without out, the TikZ code is printed instead
+        Assert.Contains("Console.WriteLine(plotTikzCode);", fullCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConversionOmitsTikzDependencyWithoutTikzPlots(bool useNancyExpressions)
+    {
+        var code = Program.ToNancyCode(
+            """
+            f := affine(1, 0)
+            plot(f, gui = "no")
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.DoesNotContain("Unipi.Nancy.Plots.Tikz", fullCode);
+    }
+
     public static IEnumerable<object[]> FunctionOperatorConversionTestCases =>
         new List<(string expression, string expectedNancy, string expectedExpressions)>
         {
