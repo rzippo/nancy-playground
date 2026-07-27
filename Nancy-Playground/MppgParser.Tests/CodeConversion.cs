@@ -87,8 +87,10 @@ public class CodeConversion
         {
             ("hDev(f + (0), f)", false, "Curve.HorizontalDeviation"),
             ("vDev(+f, f + (0))", false, "Curve.VerticalDeviation"),
+            ("zDev(f + (0), f)", false, "Curve.ZDeviation"),
             ("hDev(f + (0), f)", true, "Expressions.HorizontalDeviation"),
             ("vDev(+f, f + (0))", true, "Expressions.VerticalDeviation"),
+            ("zDev(f + (0), f)", true, "Expressions.ZDeviation"),
         }.ToXUnitTestCases();
 
     [Theory]

@@ -40,7 +40,9 @@ grammar Mppg;
         "hDev",
         "hdev",
         "vDev",
-        "vdev"
+        "vdev",
+        "zDev",
+        "zdev"
     };
 
     public IReadOnlyDictionary<string, VariableType> VariableTypes => _variableTypes;
@@ -565,12 +567,14 @@ numberReturningfunctionOperation
     | functionLeftLimitAt
     | functionRightLimitAt
     | functionHorizontalDeviation
-    | functionVerticalDeviation;
+    | functionVerticalDeviation
+    | functionZDeviation;
 functionValueAt: {IsFunctionSampleStart()}? functionName '(' numberExpression ')';
 functionLeftLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpression '~'? MINUS ')';
 functionRightLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpression '~'? PLUS ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
+functionZDeviation : ('zDev'|'zdev') '(' functionExpression ',' functionExpression ')';
 
 // Plots
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';

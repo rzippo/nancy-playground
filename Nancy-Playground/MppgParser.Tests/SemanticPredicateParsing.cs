@@ -17,6 +17,8 @@ public class SemanticPredicateParsing
             "(x) * y",
             "f(x)",
             "hDev(f,g)",
+            "vDev(f,g)",
+            "zDev(f,g)",
             "5 * f",
             "x * f",
             "(x) * f",
@@ -317,6 +319,7 @@ public class SemanticPredicateParsing
             "f(u)",
             "hDev(f, u)",
             "vDev(u, g)",
+            "zDev(f, u)",
         }.ToXUnitTestCases();
 
     [Theory]
@@ -395,6 +398,8 @@ public class SemanticPredicateParsing
         new List<string>
         {
             "hDev(f,g)",
+            "vDev(f,g)",
+            "zDev(f,g)",
             "f(x)",
             "f(x + y)",
             "f(x) + y",

@@ -612,6 +612,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionVerticalDeviation([NotNull] MppgParser.FunctionVerticalDeviationContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.functionZDeviation"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionZDeviation([NotNull] MppgParser.FunctionZDeviationContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.plotCommand"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

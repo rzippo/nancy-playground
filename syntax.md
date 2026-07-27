@@ -219,6 +219,7 @@ These operations work on functions, but return scalars.
 | hdev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | vDev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | vdev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
+| zDev(f, g) | Z-deviation between $f$ and $g$, for delay bounds with negative service curves. | ✅ |
 | maxBacklogPeriod(f, g) | Max backlog period length between $f$ and $g$. | ❌ |
 
 > The [syntax quick reference](https://www.realtimeatwork.com/minplus-quickref-syntax/), 

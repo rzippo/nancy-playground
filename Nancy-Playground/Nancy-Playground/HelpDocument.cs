@@ -557,6 +557,16 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     },
                     new HelpItem
                     {
+                        Name = "Z-deviation",
+                        Formats = ["zDev(f, g)", "zdev(f, g)"],
+                        Description = "Z-deviation between f and g. Used for delay bounds with negative service curves.",
+                        LongDescription = """
+- `zDev(f, g)` and `zdev(f, g)`: computes $z(f, g) = \inf\{t \ge 0 \mid f \otimes g (t) \ge 0\}$.
+""",
+                        Tags = ["functions", "deviation", "z", "zDev", "metrics", "operation"]
+                    },
+                    new HelpItem
+                    {
                         Name = "Max backlog period length",
                         Formats = ["maxBacklogPeriod(f, g)"],
                         Description = "Max backlog period length between f and g. (Not implemented)",

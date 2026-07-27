@@ -109,4 +109,24 @@ public partial class ExpressionVisitor
             throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
         }
     }
+
+    public override IExpression VisitFunctionZDeviation(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context)
+    {
+        if (context.ChildCount != 6)
+            throw new Exception("Expected 6 child expression");
+
+        var ilE = context.GetChild(2).Accept(this);
+        var irE = context.GetChild(4).Accept(this);
+
+        if (ilE is CurveExpression lCE && irE is CurveExpression rCE)
+        {
+            var rationalExp = Expressions.Expressions.ZDeviation(lCE, rCE);
+            return rationalExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
 }

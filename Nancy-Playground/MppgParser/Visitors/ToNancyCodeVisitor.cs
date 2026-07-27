@@ -880,6 +880,14 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.VerticalDeviation({l}, {r})"];
     }
 
+    public override List<string> VisitFunctionZDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context)
+    {
+        var l = context.GetChild(2).Accept(this).Single();
+        var r = context.GetChild(4).Accept(this).Single();
+
+        return [$"Curve.ZDeviation({l}, {r})"];
+    }
+
     #endregion
     
     #region Number binary operators
