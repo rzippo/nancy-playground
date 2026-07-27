@@ -12,8 +12,8 @@ g = new SigmaRhoArrivalCurve(1, 2)
 		grid style = {draw=gray!30},
 		axis lines = left,
 		axis equal image,
-		xlabel = time,
-		ylabel = data,
+		xlabel = {time},
+		ylabel = {data},
 		x label style = {at={(axis description cs:1,0)},anchor=north west},
 		y label style = {at={(axis description cs:0,1)},rotate=-90,anchor=south},
 		xmin = 0,
@@ -35,6 +35,18 @@ g = new SigmaRhoArrivalCurve(1, 2)
 		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (0,0) };
 		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (5,2) };
 
+		\node [ anchor = north ] at (axis cs:3, 0) {$T_{f}$};
+
+		\addplot [ color = black!60, thick, densely dashed ] coordinates { (4, 1) (4, 1.5) };
+		\addplot [ color = black!60, thick, densely dashed ] coordinates { (3, 0) (3, 1.5) };
+		\addplot [ color = black!60, thick, <-> ] coordinates { (3, 1.5) (4, 1.5) };
+		\node [ anchor = south ] at (axis cs:3.5, 1.5) {$d_{f}$};
+
+		\addplot [ color = black!60, thick, densely dashed ] coordinates { (3, 0) (4.5, 0) };
+		\addplot [ color = black!60, thick, densely dashed ] coordinates { (4, 1) (4.5, 1) };
+		\addplot [ color = black!60, thick, <-> ] coordinates { (4.5, 0) (4.5, 1) };
+		\node [ anchor = west ] at (axis cs:4.5, 0.5) {$c_{f}$};
+
 	\end{axis}
 \end{tikzpicture}
 
@@ -48,8 +60,8 @@ g = new SigmaRhoArrivalCurve(1, 2)
 		grid style = {draw=gray!30},
 		axis lines = left,
 		axis equal image,
-		xlabel = time,
-		ylabel = data,
+		xlabel = {time},
+		ylabel = {data},
 		x label style = {at={(axis description cs:1,0)},anchor=north west},
 		y label style = {at={(axis description cs:0,1)},rotate=-90,anchor=south},
 		xmin = 0,

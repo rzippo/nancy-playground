@@ -272,7 +272,7 @@ public class CodeConversion
 
         var fullCode = string.Join(Environment.NewLine, code);
 
-        Assert.Contains("#:package Unipi.Nancy.Plots.Tikz@1.0.7", fullCode);
+        Assert.Contains("#:package Unipi.Nancy.Plots.Tikz@1.0.9", fullCode);
         Assert.Contains("using Unipi.Nancy.Plots.Tikz;", fullCode);
         Assert.Contains("TikzPlots.ToTikzPlotCode(", fullCode);
         // the names of the functions to plot are passed explicitly, to be used in the legend
