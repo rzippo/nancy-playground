@@ -256,7 +256,7 @@ public class SyntaxVersioning
         """
         x := 1
         """,
-        "1.1")]
+        "1.2")]
     public void ProgramSyntaxVersion_MatchesDeclaredVersion(string programText, string expectedVersion)
     {
         var program = Program.FromText(programText);
@@ -345,5 +345,99 @@ public class SyntaxVersioning
         state.Add("x", Unipi.Nancy.Expressions.Expressions.FromRational(1, "x"));
 
         Assert.ThrowsAny<Exception>(() => Statement.FromLine("printExpression(x)", state, SyntaxVersion.V1_0));
+    }
+
+    [Fact]
+    public void NoShebang_AllowsSubaddClosure()
+    {
+        const string programText = """
+        f := ratency(1, 2)
+        subaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_RejectsSubaddClosure()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 2)
+        subaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_2_AllowsSubaddClosure()
+    {
+        const string programText = """
+        #!syntax version 1.2
+        f := ratency(1, 2)
+        subaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void NoShebang_AllowsSuperaddClosure()
+    {
+        const string programText = """
+        f := ratency(1, 2)
+        superaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_RejectsSuperaddClosure()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 2)
+        superaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_2_AllowsSuperaddClosure()
+    {
+        const string programText = """
+        #!syntax version 1.2
+        f := ratency(1, 2)
+        superaddclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
     }
 }

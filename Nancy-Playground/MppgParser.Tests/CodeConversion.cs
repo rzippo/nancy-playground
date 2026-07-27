@@ -310,6 +310,8 @@ public class CodeConversion
             ("up_inv(f)", ".UpperPseudoInverse()", ".UpperPseudoInverse()"),
             ("upclosure(f)", ".ToUpperNonDecreasing()", ".ToUpperNonDecreasing()"),
             ("left-ext(f)", ".ToLeftContinuous()", ".ToLeftContinuous()"),
+            ("subaddclosure(f)", ".SubAdditiveClosure(", ".SubAdditiveClosure()"),
+            ("superaddclosure(f)", ".SuperAdditiveClosure(", ".SuperAdditiveClosure()"),
         }
         .SelectMany(
             testCase => new[]

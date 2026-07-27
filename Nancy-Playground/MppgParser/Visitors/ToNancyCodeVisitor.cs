@@ -652,6 +652,13 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"Curve.SubAdditiveClosure({curve})"];
     }
 
+    public override List<string> VisitFunctionSuperadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSuperadditiveClosureContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"Curve.SuperAdditiveClosure({curve})"];
+    }
+
     public override List<string> VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();

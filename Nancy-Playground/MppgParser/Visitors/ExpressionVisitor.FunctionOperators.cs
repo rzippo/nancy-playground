@@ -179,6 +179,24 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionSuperadditiveClosure(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionSuperadditiveClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = Expressions.Expressions.SuperAdditiveClosure(lCE);
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
     {
         if (context.ChildCount != 6)

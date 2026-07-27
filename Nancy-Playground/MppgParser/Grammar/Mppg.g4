@@ -21,6 +21,8 @@ grammar Mppg;
         "uaf",
         "upp",
         "star",
+        "subaddclosure",
+        "superaddclosure",
         "hShift",
         "hshift",
         "vShift",
@@ -309,7 +311,7 @@ grammar Mppg;
 
     // Syntax versioning
     private int _syntaxVersionMajor = 1;
-    private int _syntaxVersionMinor = 1;
+    private int _syntaxVersionMinor = 2;
     private bool _versionDirectiveSeen = false;
     private bool _inPreamble = false;
 
@@ -356,6 +358,16 @@ grammar Mppg;
     private bool AllowsPlotTikz()
     {
         return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
+    }
+
+    private bool AllowsSubaddClosure()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
+    }
+
+    private bool AllowsSuperaddClosure()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
     }
 
 }
@@ -464,6 +476,8 @@ functionUnaryExpression
 functionEnclosedExpression
     : {ExpressionSegmentContainsFunction(2)}? '(' functionExpression ')' #functionBrackets
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
+    | {AllowsSubaddClosure()}? 'subaddclosure' '(' functionExpression ')' #functionSubadditiveClosure
+    | {AllowsSuperaddClosure()}? 'superaddclosure' '(' functionExpression ')' #functionSuperadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
     | ('inv'|'low_inv') '(' functionExpression ')' #functionLowerPseudoInverse

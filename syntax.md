@@ -165,6 +165,8 @@ These operations return a _function_.
 | f1 /_ f2 | (min,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | f1 /^ f2 | (max,+) deconvolution of  $f_1$ and $f_2$. | ✅ |
 | star(f) | Subadditive closure of $f$. | ✅ |
+| subaddclosure(f) | Subadditive closure of $f$. Requires syntax version 1.2 or later. | ✅ |
+| superaddclosure(f) | Superadditive closure of $f$. Requires syntax version 1.2 or later. | ✅ |
 | hShift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
 | hshift(f, n) | Compute the function identical to $f$ but horizontally shifted by $n$. | ✅ |
 | vShift(f, n) | Compute the function which is identical to $f$ but vertically shifted by $n$. | ✅ |

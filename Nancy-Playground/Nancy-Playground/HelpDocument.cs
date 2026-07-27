@@ -432,9 +432,23 @@ Both `*` and `*_` denote the (min,+) convolution. They are aliases.
                     new HelpItem
                     {
                         Name = "Subadditive closure",
-                        Formats = ["star(f)"],
+                        Formats = ["star(f)", "subaddclosure(f)"],
                         Description = "Subadditive closure of f.",
-                        Tags = ["closure", "subadditive", "star", "operation"]
+                        LongDescription = """
+- `star(f)`: subadditive closure of f. Always available.
+- `subaddclosure(f)`: synonym for subadditive closure. Requires syntax version 1.2 or later.
+""",
+                        Tags = ["closure", "subadditive", "star", "subaddclosure", "operation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Superadditive closure",
+                        Formats = ["superaddclosure(f)"],
+                        Description = "Superadditive closure of f.",
+                        LongDescription = """
+- `superaddclosure(f)`: superadditive closure of f. Requires syntax version 1.2 or later.
+""",
+                        Tags = ["closure", "superadditive", "superaddclosure", "operation"]
                     },
                     new HelpItem
                     {

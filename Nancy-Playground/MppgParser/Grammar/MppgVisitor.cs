@@ -265,6 +265,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionSubadditiveClosure([NotNull] MppgParser.FunctionSubadditiveClosureContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionSuperadditiveClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionSuperadditiveClosure([NotNull] MppgParser.FunctionSuperadditiveClosureContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionHShift</c>
 	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>

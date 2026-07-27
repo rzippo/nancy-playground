@@ -28,6 +28,8 @@ public partial class InteractiveCommand
         "uaf",
         // operations
         "star",
+        "subaddclosure",
+        "superaddclosure",
         "hShift",
         "vShift",
         "inv",
