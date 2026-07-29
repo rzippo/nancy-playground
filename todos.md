@@ -1,3 +1,7 @@
+- [ ] Guard the publish step of `Nancy-Playground-pack-release.yml`: the workflow also triggers on
+  `pull_request` to `master` for changes to `Nancy-Playground.csproj`, and `Publish` has no `if:`,
+  so a pull request bumping the version tries to publish from the branch, before review.
+  Harmless from a fork, which cannot read `NUGET_API_KEY`, not from a same-repo branch
 - [ ] Let interactive mode specify the directory where exports should be saved
 - [ ] Filter the interactive autocomplete by the session syntax version: `InteractiveCommand.Keywords.cs`
   lists every keyword, so a 1.0 session suggests keywords that version does not have
