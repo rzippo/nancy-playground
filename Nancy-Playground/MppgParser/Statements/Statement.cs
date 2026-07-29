@@ -24,11 +24,11 @@ public abstract record class Statement
     {
         var inputStream = CharStreams.fromString(line);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
+        lexer.SetSyntaxVersion(syntaxVersion.Major, syntaxVersion.Minor);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         parser.ErrorHandler = new BailErrorStrategy();
         parser.SeedVariableTypes(state);
-        parser.SetSyntaxVersion(syntaxVersion.Major, syntaxVersion.Minor);
 
         var context = parser.statement();
         var visitor = new StatementVisitor();

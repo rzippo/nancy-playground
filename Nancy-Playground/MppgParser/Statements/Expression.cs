@@ -73,10 +73,12 @@ public class Expression
     /// *or* a <see cref="RationalExpression"/> if the expression resolves to a number.
     /// The returned tuple will have null for the other type.  
     /// </returns>
-    public static IExpression ParseFromString(string expression, State? state)
+    public static IExpression ParseFromString(string expression, State? state, SyntaxVersion syntaxVersion = default)
     {
         var inputStream = CharStreams.fromString(expression);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
+        var version = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
+        lexer.SetSyntaxVersion(version.Major, version.Minor);
         var commonTokenStream = new CommonTokenStream(lexer);
         var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
         parser.ErrorHandler = new BailErrorStrategy();

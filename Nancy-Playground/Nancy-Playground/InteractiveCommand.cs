@@ -214,7 +214,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var outputPath = args[0];
         try
         {
-            var statementLines = Enumerable.Select(programContext.StatementHistory, s => s.Text);
+            var statementLines = programContext.ToProgramLines();
 
             File.WriteAllLines(outputPath, statementLines);
             Console.MarkupLine($"[green]Program exported successfully to[/] [blue]{Escape(outputPath)}[/].");
@@ -241,7 +241,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var outputPath = args[0];
         try
         {
-            var statementLines = Enumerable.Select(programContext.StatementHistory, s => s.Text);
+            var statementLines = programContext.ToProgramLines();
             var programText = string.Join(Environment.NewLine, statementLines);
             var programNancyCode = Unipi.Nancy.Playground.MppgParser.Program.ToNancyCode(programText);
             programNancyCode.InsertRange(0,[

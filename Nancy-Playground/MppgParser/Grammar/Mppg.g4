@@ -1,5 +1,63 @@
 grammar Mppg;
 
+@lexer::members {
+    // Syntax versioning.
+    // Keywords are matched here, before any parser rule is reached, so a keyword introduced after 1.0
+    // has to be gated here for scripts declaring an earlier version to keep using that name as a variable.
+    private int _syntaxVersionMajor = 1;
+    private int _syntaxVersionMinor = 2;
+    private bool _versionDirectiveApplied = false;
+
+    public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
+
+    /// Sets the version explicitly, for input that does not carry the directive itself,
+    /// i.e. the single lines parsed in interactive mode.
+    public void SetSyntaxVersion(int major, int minor)
+    {
+        _syntaxVersionMajor = major;
+        _syntaxVersionMinor = minor;
+        _versionDirectiveApplied = true;
+    }
+
+    /// Applies a '#!syntax version X.Y' directive as it is lexed, so that the keywords of the rest of
+    /// the input are those of the declared version.
+    /// Only the first directive of the program applies, and only if nothing but blanks precedes it,
+    /// matching the preamble rule.
+    private void TryApplyVersionDirective(string text)
+    {
+        if (_versionDirectiveApplied || !IsPrecededOnlyByBlanks())
+            return;
+        _versionDirectiveApplied = true;
+
+        if (Unipi.Nancy.Playground.MppgParser.SyntaxVersion.TryParseShebang(text, out var version))
+        {
+            _syntaxVersionMajor = version.Major;
+            _syntaxVersionMinor = version.Minor;
+        }
+    }
+
+    private bool IsPrecededOnlyByBlanks()
+    {
+        for (var index = 0; index < TokenStartCharIndex; index++)
+        {
+            var c = (char)((ICharStream)InputStream).LA(index - TokenStartCharIndex);
+            if (c != ' ' && c != '\t')
+                return false;
+        }
+        return true;
+    }
+
+    private bool IsVersionOrLater(int major, int minor)
+    {
+        return _syntaxVersionMajor > major
+            || (_syntaxVersionMajor == major && _syntaxVersionMinor >= minor);
+    }
+
+    private bool IsVersion1_1OrLater() => IsVersionOrLater(1, 1);
+
+    private bool IsVersion1_2OrLater() => IsVersionOrLater(1, 2);
+}
+
 @parser::members {
     public enum VariableType
     {
@@ -107,7 +165,8 @@ grammar Mppg;
         if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(lookaheadIndex))
             return true;
 
-        return FunctionExpressionStarters.Contains(text);
+        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
+        return token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text);
     }
 
     private bool IsFunctionProductExpressionStart(int lookaheadIndex) =>
@@ -237,7 +296,8 @@ grammar Mppg;
             if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(index))
                 return true;
 
-            if (FunctionExpressionStarters.Contains(text))
+            // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
+            if (token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text))
                 return true;
 
             if (text == "(")
@@ -287,7 +347,7 @@ grammar Mppg;
 
         var isNumberReturningFunctionCall =
             token.Type == VARIABLE_NAME && IsFunctionVariable(text)
-            || NumberReturningFunctionStarters.Contains(text);
+            || token.Type != VARIABLE_NAME && NumberReturningFunctionStarters.Contains(text);
 
         if (!isNumberReturningFunctionCall || TokenStream.LT(lookaheadIndex + 1).Text != "(")
             return -1;
@@ -313,75 +373,13 @@ grammar Mppg;
         return null;
     }
 
-    // Syntax versioning
-    private int _syntaxVersionMajor = 1;
-    private int _syntaxVersionMinor = 2;
-    private bool _versionDirectiveSeen = false;
-    private bool _inPreamble = false;
-
-    public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
-
-    public void SetSyntaxVersion(int major, int minor)
-    {
-        _syntaxVersionMajor = major;
-        _syntaxVersionMinor = minor;
-    }
-
+    // Syntax versioning is handled by the lexer, which is where keywords are matched
+    // and so where the version has to be known. This only recognises the directive as a statement.
     private bool IsVersionDirective()
     {
         if (TokenStream.LA(1) != INLINABLE_COMMENT)
             return false;
         return TokenStream.LT(1).Text.StartsWith("#!syntax");
-    }
-
-    private void ParseVersionFromShebang(string shebang)
-    {
-        if (!_inPreamble || _versionDirectiveSeen)
-            return;
-        _versionDirectiveSeen = true;
-
-        var parts = shebang.Split(new char[]{' ', '\t'}, System.StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length >= 3 && parts[2].Contains('.'))
-        {
-            var versionParts = parts[2].Split('.');
-            if (versionParts.Length == 2
-                && int.TryParse(versionParts[0], out var major)
-                && int.TryParse(versionParts[1], out var minor))
-            {
-                _syntaxVersionMajor = major;
-                _syntaxVersionMinor = minor;
-            }
-        }
-    }
-
-    private bool AllowsPrintExpression()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
-    }
-
-    private bool AllowsPlotTikz()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 1);
-    }
-
-    private bool AllowsSubaddClosure()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
-    }
-
-    private bool AllowsSuperaddClosure()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
-    }
-
-    private bool AllowsLowClosure()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
-    }
-
-    private bool AllowsNnLowClosure()
-    {
-        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
     }
 
 }
@@ -404,25 +402,35 @@ PROD_SIGN: '*';
 DIV_SIGN: '/';
 DIV_OP: 'div';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
+INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
+
+// Keywords introduced after version 1.0.
+// Each is a keyword only from the version that introduced it, and lexes as VARIABLE_NAME before that,
+// so that a script declaring an earlier version can still use the name as a variable.
+// The predicate goes last, which is where the lexer evaluates it, and these rules precede
+// VARIABLE_NAME so they win the tie whenever their predicate holds.
+PRINT_EXPRESSION : 'printExpression' {IsVersion1_1OrLater()}?;
+PLOT_TIKZ : 'plotTikz' {IsVersion1_1OrLater()}?;
+SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
+SUPERADD_CLOSURE : 'superaddclosure' {IsVersion1_2OrLater()}?;
+LOWCLOSURE : 'lowclosure' {IsVersion1_2OrLater()}?;
+NNLOWCLOSURE : 'nnlowclosure' {IsVersion1_2OrLater()}?;
+
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 
 // parser rules
 program : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
-preamble 
-@init { _inPreamble = true; }
-@after { _inPreamble = false; }
-    : preambleStatement (NEW_LINE preambleStatement)* NEW_LINE?;
+preamble : preambleStatement (NEW_LINE preambleStatement)* NEW_LINE?;
 preambleStatement : versionDirective;
-versionDirective : {IsVersionDirective()}? c=comment { ParseVersionFromShebang($c.text); };
+versionDirective : {IsVersionDirective()}? comment;
 statementLine: statement inlineComment? ;
 statement
     : assignment
     | expressionCommand
     | plotCommand
-    | {AllowsPlotTikz()}? plotTikzCommand
+    | plotTikzCommand
     | assertion
-    | {AllowsPrintExpression()}? printExpressionCommand
+    | printExpressionCommand
     | versionDirective
     | comment
     | empty;
@@ -490,16 +498,16 @@ functionUnaryExpression
 functionEnclosedExpression
     : {ExpressionSegmentContainsFunction(2)}? '(' functionExpression ')' #functionBrackets
     | 'star' '(' functionExpression ')' #functionSubadditiveClosure
-    | {AllowsSubaddClosure()}? 'subaddclosure' '(' functionExpression ')' #functionSubadditiveClosure
-    | {AllowsSuperaddClosure()}? 'superaddclosure' '(' functionExpression ')' #functionSuperadditiveClosure
+    | SUBADD_CLOSURE '(' functionExpression ')' #functionSubadditiveClosure
+    | SUPERADD_CLOSURE '(' functionExpression ')' #functionSuperadditiveClosure
     | ('hShift'|'hshift') '(' functionExpression ',' numberExpression ')' #functionHShift
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
     | ('inv'|'low_inv') '(' functionExpression ')' #functionLowerPseudoInverse
     | 'up_inv' '(' functionExpression ')' #functionUpperPseudoInverse
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
-    | {AllowsLowClosure()}? 'lowclosure' '(' functionExpression ')' #functionLowNonDecreasingClosure
-    | {AllowsNnLowClosure()}? 'nnlowclosure' '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
+    | LOWCLOSURE '(' functionExpression ')' #functionLowNonDecreasingClosure
+    | NNLOWCLOSURE '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
     | functionConstructor #functionConstructorExp
@@ -592,7 +600,7 @@ functionZDeviation : ('zDev'|'zdev') '(' functionExpression ',' functionExpressi
 
 // Plots
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';
-plotTikzCommand: 'plotTikz' '(' plotArg (',' plotArg)* ')';
+plotTikzCommand: PLOT_TIKZ '(' plotArg (',' plotArg)* ')';
 plotArg: functionName | plotOption;
 functionName: {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME;
 plotOption
@@ -632,4 +640,4 @@ assertionOperator
 
 // extra commands
 printExpressionCommand
-    : 'printExpression' '(' VARIABLE_NAME ')';
+    : PRINT_EXPRESSION '(' VARIABLE_NAME ')';

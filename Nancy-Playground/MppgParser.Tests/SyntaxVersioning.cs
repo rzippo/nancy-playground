@@ -534,4 +534,199 @@ public class SyntaxVersioning
         Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
         Assert.Contains(program.Statements, s => s is ExpressionCommand);
     }
+    // Keywords introduced after 1.0 must not act as keywords in scripts declaring an earlier version,
+    // otherwise adding one to the syntax breaks existing scripts using that name as a variable.
+    // Driven by VersionedKeywords.IntroducedIn, so keywords added later are covered without editing tests.
+
+    public static IEnumerable<object[]> VersionedKeywordCases =>
+        VersionedKeywords.IntroducedIn.Keys.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void VersionV1_0_AllowsLaterKeywordAsNumberVariable(string keyword)
+    {
+        var programText = $"""
+        #!syntax version 1.0
+        {keyword} := 3
+        {keyword} + 1
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        var output = program.ExecuteToStringOutput().ToList();
+        Assert.Contains("4", output);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void VersionV1_0_AllowsLaterKeywordAsCurveVariable(string keyword)
+    {
+        // exercises the lookahead that routes function expressions, which matches on token text
+        var programText = $"""
+        #!syntax version 1.0
+        {keyword} := ratency(1, 2)
+        h := {keyword} * {keyword}
+        h(10)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        var output = program.ExecuteToStringOutput().ToList();
+        Assert.Contains("6", output);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void VersionThatIntroducedIt_RejectsKeywordAsVariable(string keyword)
+    {
+        var introducedIn = VersionedKeywords.IntroducedIn[keyword];
+        var programText = $"""
+        #!syntax version {introducedIn}
+        {keyword} := 3
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void VersionedKeywordIsAKeywordOfTheGrammar(string keyword)
+    {
+        // guards against a stale or misspelled entry, which would silently gate nothing
+        Assert.True(
+            VersionedKeywords.KeywordTokenTypes().ContainsKey(keyword),
+            $"'{keyword}' is listed in VersionedKeywords.IntroducedIn but is not a keyword of the grammar.");
+    }
+
+    [Fact]
+    public void EveryVersionGatedLexerRuleHasAKeywordEntry()
+    {
+        // A keyword is gated by a semantic predicate on its lexer rule, for which ANTLR generates a
+        // <RULE>_sempred method. Every such keyword must also be listed in VersionedKeywords.IntroducedIn,
+        // or the tests above would silently not cover it.
+        const string suffix = "_sempred";
+        var lexerType = typeof(Unipi.MppgParser.Grammar.MppgLexer);
+
+        var gatedRules = lexerType
+            .GetMethods(System.Reflection.BindingFlags.Instance
+                        | System.Reflection.BindingFlags.NonPublic
+                        | System.Reflection.BindingFlags.Public)
+            .Select(method => method.Name)
+            .Where(name => name.EndsWith(suffix, StringComparison.Ordinal))
+            .Select(name => name[..^suffix.Length])
+            .Distinct()
+            .ToList();
+
+        Assert.NotEmpty(gatedRules);
+
+        var missing = gatedRules
+            .Where(rule => KeywordOfLexerRule(rule) is not { } keyword
+                           || !VersionedKeywords.IntroducedIn.ContainsKey(keyword))
+            .ToList();
+
+        Assert.True(
+            missing.Count == 0,
+            $"The lexer rule(s) {string.Join(", ", missing)} are gated by syntax version, but the keyword "
+            + "they match is not listed in VersionedKeywords.IntroducedIn. Add it, so that the version "
+            + "tests cover it and scripts declaring an earlier version keep using the name as a variable.");
+    }
+
+    /// <summary>
+    /// The keyword a lexer rule matches, or null if it does not match a single literal.
+    /// </summary>
+    private static string? KeywordOfLexerRule(string ruleName)
+    {
+        var tokenTypeField = typeof(Unipi.MppgParser.Grammar.MppgLexer)
+            .GetField(ruleName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        if (tokenTypeField?.GetRawConstantValue() is not int tokenType)
+            return null;
+
+        var literal = Unipi.MppgParser.Grammar.MppgLexer.DefaultVocabulary.GetLiteralName(tokenType);
+        return literal is null || literal.Length < 2 ? null : literal[1..^1];
+    }
+    // The lexer DFA is cached in a static field, shared by every lexer of the process. If ANTLR cached an
+    // edge whose computation evaluated a version predicate, a parse would inherit the version of a previous
+    // one, which would only show up as an order-dependent failure.
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void GatingIsNotLeakedBetweenParsesOfDifferentVersions(string keyword)
+    {
+        var introducedIn = VersionedKeywords.IntroducedIn[keyword];
+
+        var asKeyword = $"""
+        #!syntax version {introducedIn}
+        {keyword} := 3
+        """;
+        var asVariable = $"""
+        #!syntax version 1.0
+        {keyword} := 3
+        """;
+
+        // keyword first, then variable
+        Assert.NotEmpty(Program.FromText(asKeyword).Errors);
+        Assert.Empty(Program.FromText(asVariable).Errors);
+
+        // and the other way round
+        Assert.Empty(Program.FromText(asVariable).Errors);
+        Assert.NotEmpty(Program.FromText(asKeyword).Errors);
+    }
+
+    // Interactive mode parses one line per lexer, so the directive typed earlier in the session is not in
+    // the input being lexed: the version has to be passed in.
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void InteractiveMode_VersionV1_0_AllowsLaterKeywordAsVariable(string keyword)
+    {
+        var statement = Statement.FromLine($"{keyword} := 3", new State(), SyntaxVersion.V1_0);
+
+        Assert.IsType<Assignment>(statement);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void InteractiveMode_VersionThatIntroducedIt_RejectsKeywordAsVariable(string keyword)
+    {
+        var introducedIn = VersionedKeywords.IntroducedIn[keyword];
+
+        Assert.ThrowsAny<Exception>(
+            () => Statement.FromLine($"{keyword} := 3", new State(), introducedIn));
+    }
+
+    // Applying a directive does not execute a statement, so it is not in the statement history:
+    // without putting it back, an exported session would run again at a different version.
+    [Fact]
+    public void SessionProgramLines_KeepTheAppliedVersionDirective()
+    {
+        var programContext = new ProgramContext
+        {
+            SyntaxVersion = SyntaxVersion.V1_0,
+            SyntaxVersionDirectiveApplied = true
+        };
+        programContext.StatementHistory.Add(
+            Statement.FromLine("lowclosure := 3", programContext.State, SyntaxVersion.V1_0));
+
+        var lines = programContext.ToProgramLines().ToList();
+
+        Assert.Equal("#!syntax version 1.0", lines[0]);
+        // and the exported program parses back the same way
+        var reparsed = Program.FromText(string.Join("\n", lines));
+        Assert.Empty(reparsed.Errors);
+        Assert.Equal(SyntaxVersion.V1_0, reparsed.SyntaxVersion);
+    }
+
+    [Fact]
+    public void SessionProgramLines_OmitTheDirectiveWhenNoneWasApplied()
+    {
+        var programContext = new ProgramContext();
+        programContext.StatementHistory.Add(
+            Statement.FromLine("a := 3", programContext.State));
+
+        var lines = programContext.ToProgramLines().ToList();
+
+        Assert.Equal(["a := 3"], lines);
+    }
 }

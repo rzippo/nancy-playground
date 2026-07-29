@@ -355,3 +355,7 @@ It is applied only as the first line of the program, and only once: any later di
 
 In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
 Use `!clear` to start a new session, and with it select a new version.
+
+A keyword only acts as one from the version that introduced it: `lowclosure := 3` is an assignment under
+`#!syntax version 1.0`, and the closure operator from 1.2 on.
+Declaring a version therefore keeps a program working as later versions add keywords.

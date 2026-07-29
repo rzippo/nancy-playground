@@ -23,6 +23,22 @@ public class ProgramContext
     public bool CanApplySyntaxVersionDirective =>
         !SyntaxVersionDirectiveApplied && StatementHistory.Count == 0;
 
+    /// <summary>
+    /// The lines of this session as a program, including the syntax version directive if one was applied.
+    /// </summary>
+    /// <remarks>
+    /// Applying the directive does not execute a statement, so it is not in the statement history and has
+    /// to be put back here, for the exported program to behave the same when run again.
+    /// </remarks>
+    public IEnumerable<string> ToProgramLines()
+    {
+        var statementLines = StatementHistory.Select(s => s.Text);
+
+        return SyntaxVersionDirectiveApplied
+            ? statementLines.Prepend($"#!syntax version {SyntaxVersion}")
+            : statementLines;
+    }
+
     public StatementOutput? ExecuteStatement(
         Statement statement,
         IStatementFormatter formatter,

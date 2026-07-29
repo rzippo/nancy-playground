@@ -103,7 +103,7 @@ public record class Program
         parser.AddErrorListener(parserListener);
 
         var context = parser.program();
-        var (major, minor) = parser.SyntaxVersion;
+        var (major, minor) = lexer.SyntaxVersion;
         var syntaxVersion = SyntaxVersion.FromParts(major, minor);
         var program = FromTree(context, errors, syntaxVersion);
         return program with
@@ -198,7 +198,7 @@ public record class Program
         parser.ErrorHandler = new BailErrorStrategy();
 
         var programContext = parser.program();
-        var (major, minor) = parser.SyntaxVersion;
+        var (major, minor) = lexer.SyntaxVersion;
         var syntaxVersion = SyntaxVersion.FromParts(major, minor);
         MppgBaseVisitor<List<string>> visitor = useNancyExpressions 
             ? new ToNancyExpressionsCodeVisitor(syntaxVersion)
