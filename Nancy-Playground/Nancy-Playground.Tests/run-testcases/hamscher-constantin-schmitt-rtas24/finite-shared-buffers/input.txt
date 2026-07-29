@@ -1,0 +1,41 @@
+// Case study of Sect. IV-B, "Finite Shared Buffers", of
+// A. Hamscher, V.-C. Constantin, J. B. Schmitt, "Extending Network Calculus to Deal with
+// Min-Plus Service Curves in Multiple Flow Scenarios", RTAS 2024.
+// See https://doi.org/10.1109/RTAS61025.2024.00016.
+// Parameters: bL = 2 Mbit, bH = 1 Mbit, rL = rH = 5 Mbit/s, R = 12.5 Mbit/s.
+
+// high priority flow, maximal arrival curve
+aH := bucket(5, 1)
+// service curve offered to the aggregate, R = R1 /\ R2, T = 0
+sc := ratency(12.5, 0)
+
+// for the high priority flow both analyses agree: h(aH, sc) = bH / R
+wcd_H := hDev(aH, sc)
+assert(wcd_H = 2/25)
+// buffer requirement of the high priority queue: v(aH, sc) = bH
+buf_H := vDev(aH, sc)
+assert(buf_H = 1)
+
+// residual service curve for the low priority flow, in this case it is negative.
+// per Sect. III, the *lower* non-decreasing closure is the one to use here.
+rsc_L := lowclosure(sc - aH)
+// the closure is not a no-op: the raw curve dips to -bH right after the origin
+raw_L := sc - aH
+assert(raw_L(0) != rsc_L(0))
+assert(raw_L(0.5) = rsc_L(0.5))
+
+// low priority flow, maximal arrival curve
+aL := bucket(5, 2)
+// Eq. (54): v(aL, rsc_L) = bH + bL
+buf_L := vDev(aL, rsc_L)
+assert(buf_L = 3)
+
+// Eq. (56), with minimal arrival curve of rate 4.5 Mbit/s (Fig. 9c)
+aL_min_45 := ratency(4.5, 2/4.5)
+wcd_L_45 := zDev(aL_min_45, rsc_L) \/ hDev(aL, rsc_L)
+assert(wcd_L_45 = 2/3)
+
+// Eq. (56), with minimal arrival curve of rate 3.75 Mbit/s (Fig. 9d)
+aL_min_375 := ratency(3.75, 2/3.75)
+wcd_L_375 := zDev(aL_min_375, rsc_L) \/ hDev(aL, rsc_L)
+assert(wcd_L_375 = 4/5)

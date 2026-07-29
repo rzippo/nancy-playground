@@ -1,0 +1,54 @@
+// Case study of Sect. IV-B, "Finite Shared Buffers", of
+// A. Hamscher, V.-C. Constantin, J. B. Schmitt, "Extending Network Calculus to Deal with
+// Min-Plus Service Curves in Multiple Flow Scenarios", RTAS 2024.
+// See https://doi.org/10.1109/RTAS61025.2024.00016.
+// Parameters: bL = 2 Mbit, bH = 1 Mbit, rL = rH = 5 Mbit/s, R = 12.5 Mbit/s.
+// high priority flow, maximal arrival curve
+> aH := bucket ( 5 , 1 )
+aH = new SigmaRhoArrivalCurve(1, 5)
+// service curve offered to the aggregate, R = R1 /\ R2, T = 0
+> sc := ratency ( 12.5 , 0 )
+sc = new RateLatencyServiceCurve(new Rational(25, 2), 0)
+// for the high priority flow both analyses agree: h(aH, sc) = bH / R
+> wcd_H := hDev ( aH , sc )
+wcd_H = 2/25
+> assert ( wcd_H = 2 / 25 )
+true
+// buffer requirement of the high priority queue: v(aH, sc) = bH
+> buf_H := vDev ( aH , sc )
+buf_H = 1
+> assert ( buf_H = 1 )
+true
+// residual service curve for the low priority flow, in this case it is negative.
+// per Sect. III, the *lower* non-decreasing closure is the one to use here.
+> rsc_L := lowclosure ( sc - aH )
+rsc_L = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,-1), new Segment(0,1,-1,new Rational(15, 2)) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: new Rational(15, 2))
+// the closure is not a no-op: the raw curve dips to -bH right after the origin
+> raw_L := sc - aH
+raw_L = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,-1,new Rational(15, 2)), new Point(1,new Rational(13, 2)), new Segment(1,2,new Rational(13, 2),new Rational(15, 2)) }), pseudoPeriodStart: 1, pseudoPeriodLength: 1, pseudoPeriodHeight: new Rational(15, 2))
+> assert ( raw_L ( 0 ) != rsc_L ( 0 ) )
+true
+> assert ( raw_L ( 0.5 ) = rsc_L ( 0.5 ) )
+true
+// low priority flow, maximal arrival curve
+> aL := bucket ( 5 , 2 )
+aL = new SigmaRhoArrivalCurve(2, 5)
+// Eq. (54): v(aL, rsc_L) = bH + bL
+> buf_L := vDev ( aL , rsc_L )
+buf_L = 3
+> assert ( buf_L = 3 )
+true
+// Eq. (56), with minimal arrival curve of rate 4.5 Mbit/s (Fig. 9c)
+> aL_min_45 := ratency ( 4.5 , 2 / 4.5 )
+aL_min_45 = new RateLatencyServiceCurve(new Rational(9, 2), new Rational(4, 9))
+> wcd_L_45 := zDev ( aL_min_45 , rsc_L ) \/ hDev ( aL , rsc_L )
+wcd_L_45 = 2/3
+> assert ( wcd_L_45 = 2 / 3 )
+true
+// Eq. (56), with minimal arrival curve of rate 3.75 Mbit/s (Fig. 9d)
+> aL_min_375 := ratency ( 3.75 , 2 / 3.75 )
+aL_min_375 = new RateLatencyServiceCurve(new Rational(15, 4), new Rational(8, 15))
+> wcd_L_375 := zDev ( aL_min_375 , rsc_L ) \/ hDev ( aL , rsc_L )
+wcd_L_375 = 4/5
+> assert ( wcd_L_375 = 4 / 5 )
+true
