@@ -729,4 +729,42 @@ public class SyntaxVersioning
 
         Assert.Equal(["a := 3"], lines);
     }
+    // Built by concatenation on purpose: a raw string literal would have its indentation stripped by the
+    // compiler, putting the directive back at column 0 and hiding what these cover.
+
+    [Fact]
+    public void IndentedPreambleDirective_IsApplied()
+    {
+        var programText = "  #!syntax version 1.0\n  lowclosure := 3\n  lowclosure + 1";
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.V1_0, program.SyntaxVersion);
+        Assert.Contains("4", program.ExecuteToStringOutput().ToList());
+    }
+
+    [Fact]
+    public void IndentedPreambleDirective_WithTrailingBlanks_IsApplied()
+    {
+        // the directive's own trailing blanks used to be what the check read, making it intermittent
+        var programText = "  #!syntax version 1.0   \n  lowclosure := 3";
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.V1_0, program.SyntaxVersion);
+    }
+
+    [Fact]
+    public void DirectiveAfterABlankLine_IsNotApplied()
+    {
+        // only the preamble counts, and a blank line is already a statement
+        var programText = "\n#!syntax version 1.0\na := 1";
+
+        var program = Program.FromText(programText);
+
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.True(program.Statements.OfType<VersionDirectiveStatement>().Single().IsDuplicate);
+    }
 }

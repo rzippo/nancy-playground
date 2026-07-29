@@ -109,9 +109,16 @@ public partial class MppgLexer : Lexer {
 
 	    private bool IsPrecededOnlyByBlanks()
 	    {
-	        for (var index = 0; index < TokenStartCharIndex; index++)
+	        if (TokenStartCharIndex == 0)
+	            return true;
+
+	        // read by absolute interval: LA is relative to the current position, which during this action
+	        // is the end of the matched token, not its start
+	        var before = ((ICharStream)InputStream)
+	            .GetText(Antlr4.Runtime.Misc.Interval.Of(0, TokenStartCharIndex - 1));
+
+	        foreach (var c in before)
 	        {
-	            var c = (char)((ICharStream)InputStream).LA(index - TokenStartCharIndex);
 	            if (c != ' ' && c != '\t')
 	                return false;
 	        }
