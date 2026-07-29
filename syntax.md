@@ -176,6 +176,8 @@ These operations return a _function_.
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
 | upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
 | nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
+| lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. | ✅ |
+| nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
 | left-ext(f) | Left-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^-)$. | ✅ |
 | right-ext(f) | Right-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^+)$. | ✅ |

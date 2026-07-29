@@ -37,6 +37,8 @@ public partial class InteractiveCommand
         "up_inv",
         "upclosure",
         "nnupclosure",
+        "lowclosure",
+        "nnlowclosure",
         "comp",
         "left-ext",
         "right-ext",

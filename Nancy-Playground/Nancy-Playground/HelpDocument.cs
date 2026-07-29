@@ -494,6 +494,17 @@ Both `hShift` and `hshift` are accepted spellings.
                     },
                     new HelpItem
                     {
+                        Name = "Lower closure",
+                        Formats = ["lowclosure(f)", "nnlowclosure(f)"],
+                        Description = "Lower non-decreasing closure (optionally non-negative).",
+                        LongDescription = """
+- `lowclosure(f)`: lower non-decreasing closure of f.
+- `nnlowclosure(f)`: non-negative lower non-decreasing closure of f.
+""",
+                        Tags = ["closure", "non-decreasing", "lower", "operation"]
+                    },
+                    new HelpItem
+                    {
                         Name = "Composition",
                         Formats = ["f comp g"],
                         Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",

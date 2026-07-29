@@ -703,6 +703,20 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"({curve}).ToNonNegative().ToUpperNonDecreasing()"];
     }
 
+    public override List<string> VisitFunctionLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonDecreasingClosureContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).ToLowerNonDecreasing()"];
+    }
+
+    public override List<string> VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).ToNonNegative().ToLowerNonDecreasing()"];
+    }
+
     public override List<string> VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)
     {
         var curve = context.GetChild(2).Accept(this).Single();

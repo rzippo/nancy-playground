@@ -297,6 +297,42 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonDecreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE.ToLowerNonDecreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    public override IExpression VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE
+                .ToNonNegative()
+                .ToLowerNonDecreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)
     {
         if (context.ChildCount != 4)

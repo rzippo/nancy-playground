@@ -311,6 +311,8 @@ public class CodeConversion
             ("vshift(f, 3)", ".VerticalShift(", ".VerticalShift("),
             ("up_inv(f)", ".UpperPseudoInverse()", ".UpperPseudoInverse()"),
             ("upclosure(f)", ".ToUpperNonDecreasing()", ".ToUpperNonDecreasing()"),
+            ("lowclosure(f)", ".ToLowerNonDecreasing()", ".ToLowerNonDecreasing()"),
+            ("nnlowclosure(f)", ".ToNonNegative().ToLowerNonDecreasing()", ".ToNonNegative().ToLowerNonDecreasing()"),
             ("left-ext(f)", ".ToLeftContinuous()", ".ToLeftContinuous()"),
             ("subaddclosure(f)", ".SubAdditiveClosure(", ".SubAdditiveClosure()"),
             ("superaddclosure(f)", ".SuperAdditiveClosure(", ".SuperAdditiveClosure()"),

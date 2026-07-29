@@ -32,6 +32,8 @@ grammar Mppg;
         "up_inv",
         "upclosure",
         "nnupclosure",
+        "lowclosure",
+        "nnlowclosure",
         "left-ext",
         "right-ext"
     };
@@ -372,6 +374,16 @@ grammar Mppg;
         return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
     }
 
+    private bool AllowsLowClosure()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
+    }
+
+    private bool AllowsNnLowClosure()
+    {
+        return _syntaxVersionMajor > 1 || (_syntaxVersionMajor == 1 && _syntaxVersionMinor >= 2);
+    }
+
 }
 
 // lexer rules
@@ -486,6 +498,8 @@ functionEnclosedExpression
     | 'up_inv' '(' functionExpression ')' #functionUpperPseudoInverse
     | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
     | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
+    | {AllowsLowClosure()}? 'lowclosure' '(' functionExpression ')' #functionLowNonDecreasingClosure
+    | {AllowsNnLowClosure()}? 'nnlowclosure' '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
     | functionConstructor #functionConstructorExp

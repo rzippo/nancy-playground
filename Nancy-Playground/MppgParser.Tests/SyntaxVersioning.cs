@@ -440,4 +440,98 @@ public class SyntaxVersioning
         Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
         Assert.Contains(program.Statements, s => s is ExpressionCommand);
     }
+
+    [Fact]
+    public void NoShebang_AllowsLowClosure()
+    {
+        const string programText = """
+        f := ratency(1, 2)
+        lowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_RejectsLowClosure()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 2)
+        lowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_2_AllowsLowClosure()
+    {
+        const string programText = """
+        #!syntax version 1.2
+        f := ratency(1, 2)
+        lowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void NoShebang_AllowsNnLowClosure()
+    {
+        const string programText = """
+        f := ratency(1, 2)
+        nnlowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_RejectsNnLowClosure()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        f := ratency(1, 2)
+        nnlowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_2_AllowsNnLowClosure()
+    {
+        const string programText = """
+        #!syntax version 1.2
+        f := ratency(1, 2)
+        nnlowclosure(f)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is ExpressionCommand);
+    }
 }
