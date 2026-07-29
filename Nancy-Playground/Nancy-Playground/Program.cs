@@ -36,6 +36,11 @@ public class Program
     public static int Main(string[] args)
     {
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+        if (Console.IsInputRedirected)
+        {
+            // the line editor reads keys, which requires a terminal
+            AnsiConsole.Profile.Capabilities.Interactive = false;
+        }
         if (Console.IsOutputRedirected)
         {
             Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);

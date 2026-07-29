@@ -25,6 +25,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
     }
 
+    /// <summary>
+    /// Where the lines are read from when the input is piped.
+    /// </summary>
+    protected virtual TextReader LineInputSource => System.Console.In;
+
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)
@@ -39,8 +44,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         var programContext = new ProgramContext();
 
-        // in interactive mode, the default is not to echo each command
-        var echoInput = settings.EchoInput ?? false;
+        // the line editor reads keys, so it cannot be used on piped input
+        var useLineInput = settings.LineInput ?? !Console.Profile.Capabilities.Interactive;
+
+        // typing at a terminal already shows the command, piping it does not
+        var echoInput = settings.EchoInput ?? useLineInput;
 
         // todo: make this configurable
         var plotsRoot = Environment.CurrentDirectory;
@@ -68,7 +76,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             _ => false
         };
 
-        var lineEditor = new LineEditor(Keywords, ContextualKeywords(), Console);
+        ILineReader lineEditor = useLineInput
+            ? new PipedLineReader(LineInputSource)
+            : new LineEditor(Keywords, ContextualKeywords(), Console);
         var totalComputationTime = TimeSpan.Zero;
 
         // CLI welcome message
@@ -270,7 +280,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// <param name="formatter">The statement formatter to use</param>
     /// <param name="immediateComputeValue">Whether to compute values immediately</param>
     /// <param name="lineEditor">The line editor for updating keywords</param>
-    private void LoadProgram(string[] args, ProgramContext programContext, IStatementFormatter formatter, bool immediateComputeValue, LineEditor lineEditor)
+    private void LoadProgram(string[] args, ProgramContext programContext, IStatementFormatter formatter, bool immediateComputeValue, ILineReader lineEditor)
     {
         if (args.Length == 0)
         {

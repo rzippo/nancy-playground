@@ -184,6 +184,8 @@ public class InteractiveLineEditorTests
     public void InteractiveCommand_VersionDirective_IsAppliedToSubsequentLines()
     {
         var console = new TestConsole();
+        // drives the line editor, as a user typing at a terminal would
+        console.Profile.Capabilities.Interactive = true;
         console.Input.PushTypedLine("#!syntax version 1.0");
         console.Input.PushTypedLine("a := 5");
         console.Input.PushTypedLine("a");

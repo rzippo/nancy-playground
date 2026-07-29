@@ -7,7 +7,7 @@ namespace Unipi.Nancy.Playground.Cli;
 /// Handles user input, with a navigable history of previous commands.
 /// Uses IAnsiConsole for I/O so it can be tested with Spectre's TestConsole.
 /// </summary>
-public class LineEditor
+public class LineEditor : ILineReader
 {
     private readonly IAnsiConsole _console;
 

@@ -28,6 +28,10 @@ public class CommonExecutionSettings : CommandSettings
     [Description("Echoes user input in interactive mode. Default: true in run mode, false in interactive mode.")]
     public bool? EchoInput { get; init; }
 
+    [CommandOption("--line-input")]
+    [Description("Reads whole lines instead of using the interactive line editor. Default: enabled when the input is piped.")]
+    public bool? LineInput { get; init; }
+
     [CommandOption("--verbose")]
     [Description("If enabled, the program prints out additional information about the execution, such as the time taken during parsing. Default: false.")]
     public bool Verbose {get; init;} = false;

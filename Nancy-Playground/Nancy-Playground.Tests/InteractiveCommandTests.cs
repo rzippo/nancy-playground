@@ -414,11 +414,86 @@ public class InteractiveCommandTests
         Assert.Contains("f := ratency(1,", console.Output);
     }
 
+    // Piped input, e.g. `cat script.mppg | nancy-playground interactive`: the line editor reads keys,
+    // so it cannot be used, and a non-interactive console selects whole-line reading instead.
+
+    private static TestConsole CreatePipedConsole()
+    {
+        var console = CreateConsole();
+        console.Profile.Capabilities.Interactive = false;
+        return console;
+    }
+
+    [Fact]
+    public void PipedInput_RunsTheSessionAndStopsAtEndOfInput()
+    {
+        var console = CreatePipedConsole();
+        var input = new StringReader(string.Join(Environment.NewLine,
+            "#!syntax version 1.0",
+            "lowclosure := 3",
+            "lowclosure + 1"));
+
+        var exitCode = new TestableInteractiveCommand(console, input)
+            .Invoke(new InteractiveCommand.Settings { MuteWelcomeMessage = true });
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("Syntax version set to 1.0.", console.Output);
+        // the keyword of a later version is usable as a variable, as the declared version has no such keyword
+        Assert.Contains("lowclosure = 3", console.Output);
+        Assert.Contains("4", console.Output);
+        // reaching the end of the input ends the session, without needing !quit
+        Assert.Contains("Bye.", console.Output);
+    }
+
+    [Fact]
+    public void PipedInput_EchoesTheStatements()
+    {
+        // a pipe does not echo what was typed, so the session has to
+        var console = CreatePipedConsole();
+        var input = new StringReader("a := 5");
+
+        new TestableInteractiveCommand(console, input)
+            .Invoke(new InteractiveCommand.Settings { MuteWelcomeMessage = true });
+
+        Assert.Contains("a := 5", console.Output);
+    }
+
+    [Fact]
+    public void PipedInput_HonoursInteractiveCommands()
+    {
+        var console = CreatePipedConsole();
+        var input = new StringReader(string.Join(Environment.NewLine, "a := 5", "!clear", "a"));
+
+        new TestableInteractiveCommand(console, input)
+            .Invoke(new InteractiveCommand.Settings { MuteWelcomeMessage = true });
+
+        Assert.Contains("Session cleared.", console.Output);
+    }
+
+    [Fact]
+    public void LineInputFalse_ForcesTheEditorOnANonInteractiveConsole()
+    {
+        // the explicit option overrides the detection, in both directions
+        var console = CreatePipedConsole();
+        console.Input.PushTypedLine("a := 7");
+        console.Input.PushTypedLine("!quit");
+
+        var exitCode = new TestableInteractiveCommand(console, new StringReader("a := 999"))
+            .Invoke(new InteractiveCommand.Settings { MuteWelcomeMessage = true, LineInput = false });
+
+        Assert.Equal(0, exitCode);
+        // read through the editor, not from the piped source
+        Assert.Contains("a = 7", console.Output);
+        Assert.DoesNotContain("999", console.Output);
+    }
+
     private static TestConsole CreateConsole()
     {
         var console = new TestConsole();
         console.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         console.Profile.Capabilities.Ansi = false;
+        // these tests drive the line editor, as a user typing at a terminal would
+        console.Profile.Capabilities.Interactive = true;
         console.Profile.Width = int.MaxValue;
         return console;
     }
@@ -431,9 +506,14 @@ public class InteractiveCommandTests
 
     private sealed class TestableInteractiveCommand : InteractiveCommand
     {
-        public TestableInteractiveCommand(IAnsiConsole console) : base(console)
+        private readonly TextReader? _lineInput;
+
+        public TestableInteractiveCommand(IAnsiConsole console, TextReader? lineInput = null) : base(console)
         {
+            _lineInput = lineInput;
         }
+
+        protected override TextReader LineInputSource => _lineInput ?? base.LineInputSource;
 
         public int Invoke(Settings settings) =>
             Execute(null!, settings, CancellationToken.None);
