@@ -7,14 +7,11 @@ on:
       - master
     paths:
       - "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
-  pull_request:
-    branches:
-      - master
-    paths:
-      - "Nancy-Playground/Nancy-Playground/Nancy-Playground.csproj"
 
 jobs:
   Nancy-Playground-pack-release:
+    # only release what is on master: a pull request, or a manual run on another branch, must not publish
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
         
     env:
