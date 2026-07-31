@@ -767,4 +767,58 @@ public class SyntaxVersioning
         Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
         Assert.True(program.Statements.OfType<VersionDirectiveStatement>().Single().IsDuplicate);
     }
+
+    // Regression test: the shebang and a following plain comment used to lex as the same token
+    // type (INLINABLE_COMMENT), so the parser needed a content-dependent predicate to tell them
+    // apart when deciding whether to keep parsing the preamble. That predicate was evaluated
+    // against the wrong lookahead position during ANTLR's adaptive prediction of the preamble's
+    // loop, so it optimistically kept parsing the preamble, then failed for real on the comment,
+    // throwing "rule versionDirective failed predicate". Giving '#!' its own token type
+    // (DIRECTIVE_START / VERSION_DIRECTIVE_START) removes the need for that predicate entirely.
+    [Fact]
+    public void ShebangImmediatelyFollowedByComment_ParsesWithoutError()
+    {
+        const string programText = """
+        #!syntax version 1.2
+        // a comment
+        x := 5
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 2), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is Comment);
+        Assert.Contains(program.Statements, s => s is Assignment { VariableName: "x" });
+    }
+
+    [Fact]
+    public void UnknownDirective_InPreamblePosition_DoesNotAffectVersionOrError()
+    {
+        const string programText = """
+        #!some-future-directive
+        a := 1
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(SyntaxVersion.Latest, program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is Assignment { VariableName: "a" });
+    }
+
+    [Fact]
+    public void UnknownDirective_InStatementPosition_ProducesDirectiveStatement()
+    {
+        const string programText = """
+        a := 1
+        #!some-future-directive
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        var directive = program.Statements.OfType<DirectiveStatement>().Single();
+        Assert.Equal("#!some-future-directive", directive.Text);
+    }
 }

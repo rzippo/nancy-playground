@@ -68,6 +68,12 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new VersionDirectiveStatement(version) { Text = text };
     }
 
+    public override Statement? VisitDirective(Unipi.MppgParser.Grammar.MppgParser.DirectiveContext context)
+    {
+        var text = context.GetJoinedText();
+        return new DirectiveStatement { Text = text };
+    }
+
     public override Statement? VisitEmpty(Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
     {
         return new EmptyStatement();

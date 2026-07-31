@@ -57,6 +57,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVersionDirective([NotNull] MppgParser.VersionDirectiveContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.directive"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDirective([NotNull] MppgParser.DirectiveContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.statementLine"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

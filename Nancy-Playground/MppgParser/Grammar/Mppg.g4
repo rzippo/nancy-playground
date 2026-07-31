@@ -380,15 +380,6 @@ grammar Mppg;
         return null;
     }
 
-    // Syntax versioning is handled by the lexer, which is where keywords are matched
-    // and so where the version has to be known. This only recognises the directive as a statement.
-    private bool IsVersionDirective()
-    {
-        if (TokenStream.LA(1) != INLINABLE_COMMENT)
-            return false;
-        return TokenStream.LT(1).Text.StartsWith("#!syntax");
-    }
-
 }
 
 // lexer rules
@@ -409,7 +400,15 @@ PROD_SIGN: '*';
 DIV_SIGN: '/';
 DIV_OP: 'div';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
+// Directives are '#!'-prefixed lines, lexed as their own token type so the parser can tell a
+// directive apart from a plain comment without a content-dependent predicate (see versionDirective).
+// A specific directive keyword (like 'syntax') gets its own token declared ahead of the generic
+// DIRECTIVE_START, the same way versioned keywords below are declared ahead of VARIABLE_NAME, so it
+// wins the lexical tie; anything else starting with '#!' falls back to being a generic directive,
+// leaving room for other directive kinds to be added the same way in the future.
+VERSION_DIRECTIVE_START: '#!syntax' [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
+DIRECTIVE_START: '#!' [\p{L}\p{Nd}\p{P}\p{S} \t]*;
+INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 
 // Keywords introduced after version 1.0.
 // Each is a keyword only from the version that introduced it, and lexes as VARIABLE_NAME before that,
@@ -428,8 +427,9 @@ VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 // parser rules
 program : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
 preamble : preambleStatement (NEW_LINE preambleStatement)* NEW_LINE?;
-preambleStatement : versionDirective;
-versionDirective : {IsVersionDirective()}? comment;
+preambleStatement : versionDirective | directive;
+versionDirective : VERSION_DIRECTIVE_START;
+directive : DIRECTIVE_START;
 statementLine: statement inlineComment? ;
 statement
     : assignment
@@ -439,6 +439,7 @@ statement
     | assertion
     | printExpressionCommand
     | versionDirective
+    | directive
     | comment
     | empty;
 assignment : name=VARIABLE_NAME ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
