@@ -47,6 +47,12 @@ public partial class InteractiveCommand
         "hDev",
         "vDev",
         "zDev",
+        // scalar operations
+        "abs",
+        "pow",
+        "mod",
+        "gcd",
+        "lcm",
         // "maxBacklogPeriod", not implemented yet
         "plot",
         "plotTikz",

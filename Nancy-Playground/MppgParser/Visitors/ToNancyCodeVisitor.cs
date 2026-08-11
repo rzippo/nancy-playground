@@ -957,6 +957,49 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
     private static string RationalCeilCode(string value) => $"((Rational)({value}).Ceil())";
 
+    public override List<string> VisitNumberAbs(Unipi.MppgParser.Grammar.MppgParser.NumberAbsContext context) =>
+        [AbsCode(context.numberExpression().Accept(this).Single())];
+
+    public override List<string> VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
+        [AbsCode(context.numberExpression().Accept(this).Single())];
+
+    public override List<string> VisitNumberPow(Unipi.MppgParser.Grammar.MppgParser.NumberPowContext context) =>
+        [PowCode(Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
+        [PowCode(Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberMod(Unipi.MppgParser.Grammar.MppgParser.NumberModContext context) =>
+        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberMod(Unipi.MppgParser.Grammar.MppgParser.EncNumberModContext context) =>
+        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
+        [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
+        [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberLcm(Unipi.MppgParser.Grammar.MppgParser.NumberLcmContext context) =>
+        [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
+        [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
+
+    private (string Left, string Right) Operands(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext[] operands) =>
+        (operands[0].Accept(this).Single(), operands[1].Accept(this).Single());
+
+    private static string AbsCode(string value) => $"Rational.Abs({value})";
+
+    // Rational.Pow takes the exponent as a BigInteger, which the syntax has already required it to be.
+    private static string PowCode((string Base, string Exponent) operands) =>
+        $"Rational.Pow({operands.Base}, (System.Numerics.BigInteger)({operands.Exponent}))";
+
+    private static string BinaryRationalCode(string method, (string Left, string Right) operands) =>
+        $"Rational.{method}({operands.Left}, {operands.Right})";
+
     public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();

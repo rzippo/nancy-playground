@@ -634,6 +634,35 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     },
                     new HelpItem
                     {
+                        Name = "Absolute value and power",
+                        Formats = ["abs(v)", "pow(v, n)"],
+                        Description = "Absolute value of a scalar, and a scalar raised to an integer power.",
+                        LongDescription = """
+- `abs(v)`: |v|, e.g. `abs(-7/2)` is 7/2.
+- `pow(v, n)`: v raised to n, e.g. `pow(2, 10)` is 1024 and `pow(2, -2)` is 1/4.
+  n must be an integer, and a non-integer exponent is rejected.
+
+They require syntax version 1.3 or later.
+""",
+                        Tags = ["scalars", "absolute", "power", "exponent", "operations", "operation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Remainder, gcd and lcm",
+                        Formats = ["mod(v1, v2)", "gcd(v1, v2)", "lcm(v1, v2)"],
+                        Description = "Remainder of a division, greatest common divisor and least common multiple.",
+                        LongDescription = """
+- `mod(v1, v2)`: remainder of v1 divided by v2, which takes the sign of v1, e.g. `mod(-7/2, 3)` is -1/2.
+- `gcd(v1, v2)`: greatest common divisor, e.g. `gcd(12, 18)` is 6.
+- `lcm(v1, v2)`: least common multiple, e.g. `lcm(4, 6)` is 12.
+
+All three work on rationals, not only on integers: `gcd(1/2, 1/3)` is 1/6.
+They require syntax version 1.3 or later.
+""",
+                        Tags = ["scalars", "remainder", "modulo", "gcd", "lcm", "divisor", "multiple", "operations", "operation"]
+                    },
+                    new HelpItem
+                    {
                         Name = "Floor and ceiling (scalars)",
                         Formats = ["floor(v)", "ceil(v)"],
                         Description = "Largest integer not above, or smallest integer not below, a scalar value.",

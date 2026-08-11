@@ -541,6 +541,34 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberBrackets([NotNull] MppgParser.NumberBracketsContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>numberVariableExp</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberVariableExp([NotNull] MppgParser.NumberVariableExpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberGcd</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberGcd([NotNull] MppgParser.NumberGcdContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberNegative</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberNegative([NotNull] MppgParser.NumberNegativeContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberMod</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberMod([NotNull] MppgParser.NumberModContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>numberSumSubMinMax</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// </summary>
@@ -555,19 +583,26 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberFloor([NotNull] MppgParser.NumberFloorContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>numberVariableExp</c>
-	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitNumberVariableExp([NotNull] MppgParser.NumberVariableExpContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>numberCeil</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitNumberCeil([NotNull] MppgParser.NumberCeilContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberPow</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberPow([NotNull] MppgParser.NumberPowContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>numberLcm</c>
+	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNumberLcm([NotNull] MppgParser.NumberLcmContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberPositive</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
@@ -576,12 +611,12 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberPositive([NotNull] MppgParser.NumberPositiveContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>numberNegative</c>
+	/// Visit a parse tree produced by the <c>numberAbs</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitNumberNegative([NotNull] MppgParser.NumberNegativeContext context);
+	Result VisitNumberAbs([NotNull] MppgParser.NumberAbsContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>numberLiteralExp</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
@@ -610,6 +645,41 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitEncNumberCeil([NotNull] MppgParser.EncNumberCeilContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberAbs</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberAbs([NotNull] MppgParser.EncNumberAbsContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberPow</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberPow([NotNull] MppgParser.EncNumberPowContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberMod</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberMod([NotNull] MppgParser.EncNumberModContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberGcd</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberGcd([NotNull] MppgParser.EncNumberGcdContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>encNumberLcm</c>
+	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEncNumberLcm([NotNull] MppgParser.EncNumberLcmContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>encNumberBrackets</c>
 	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.

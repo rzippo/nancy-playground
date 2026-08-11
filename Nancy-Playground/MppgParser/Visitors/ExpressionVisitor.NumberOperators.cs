@@ -108,6 +108,75 @@ public partial class ExpressionVisitor
             ? Expressions.Expressions.Ceil(rE)
             : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
 
+    public override IExpression VisitNumberAbs(Unipi.MppgParser.Grammar.MppgParser.NumberAbsContext context) =>
+        Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
+
+    public override IExpression VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
+        Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
+
+    public override IExpression VisitNumberPow(Unipi.MppgParser.Grammar.MppgParser.NumberPowContext context) =>
+        Pow(context.numberExpression(), context);
+
+    public override IExpression VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
+        Pow(context.numberExpression(), context);
+
+    public override IExpression VisitNumberMod(Unipi.MppgParser.Grammar.MppgParser.NumberModContext context) =>
+        Expressions.Expressions.Remainder(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    public override IExpression VisitEncNumberMod(Unipi.MppgParser.Grammar.MppgParser.EncNumberModContext context) =>
+        Expressions.Expressions.Remainder(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    public override IExpression VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
+        Expressions.Expressions.GreatestCommonDivisor(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    public override IExpression VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
+        Expressions.Expressions.GreatestCommonDivisor(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    public override IExpression VisitNumberLcm(Unipi.MppgParser.Grammar.MppgParser.NumberLcmContext context) =>
+        Expressions.Expressions.LeastCommonMultiple(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    public override IExpression VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
+        Expressions.Expressions.LeastCommonMultiple(
+            Operand(context.numberExpression(0), context),
+            Operand(context.numberExpression(1), context));
+
+    /// <summary>
+    /// The power of the two operands of <paramref name="operands"/>.
+    /// The exponent is rejected unless it is an integer, which is the only kind the operation supports:
+    /// it is truncated to one otherwise, which would silently give the power of a different exponent.
+    /// </summary>
+    private RationalExpression Pow(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext[] operands,
+        Antlr4.Runtime.ParserRuleContext context)
+    {
+        var @base = Operand(operands[0], context);
+        var exponent = Operand(operands[1], context);
+
+        var exponentValue = exponent.Compute();
+        if (!exponentValue.IsInteger)
+            throw new Exception(
+                $"Invalid expression \"{context.GetJoinedText()}\": "
+                + $"the exponent of pow must be an integer, but it is {exponentValue}");
+
+        return Expressions.Expressions.Pow(@base, exponent);
+    }
+
+    private RationalExpression Operand(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext operand,
+        Antlr4.Runtime.ParserRuleContext context) =>
+        operand.Accept(this) as RationalExpression
+        ?? throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+
     public override IExpression VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
     {
         var ie = base.VisitNumberNegative(context);

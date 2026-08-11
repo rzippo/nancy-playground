@@ -1012,6 +1012,43 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
         [$"({context.numberExpression().Accept(this).Single()}).Ceil()"];
 
+    public override List<string> VisitNumberAbs(Unipi.MppgParser.Grammar.MppgParser.NumberAbsContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).AbsoluteValue()"];
+
+    public override List<string> VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).AbsoluteValue()"];
+
+    public override List<string> VisitNumberPow(Unipi.MppgParser.Grammar.MppgParser.NumberPowContext context) =>
+        [BinaryRationalCode("Pow", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
+        [BinaryRationalCode("Pow", Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberMod(Unipi.MppgParser.Grammar.MppgParser.NumberModContext context) =>
+        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberMod(Unipi.MppgParser.Grammar.MppgParser.EncNumberModContext context) =>
+        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
+        [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
+        [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
+
+    public override List<string> VisitNumberLcm(Unipi.MppgParser.Grammar.MppgParser.NumberLcmContext context) =>
+        [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
+
+    public override List<string> VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
+        [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
+
+    private (string Left, string Right) Operands(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext[] operands) =>
+        (operands[0].Accept(this).Single(), operands[1].Accept(this).Single());
+
+    private static string BinaryRationalCode(string method, (string Left, string Right) operands) =>
+        $"({operands.Left}).{method}({operands.Right})";
+
     public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {
         var first = context.GetChild(0).Accept(this).Single();

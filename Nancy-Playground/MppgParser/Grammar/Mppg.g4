@@ -120,6 +120,15 @@ grammar Mppg;
         "floor",
         "ceil"
     };
+    // Operators that take scalars and return a scalar, so their call site is one wherever it appears.
+    private static readonly HashSet<string> ScalarFunctionStarters = new()
+    {
+        "abs",
+        "pow",
+        "mod",
+        "gcd",
+        "lcm"
+    };
 
     public IReadOnlyDictionary<string, VariableType> VariableTypes => _variableTypes;
 
@@ -189,17 +198,22 @@ grammar Mppg;
         return token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text);
     }
 
-    // Index at which the argument of a type-preserving call, i.e. floor(...) or ceil(...), starts,
-    // or -1 if the tokens from lookaheadIndex are not such a call.
-    private int TryGetTypePreservingCallArgumentStart(int lookaheadIndex)
+    // True if the tokens from lookaheadIndex are a call of one of the given keywords.
+    private bool IsCallOf(int lookaheadIndex, HashSet<string> starters)
     {
         var token = TokenStream.LT(lookaheadIndex);
 
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        if (token.Type == VARIABLE_NAME || !TypePreservingFunctionStarters.Contains(token.Text))
-            return -1;
+        return token.Type != VARIABLE_NAME
+            && starters.Contains(token.Text)
+            && TokenStream.LT(lookaheadIndex + 1).Text == "(";
+    }
 
-        return TokenStream.LT(lookaheadIndex + 1).Text == "(" ? lookaheadIndex + 2 : -1;
+    // Index at which the argument of a type-preserving call, i.e. floor(...) or ceil(...), starts,
+    // or -1 if the tokens from lookaheadIndex are not such a call.
+    private int TryGetTypePreservingCallArgumentStart(int lookaheadIndex)
+    {
+        return IsCallOf(lookaheadIndex, TypePreservingFunctionStarters) ? lookaheadIndex + 2 : -1;
     }
 
     private bool IsFunctionProductExpressionStart(int lookaheadIndex) =>
@@ -233,6 +247,9 @@ grammar Mppg;
         if (typePreservingArgument > 0)
             return !ExpressionSegmentContainsFunction(typePreservingArgument);
 
+        if (IsCallOf(lookaheadIndex, ScalarFunctionStarters))
+            return true;
+
         if (token.Type != VARIABLE_NAME)
             return false;
 
@@ -261,6 +278,9 @@ grammar Mppg;
         var typePreservingArgument = TryGetTypePreservingCallArgumentStart(lookaheadIndex);
         if (typePreservingArgument > 0)
             return FindMatchingRightParenthesis(typePreservingArgument - 1);
+
+        if (IsCallOf(lookaheadIndex, ScalarFunctionStarters))
+            return FindMatchingRightParenthesis(lookaheadIndex + 1);
 
         var numberReturningCallEnd = TryGetNumberReturningFunctionCallEnd(lookaheadIndex);
         if (numberReturningCallEnd > 0)
@@ -457,6 +477,11 @@ LOWCLOSURE : 'lowclosure' {IsVersion1_2OrLater()}?;
 NNLOWCLOSURE : 'nnlowclosure' {IsVersion1_2OrLater()}?;
 FLOOR : 'floor' {IsVersion1_3OrLater()}?;
 CEIL : 'ceil' {IsVersion1_3OrLater()}?;
+ABS : 'abs' {IsVersion1_3OrLater()}?;
+POW : 'pow' {IsVersion1_3OrLater()}?;
+MOD : 'mod' {IsVersion1_3OrLater()}?;
+GCD : 'gcd' {IsVersion1_3OrLater()}?;
+LCM : 'lcm' {IsVersion1_3OrLater()}?;
 
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 
@@ -616,6 +641,11 @@ numberExpression
     : numberReturningfunctionOperation #numberReturningfunctionOperationExp
     | FLOOR '(' numberExpression ')' #numberFloor
     | CEIL '(' numberExpression ')' #numberCeil
+    | ABS '(' numberExpression ')' #numberAbs
+    | POW '(' numberExpression ',' numberExpression ')' #numberPow
+    | MOD '(' numberExpression ',' numberExpression ')' #numberMod
+    | GCD '(' numberExpression ',' numberExpression ')' #numberGcd
+    | LCM '(' numberExpression ',' numberExpression ')' #numberLcm
     | '(' numberExpression ')' #numberBrackets
     | PLUS numberExpression #numberPositive
     | MINUS numberExpression #numberNegative
@@ -629,6 +659,11 @@ numberEnclosedExpression
     : numberReturningfunctionOperation #encNumberReturningfunctionOperationExp
     | FLOOR '(' numberExpression ')' #encNumberFloor
     | CEIL '(' numberExpression ')' #encNumberCeil
+    | ABS '(' numberExpression ')' #encNumberAbs
+    | POW '(' numberExpression ',' numberExpression ')' #encNumberPow
+    | MOD '(' numberExpression ',' numberExpression ')' #encNumberMod
+    | GCD '(' numberExpression ',' numberExpression ')' #encNumberGcd
+    | LCM '(' numberExpression ',' numberExpression ')' #encNumberLcm
     | {!(ExpressionSegmentContainsFunction(2))}? '(' numberExpression ')' #encNumberBrackets
     | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #encNumberVariableExp
     | numberLiteral #encNumberLiteralExp

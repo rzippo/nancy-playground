@@ -47,6 +47,11 @@ public static class VersionedKeywords
             ["nnlowclosure"] = SyntaxVersion.V1_2,
             ["floor"] = SyntaxVersion.V1_3,
             ["ceil"] = SyntaxVersion.V1_3,
+            ["abs"] = SyntaxVersion.V1_3,
+            ["pow"] = SyntaxVersion.V1_3,
+            ["mod"] = SyntaxVersion.V1_3,
+            ["gcd"] = SyntaxVersion.V1_3,
+            ["lcm"] = SyntaxVersion.V1_3,
         };
 
     /// <summary>

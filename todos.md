@@ -12,9 +12,9 @@ Compared against `Unipi.Nancy` 1.3.6 and `Unipi.Nancy.Expressions` 1.0.7.
   scalars, added in syntax version 1.3.
   Scripts that spelled the floor function as `right-ext(stair(1, 1, 1))` and named it `floor`, as the
   `hal-04513292v1` test case did, now declare `#!syntax version 1.2` to keep that name.
-- [ ] Scalar operators `abs`, `pow`, `mod`, `gcd`, `lcm`, from `Expressions.AbsoluteValue`, `Pow`,
-  `Remainder`, `GreatestCommonDivisor` and `LeastCommonMultiple`.
-  Scalars currently have only `+ - * / div /\ \/`.
+- [x] Scalar operators `abs`, `pow`, `mod`, `gcd`, `lcm`, from `Expressions.AbsoluteValue`, `Pow`,
+  `Remainder`, `GreatestCommonDivisor` and `LeastCommonMultiple`, added in syntax version 1.3.
+  All are call forms, `mod(v1, v2)` included, rather than infix like `div`.
 - [ ] Curve predicates, to be used with `assert`: `Dominance`, `EquivalentAfter`,
   `EquivalentExceptOrigin`, the `IsContinuousAt` and `IsNonDecreasingOverInterval` family, and the
   curve properties (`IsSubAdditive`, `IsConcave`, ...), none of which can be queried today.
