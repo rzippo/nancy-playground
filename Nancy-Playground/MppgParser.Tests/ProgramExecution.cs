@@ -13,8 +13,9 @@ public class ProgramExecution
 
     public static List<string> Programs =
     [
-        // Both scripts name the floor curve 'floor', a name later syntax versions reserve for the
-        // operator: they declare 1.2 to keep it, as any script written before the operator can.
+        // The two scripts below spell the floor curve as a variable named 'floor', which is a keyword
+        // from syntax version 1.3 on: they declare 1.2 to keep the name, as any script written before
+        // the operator existed can.
         """
         #!syntax version 1.2
         T4 := 60
@@ -46,6 +47,20 @@ public class ProgramExecution
         h := hDev(A3 , D3)
         printExpression(h)
         h
+        """,
+        // the same script written with the floor operator of 1.3, which replaces the curve above
+        """
+        T4 := 60
+        A1 := stair(0, 60, 35)
+        A2 := stair (0, 5, 2)
+        A4 := stair (0, T4, 12)
+        C := affine (1 ,0)
+        D1 := C + (A1 - C)*zero
+        D2 := C + (A1 + A2 - C)*zero - D1
+        D4 := C + (A4 - C)*zero
+        A3 := floor( D2 / 2 ) * 4
+        D3 := C + (A3 + A4 - C)*zero - D4
+        hDev(A3 , D3)
         """
     ];
 

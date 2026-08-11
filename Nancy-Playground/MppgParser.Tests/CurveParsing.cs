@@ -304,6 +304,12 @@ public class CurveParsing
             ("x comp f", ConstantFunction(XValue)),
             ("f comp x", ConstantFunction(new Rational(7))),
             ("f + x comp g", BucketFunction().Addition(ConstantFunction(XValue))),
+            // a floor or ceil of a scalar is a scalar wherever it appears, so these scale and shift
+            ("floor(x) * f", BucketFunction().Scale(XValue)),
+            ("f * ceil(x / 3)", BucketFunction().Scale(new Rational(1))),
+            ("f / floor(x)", BucketFunction().Scale(new Rational(1, 2))),
+            ("floor(f(x)) + g", ServiceCurve().VerticalShift(new Rational(7))),
+            ("g + ceil(f(x) / 2)", ServiceCurve().VerticalShift(new Rational(4))),
         }.ToXUnitTestCases();
 
     [Theory]
@@ -318,6 +324,49 @@ public class CurveParsing
             ExpressionParsing.Parse(mppg, state));
 
         Assert.True(Curve.Equivalent(expected, actual.Compute()));
+    }
+
+    public static IEnumerable<object[]> FloorCeilCurveValueTestCases =>
+        new List<(string mppg, Rational time, Rational expected)>
+        {
+            // g is ratency(1, 1), i.e. g(t) = max(0, t - 1)
+            ("floor(g)", new Rational(7, 2), new Rational(2)),
+            ("ceil(g)", new Rational(7, 2), new Rational(3)),
+            ("floor(g)", new Rational(3), new Rational(2)),
+            ("ceil(g)", new Rational(3), new Rational(2)),
+            ("floor(g)", new Rational(1, 2), new Rational(0)),
+            ("ceil(g)", new Rational(1, 2), new Rational(0)),
+            // a negated curve rounds away from zero on the floor side, as the values are negative
+            ("floor(-g)", new Rational(7, 2), new Rational(-3)),
+            ("ceil(-g)", new Rational(7, 2), new Rational(-2)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(FloorCeilCurveValueTestCases))]
+    public void FloorCeilOfACurveRoundsItsValues(string mppg, Rational time, Rational expected)
+    {
+        var curve = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse(mppg, StateWithVariables()));
+
+        Assert.Equal(expected, curve.ValueAt(time).Compute());
+    }
+
+    // The floor of a curve was written as a composition with right-ext(stair(1, 1, 1)) before the
+    // operator existed: the operator must compute the same curve.
+    [Theory]
+    [InlineData("f")]
+    [InlineData("f / 2")]
+    [InlineData("g")]
+    public void FloorOfACurveMatchesTheCompositionItReplaces(string argument)
+    {
+        var state = StateWithVariables();
+
+        var withOperator = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse($"floor({argument})", state));
+        var withComposition = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse($"right-ext(stair(1, 1, 1)) comp ({argument})", state));
+
+        Assert.True(Curve.Equivalent(withComposition.Compute(), withOperator.Compute()));
     }
 
     [Fact]

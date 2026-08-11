@@ -67,13 +67,28 @@ public class LineParsing
         ),
         (
             // 'flr' stands in for the floor curve of the source script, which spelled it 'floor':
-            // that name is reserved for the operator of a later syntax version
+            // that name is a keyword from syntax version 1.3 on, and these cases parse at the latest one
             "( flr comp (D2 / 2) ) * 4",
             [
                 ("flr", Expressions.Expressions.FromCurve(Curve.Zero(), "flr")),
                 ("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))
             ],
             []
+        ),
+        (
+            "floor(D2 / 2) * 4",
+            [("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))],
+            []
+        ),
+        (
+            "ceil(D2 / 2) * 4",
+            [("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))],
+            []
+        ),
+        (
+            "floor(x) * D2",
+            [("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))],
+            [("x", Expressions.Expressions.FromRational(2, "x"))]
         ),
         (
             "C + (A3 + A4 - C)*zero - D4",

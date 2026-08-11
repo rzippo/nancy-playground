@@ -316,6 +316,12 @@ public class CodeConversion
             ("left-ext(f)", ".ToLeftContinuous()", ".ToLeftContinuous()"),
             ("subaddclosure(f)", ".SubAdditiveClosure(", ".SubAdditiveClosure()"),
             ("superaddclosure(f)", ".SuperAdditiveClosure(", ".SuperAdditiveClosure()"),
+            ("floor(f)", ".Floor()", ".Floor()"),
+            ("ceil(f)", ".Ceil()", ".Ceil()"),
+            // Rational.Floor() returns a BigInteger, so the emitted Nancy code casts back to Rational
+            // to keep what surrounds it rational; on expressions the return type is already right
+            ("f * floor(3/2)", "((Rational)(", ".Floor()"),
+            ("f * ceil(3/2)", "((Rational)(", ".Ceil()"),
         }
         .SelectMany(
             testCase => new[]
@@ -342,6 +348,23 @@ public class CodeConversion
         var fullCode = string.Join(Environment.NewLine, code);
 
         Assert.Contains(expected, fullCode);
+        Assert.DoesNotContain("NOT IMPLEMENTED", fullCode);
+    }
+
+    // Rational.Floor() and Rational.Ceil() return a BigInteger: emitted without a cast back to
+    // Rational, a division between two of them would be an integer division, and print 0 instead of 3/4.
+    [Fact]
+    public void ScalarFloorConversionKeepsRationalDivision()
+    {
+        var code = Program.ToNancyCode(
+            """
+            floor(7/2) / floor(9/2)
+            """,
+            useNancyExpressions: false);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains("((Rational)(new Rational(7) / new Rational(2)).Floor())", fullCode);
         Assert.DoesNotContain("NOT IMPLEMENTED", fullCode);
     }
 }

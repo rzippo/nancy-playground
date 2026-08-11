@@ -40,6 +40,15 @@ public class RationalParsing
         ( "-inf", Rational.MinusInfinity ),
         ( "+infinity", Rational.PlusInfinity ),
         ( "-infinity", Rational.MinusInfinity ),
+        ( "floor(7/2)", new Rational(3) ),
+        ( "ceil(7/2)", new Rational(4) ),
+        ( "floor(-7/2)", new Rational(-4) ),
+        ( "ceil(-7/2)", new Rational(-3) ),
+        ( "floor(3)", new Rational(3) ),
+        ( "ceil(3)", new Rational(3) ),
+        ( "floor(0.25)", new Rational(0) ),
+        ( "ceil(0.25)", new Rational(1) ),
+        ( "floor(ceil(7/2))", new Rational(4) ),
     ];
 
     public static IEnumerable<object[]> KnownMppgRationalTestCases =>
@@ -65,6 +74,16 @@ public class RationalParsing
         ( "x /\\ y", XValue ),
         ( "x \\/ y", YValue ),
         ( "-x", new Rational(-2) ),
+        ( "floor(x / y)", new Rational(0) ),
+        ( "ceil(x / y)", new Rational(1) ),
+        ( "floor(-x / y)", new Rational(-1) ),
+        ( "ceil(-x / y)", new Rational(0) ),
+        ( "floor(x) + y", new Rational(5) ),
+        // floor of a scalar stays a scalar, so the division around it is not integer division
+        ( "floor(7/2) / 2", new Rational(3, 2) ),
+        ( "ceil(7/2) / 4", new Rational(1) ),
+        // both operands round to integers, yet the division between them is not an integer division
+        ( "floor(7/2) / floor(9/2)", new Rational(3, 4) ),
     ];
 
     public static IEnumerable<object[]> AmbiguousVariableRationalExpressionTestCases =>

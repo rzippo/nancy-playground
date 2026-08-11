@@ -67,6 +67,22 @@ public class SemanticPredicateParsing
             "g \\/ f(x)",
             "f(x) comp g",
             "g comp f(x)",
+            // floor and ceil take either kind of argument and return that kind
+            "floor(x)",
+            "ceil(x)",
+            "floor(f)",
+            "ceil(f)",
+            "floor(f(x))",
+            "floor(x) * f",
+            "f * floor(x)",
+            "floor(f) * g",
+            "f * floor(g)",
+            "floor(x) + f",
+            "f + floor(x)",
+            "floor(x) * y",
+            "floor(x + y) * f",
+            "floor(ceil(x))",
+            "floor(ceil(f))",
         }.ToXUnitTestCases();
 
     [Theory]
@@ -160,6 +176,14 @@ public class SemanticPredicateParsing
             "g \\/ f(x)",
             "f(x) comp g",
             "g comp f(x)",
+            // a floor or ceil of a function is a function, whatever surrounds it
+            "floor(f)",
+            "ceil(f)",
+            "floor(f) * g",
+            "f * floor(g)",
+            "floor(f) + x",
+            "floor(x) * f",
+            "floor(ceil(f))",
         }.ToXUnitTestCases();
 
     [Theory]
@@ -257,6 +281,23 @@ public class SemanticPredicateParsing
             ("g \\/ f(x)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("f(x) comp g", typeof(GrammarMppgParser.FunctionScalarCompositionRevContext)),
             ("g comp f(x)", typeof(GrammarMppgParser.FunctionScalarCompositionSuffixContext)),
+            // the argument of floor/ceil, not the keyword, decides which side of an operator it sits on
+            ("floor(f) * g", typeof(GrammarMppgParser.FunctionMinPlusConvolutionSuffixContext)),
+            ("f * floor(g)", typeof(GrammarMppgParser.FunctionMinPlusConvolutionSuffixContext)),
+            ("floor(x) * f", typeof(GrammarMppgParser.FunctionScalarMulRevContext)),
+            ("f * floor(x)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            ("f * ceil(x)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            ("f / floor(x)", typeof(GrammarMppgParser.FunctionScalarDivSuffixContext)),
+            ("f / floor(g)", typeof(GrammarMppgParser.FunctionMinPlusDeconvolutionSuffixContext)),
+            ("floor(x) + f", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
+            ("f + floor(x)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
+            ("f + floor(g)", typeof(GrammarMppgParser.FunctionSumSubMinMaxSuffixContext)),
+            ("floor(x) comp f", typeof(GrammarMppgParser.FunctionScalarCompositionRevContext)),
+            ("f comp floor(x)", typeof(GrammarMppgParser.FunctionScalarCompositionSuffixContext)),
+            ("f comp floor(g)", typeof(GrammarMppgParser.FunctionCompositionContext)),
+            // the argument is scanned as a whole, so a scalar-returning call inside keeps it scalar
+            ("f * floor(g(x))", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            ("f * floor(x + y)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
         }.ToXUnitTestCases();
 
     [Theory]
@@ -409,6 +450,18 @@ public class SemanticPredicateParsing
             "f(x) /\\ y",
             "f(x) \\/ y",
             "vDev(f,g)",
+            // a floor or ceil of a scalar is a scalar, and a scalar-returning call inside one is scanned
+            // as part of its argument, so it does not turn the call into a function expression
+            "floor(x)",
+            "ceil(x)",
+            "floor(3/2)",
+            "floor(x + y)",
+            "floor(x) * y",
+            "floor(f(x))",
+            "ceil(f(x))",
+            "floor(hDev(f, g))",
+            "floor(ceil(x))",
+            "-floor(x)",
         }.ToXUnitTestCases();
 
     [Theory]
@@ -418,6 +471,7 @@ public class SemanticPredicateParsing
         var (context, _, errors) = ParseExpression(mppg);
         Assert.Empty(errors.Select(error => error.ToString(verbose: true)));
         Assert.NotNull(context.numberExpression());
+        Assert.Null(context.functionExpression());
     }
 
     public static IEnumerable<object[]> AssertionDelimiterParseCases =>
