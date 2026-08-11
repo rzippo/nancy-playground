@@ -39,6 +39,8 @@ public partial class InteractiveCommand
         "nnupclosure",
         "lowclosure",
         "nnlowclosure",
+        "floor",
+        "ceil",
         "comp",
         "left-ext",
         "right-ext",

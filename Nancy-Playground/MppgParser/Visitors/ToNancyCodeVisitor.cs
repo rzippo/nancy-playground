@@ -731,6 +731,20 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"({curve}).ToRightContinuous()"];
     }
 
+    public override List<string> VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).Floor()"];
+    }
+
+    public override List<string> VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).Ceil()"];
+    }
+
     #endregion Function unary operators
     
     #region Function constructors
@@ -924,6 +938,24 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             _ => [$"-({value})"]
         };
     }
+
+    public override List<string> VisitNumberFloor(Unipi.MppgParser.Grammar.MppgParser.NumberFloorContext context) =>
+        [RationalFloorCode(context.numberExpression().Accept(this).Single())];
+
+    public override List<string> VisitNumberCeil(Unipi.MppgParser.Grammar.MppgParser.NumberCeilContext context) =>
+        [RationalCeilCode(context.numberExpression().Accept(this).Single())];
+
+    public override List<string> VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
+        [RationalFloorCode(context.numberExpression().Accept(this).Single())];
+
+    public override List<string> VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
+        [RationalCeilCode(context.numberExpression().Accept(this).Single())];
+
+    // Rational.Floor() and Rational.Ceil() return a BigInteger, which would make the operators around
+    // them integer arithmetic: the cast back to Rational keeps the rest of the expression rational.
+    private static string RationalFloorCode(string value) => $"((Rational)({value}).Floor())";
+
+    private static string RationalCeilCode(string value) => $"((Rational)({value}).Ceil())";
 
     public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {

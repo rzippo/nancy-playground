@@ -5,7 +5,7 @@ grammar Mppg;
     // Keywords are matched here, before any parser rule is reached, so a keyword introduced after 1.0
     // has to be gated here for scripts declaring an earlier version to keep using that name as a variable.
     private int _syntaxVersionMajor = 1;
-    private int _syntaxVersionMinor = 2;
+    private int _syntaxVersionMinor = 3;
     private bool _versionDirectiveApplied = false;
 
     public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
@@ -63,6 +63,8 @@ grammar Mppg;
     private bool IsVersion1_1OrLater() => IsVersionOrLater(1, 1);
 
     private bool IsVersion1_2OrLater() => IsVersionOrLater(1, 2);
+
+    private bool IsVersion1_3OrLater() => IsVersionOrLater(1, 3);
 }
 
 @parser::members {
@@ -110,6 +112,13 @@ grammar Mppg;
         "vdev",
         "zDev",
         "zdev"
+    };
+    // Operators that return whatever kind their argument is, so their call site is classified by
+    // scanning the argument rather than by the keyword alone.
+    private static readonly HashSet<string> TypePreservingFunctionStarters = new()
+    {
+        "floor",
+        "ceil"
     };
 
     public IReadOnlyDictionary<string, VariableType> VariableTypes => _variableTypes;
@@ -172,8 +181,25 @@ grammar Mppg;
         if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(lookaheadIndex))
             return true;
 
+        var typePreservingArgument = TryGetTypePreservingCallArgumentStart(lookaheadIndex);
+        if (typePreservingArgument > 0)
+            return ExpressionSegmentContainsFunction(typePreservingArgument);
+
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
         return token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text);
+    }
+
+    // Index at which the argument of a type-preserving call, i.e. floor(...) or ceil(...), starts,
+    // or -1 if the tokens from lookaheadIndex are not such a call.
+    private int TryGetTypePreservingCallArgumentStart(int lookaheadIndex)
+    {
+        var token = TokenStream.LT(lookaheadIndex);
+
+        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
+        if (token.Type == VARIABLE_NAME || !TypePreservingFunctionStarters.Contains(token.Text))
+            return -1;
+
+        return TokenStream.LT(lookaheadIndex + 1).Text == "(" ? lookaheadIndex + 2 : -1;
     }
 
     private bool IsFunctionProductExpressionStart(int lookaheadIndex) =>
@@ -203,6 +229,10 @@ grammar Mppg;
         if (text == "(")
             return !ExpressionSegmentContainsFunction(lookaheadIndex + 1);
 
+        var typePreservingArgument = TryGetTypePreservingCallArgumentStart(lookaheadIndex);
+        if (typePreservingArgument > 0)
+            return !ExpressionSegmentContainsFunction(typePreservingArgument);
+
         if (token.Type != VARIABLE_NAME)
             return false;
 
@@ -227,6 +257,10 @@ grammar Mppg;
 
         if (text == "(")
             return FindMatchingRightParenthesis(lookaheadIndex);
+
+        var typePreservingArgument = TryGetTypePreservingCallArgumentStart(lookaheadIndex);
+        if (typePreservingArgument > 0)
+            return FindMatchingRightParenthesis(typePreservingArgument - 1);
 
         var numberReturningCallEnd = TryGetNumberReturningFunctionCallEnd(lookaheadIndex);
         if (numberReturningCallEnd > 0)
@@ -421,6 +455,8 @@ SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
 SUPERADD_CLOSURE : 'superaddclosure' {IsVersion1_2OrLater()}?;
 LOWCLOSURE : 'lowclosure' {IsVersion1_2OrLater()}?;
 NNLOWCLOSURE : 'nnlowclosure' {IsVersion1_2OrLater()}?;
+FLOOR : 'floor' {IsVersion1_3OrLater()}?;
+CEIL : 'ceil' {IsVersion1_3OrLater()}?;
 
 VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
 
@@ -518,6 +554,11 @@ functionEnclosedExpression
     | NNLOWCLOSURE '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
+    // floor and ceil return the kind of their argument: these are the curve-argument forms, and the
+    // scalar-argument ones are alternatives of numberExpression. The lookahead predicates that route
+    // an expression to either side scan the argument, see TryGetTypePreservingCallArgumentStart.
+    | FLOOR '(' functionExpression ')' #functionFloor
+    | CEIL '(' functionExpression ')' #functionCeil
     | functionConstructor #functionConstructorExp
     | {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME #functionVariableExp
     ;
@@ -573,6 +614,8 @@ segmentLeftClosedRightClosed: '[' endpoint numberExpression? endpoint ']';
 // Numbers
 numberExpression
     : numberReturningfunctionOperation #numberReturningfunctionOperationExp
+    | FLOOR '(' numberExpression ')' #numberFloor
+    | CEIL '(' numberExpression ')' #numberCeil
     | '(' numberExpression ')' #numberBrackets
     | PLUS numberExpression #numberPositive
     | MINUS numberExpression #numberNegative
@@ -584,6 +627,8 @@ numberExpression
 
 numberEnclosedExpression
     : numberReturningfunctionOperation #encNumberReturningfunctionOperationExp
+    | FLOOR '(' numberExpression ')' #encNumberFloor
+    | CEIL '(' numberExpression ')' #encNumberCeil
     | {!(ExpressionSegmentContainsFunction(2))}? '(' numberExpression ')' #encNumberBrackets
     | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #encNumberVariableExp
     | numberLiteral #encNumberLiteralExp

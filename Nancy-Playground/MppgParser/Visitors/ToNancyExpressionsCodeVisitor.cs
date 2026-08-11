@@ -729,6 +729,20 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"({curve}).ToRightContinuous()"];
     }
 
+    public override List<string> VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).Floor()"];
+    }
+
+    public override List<string> VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context)
+    {
+        var curve = context.GetChild(2).Accept(this).Single();
+
+        return [$"({curve}).Ceil()"];
+    }
+
     #endregion Function unary operators
     
     #region Function constructors
@@ -976,6 +990,18 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
             _ => [$"({value}).Negate()"]
         };
     }
+
+    public override List<string> VisitNumberFloor(Unipi.MppgParser.Grammar.MppgParser.NumberFloorContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).Floor()"];
+
+    public override List<string> VisitNumberCeil(Unipi.MppgParser.Grammar.MppgParser.NumberCeilContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).Ceil()"];
+
+    public override List<string> VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).Floor()"];
+
+    public override List<string> VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
+        [$"({context.numberExpression().Accept(this).Single()}).Ceil()"];
 
     public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
     {

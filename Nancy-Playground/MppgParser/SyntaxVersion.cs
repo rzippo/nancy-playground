@@ -5,7 +5,8 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     public static readonly SyntaxVersion V1_0 = new(1, 0);
     public static readonly SyntaxVersion V1_1 = new(1, 1);
     public static readonly SyntaxVersion V1_2 = new(1, 2);
-    public static readonly SyntaxVersion Latest = V1_2;
+    public static readonly SyntaxVersion V1_3 = new(1, 3);
+    public static readonly SyntaxVersion Latest = V1_3;
 
     public static SyntaxVersion FromParts(int major, int minor) => new(major, minor);
 

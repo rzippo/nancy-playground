@@ -505,6 +505,20 @@ Both `hShift` and `hshift` are accepted spellings.
                     },
                     new HelpItem
                     {
+                        Name = "Floor and ceiling (functions)",
+                        Formats = ["floor(f)", "ceil(f)"],
+                        Description = "Floor and ceiling of a function, applied to its values.",
+                        LongDescription = """
+- `floor(f)`: the function g such that g(x) = ⌊f(x)⌋.
+- `ceil(f)`: the function g such that g(x) = ⌈f(x)⌉.
+
+Both take a function or a scalar, and return the same kind: `floor(f)` is a function, `floor(3/2)` is a scalar.
+They require syntax version 1.3 or later.
+""",
+                        Tags = ["floor", "ceiling", "rounding", "operation"]
+                    },
+                    new HelpItem
+                    {
                         Name = "Composition",
                         Formats = ["f comp g"],
                         Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",
@@ -617,6 +631,20 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - `v1 div v2`: division (same semantics for this syntax)
 """,
                         Tags = ["scalars", "arithmetic", "addition", "multiplication", "division", "operations", "operation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Floor and ceiling (scalars)",
+                        Formats = ["floor(v)", "ceil(v)"],
+                        Description = "Largest integer not above, or smallest integer not below, a scalar value.",
+                        LongDescription = """
+- `floor(v)`: ⌊v⌋, e.g. `floor(7/2)` is 3 and `floor(-7/2)` is -4.
+- `ceil(v)`: ⌈v⌉, e.g. `ceil(7/2)` is 4 and `ceil(-7/2)` is -3.
+
+The same names applied to a function round its values instead, see "Floor and ceiling (functions)".
+They require syntax version 1.3 or later.
+""",
+                        Tags = ["scalars", "floor", "ceiling", "rounding", "operations", "operation"]
                     }
                 ]
             },

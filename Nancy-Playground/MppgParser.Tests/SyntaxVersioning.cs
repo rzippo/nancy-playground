@@ -256,7 +256,7 @@ public class SyntaxVersioning
         """
         x := 1
         """,
-        "1.2")]
+        "1.3")]
     public void ProgramSyntaxVersion_MatchesDeclaredVersion(string programText, string expectedVersion)
     {
         var program = Program.FromText(programText);

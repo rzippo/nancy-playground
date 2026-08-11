@@ -24,6 +24,8 @@ public static class VersionedKeywords
             ["superaddclosure"] = SyntaxVersion.V1_2,
             ["lowclosure"] = SyntaxVersion.V1_2,
             ["nnlowclosure"] = SyntaxVersion.V1_2,
+            ["floor"] = SyntaxVersion.V1_3,
+            ["ceil"] = SyntaxVersion.V1_3,
         };
 
     /// <summary>

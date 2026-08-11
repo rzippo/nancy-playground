@@ -6,11 +6,12 @@
 
 ## Operators of Nancy still missing from the syntax
 
-Compared against `Unipi.Nancy` 1.3.6 and `Unipi.Nancy.Expressions` 1.0.6.
+Compared against `Unipi.Nancy` 1.3.6 and `Unipi.Nancy.Expressions` 1.0.7.
 
-- [ ] `floor(f)` and `ceil(f)`, from `Curve.Floor` and `Curve.Ceil`.
-  Writing these today is cumbersome: it takes `right-ext(stair(1, 1, 1)) comp (f / n)`, as in the
-  `hal-04513292v1` test case.
+- [x] `floor(f)` and `ceil(f)`, from `Curve.Floor` and `Curve.Ceil`, and `floor(v)` and `ceil(v)` on
+  scalars, added in syntax version 1.3.
+  Scripts that spelled the floor function as `right-ext(stair(1, 1, 1))` and named it `floor`, as the
+  `hal-04513292v1` test case did, now declare `#!syntax version 1.2` to keep that name.
 - [ ] Scalar operators `abs`, `pow`, `mod`, `gcd`, `lcm`, from `Expressions.AbsoluteValue`, `Pow`,
   `Remainder`, `GreatestCommonDivisor` and `LeastCommonMultiple`.
   Scalars currently have only `+ - * / div /\ \/`.
@@ -27,7 +28,7 @@ Considered and left out:
 - `maxBacklogPeriod`, listed as not implemented in `syntax.md`: `Curve` has no such method, so it
   needs work in Nancy before it can be a syntax question.
 
-Note that `Floor`, `Ceil` and the predicates exist on `Curve` but not in `Unipi.Nancy.Expressions`
-1.0.6. They need either an addition there, to keep the syntax symbolic, or eager evaluation, which
-would make `printExpression` and `convert` show a computed curve instead of the expression that
-produced it.
+`Unipi.Nancy.Expressions` 1.0.7 added `Floor` and `Ceil`, on both curves and rationals, so the syntax
+maps to them and stays symbolic. The predicates still exist on `Curve` only: they need either an
+addition there, to keep the syntax symbolic, or eager evaluation, which would make `printExpression`
+and `convert` show a computed curve instead of the expression that produced it.

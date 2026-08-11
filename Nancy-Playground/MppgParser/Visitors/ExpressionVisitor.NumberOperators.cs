@@ -86,6 +86,28 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitNumberFloor(Unipi.MppgParser.Grammar.MppgParser.NumberFloorContext context) =>
+        Floor(context.numberExpression().Accept(this), context);
+
+    public override IExpression VisitNumberCeil(Unipi.MppgParser.Grammar.MppgParser.NumberCeilContext context) =>
+        Ceil(context.numberExpression().Accept(this), context);
+
+    public override IExpression VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
+        Floor(context.numberExpression().Accept(this), context);
+
+    public override IExpression VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
+        Ceil(context.numberExpression().Accept(this), context);
+
+    private static IExpression Floor(IExpression argument, Antlr4.Runtime.ParserRuleContext context) =>
+        argument is RationalExpression rE
+            ? Expressions.Expressions.Floor(rE)
+            : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+
+    private static IExpression Ceil(IExpression argument, Antlr4.Runtime.ParserRuleContext context) =>
+        argument is RationalExpression rE
+            ? Expressions.Expressions.Ceil(rE)
+            : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+
     public override IExpression VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
     {
         var ie = base.VisitNumberNegative(context);

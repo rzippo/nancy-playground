@@ -178,6 +178,8 @@ These operations return a _function_.
 | nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
 | lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. | ✅ |
 | nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. | ✅ |
+| floor(f) | Compute the function $g$ such that $g(x) = \lfloor f(x) \rfloor$. Requires syntax version 1.3 or later. | ✅ |
+| ceil(f) | Compute the function $g$ such that $g(x) = \lceil f(x) \rceil$. Requires syntax version 1.3 or later. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
 | left-ext(f) | Left-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^-)$. | ✅ |
 | right-ext(f) | Right-continuous projection, i.e., the function $g$ such that for all $x$, $g(x) = f(x^+)$. | ✅ |
@@ -245,6 +247,12 @@ These operations work between scalars, and return scalars.
 | v1 * v2 | Multiplication of v1 and v2. | ✅ |
 | v1 ÷ v2 | Division of v1 and v2. | ✅ |
 | v1 div v2 | Division of v1 by v2. | ✅ |
+| floor(v) | Largest integer not above $v$, i.e. $\lfloor v \rfloor$. Requires syntax version 1.3 or later. | ✅ |
+| ceil(v) | Smallest integer not below $v$, i.e. $\lceil v \rceil$. Requires syntax version 1.3 or later. | ✅ |
+
+> `floor` and `ceil` return the kind of their argument: `floor(f)` is a function, `floor(3/2)` is a scalar.
+> Which one it is is decided by the argument, so `f * floor(2)` scales `f` by 2, while `f * floor(g)` is a
+> convolution.
 
 
 ## Output ✅
@@ -359,3 +367,12 @@ Use `!clear` to start a new session, and with it select a new version.
 A keyword only acts as one from the version that introduced it: `lowclosure := 3` is an assignment under
 `#!syntax version 1.0`, and the closure operator from 1.2 on.
 Declaring a version therefore keeps a program working as later versions add keywords.
+
+| Version | Keywords introduced |
+| ---- | ---- |
+| 1.1 | `printExpression`, `plotTikz` |
+| 1.2 | `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure` |
+| 1.3 | `floor`, `ceil` |
+
+Scripts that name a variable `floor`, as the ones that spell the floor function
+`right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.

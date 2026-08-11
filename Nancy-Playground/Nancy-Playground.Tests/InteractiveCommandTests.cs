@@ -140,7 +140,7 @@ public class InteractiveCommandTests
 
         // the exported program would ignore the directive too, as it would not be in the preamble
         Assert.Contains("only applied before any other statement", console.Output);
-        Assert.Contains("Active version: 1.2.", console.Output);
+        Assert.Contains("Active version: 1.3.", console.Output);
         Assert.Contains("\\begin{tikzpicture}", console.Output);
     }
 

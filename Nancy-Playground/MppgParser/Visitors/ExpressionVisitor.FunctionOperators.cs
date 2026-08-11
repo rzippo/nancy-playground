@@ -367,6 +367,40 @@ public partial class ExpressionVisitor
         }
     }
 
+    public override IExpression VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = Expressions.Expressions.Floor(lCE);
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    public override IExpression VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = Expressions.Expressions.Ceil(lCE);
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
     public override IExpression VisitFunctionNegative(Unipi.MppgParser.Grammar.MppgParser.FunctionNegativeContext context)
     {
         var ie = base.VisitFunctionNegative(context);
