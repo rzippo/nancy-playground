@@ -592,13 +592,57 @@ public class SyntaxVersioning
         Assert.NotEmpty(program.Errors);
     }
 
+    // A script written before a keyword existed fails on a name it was free to use, so the error has to
+    // say which name that is and how to keep it, rather than only where the parse gave up.
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void KeywordUsedAsVariable_ErrorNamesItAndTheDirectiveToDeclare(string keyword)
+    {
+        var introducedIn = VersionedKeywords.IntroducedIn[keyword];
+        var keepsIt = introducedIn.Previous();
+        Assert.NotNull(keepsIt);
+
+        var program = Program.FromText($"{keyword} := 3");
+
+        var error = Assert.Single(program.Errors, e => e.Hint is not null);
+        Assert.Contains($"'{keyword}'", error.Hint!);
+        Assert.Contains($"version {introducedIn}", error.Hint!);
+        Assert.Contains($"#!syntax version {keepsIt}", error.Hint!);
+        // and following the hint makes the program parse
+        Assert.Empty(Program.FromText($"#!syntax version {keepsIt}\n{keyword} := 3").Errors);
+    }
+
+    [Theory]
+    [MemberData(nameof(VersionedKeywordCases))]
+    public void KeywordUsedAsVariable_InteractiveErrorCarriesTheSameHint(string keyword)
+    {
+        var introducedIn = VersionedKeywords.IntroducedIn[keyword];
+
+        var exception = Assert.ThrowsAny<Exception>(
+            () => Statement.FromLine($"{keyword} := 3", new State(), introducedIn));
+
+        Assert.Contains($"'{keyword}'", exception.Message);
+        Assert.Contains($"#!syntax version {introducedIn.Previous()}", exception.Message);
+    }
+
+    // The hint is about a name used where the syntax expects an operator or a command: a call of the
+    // keyword that fails to parse for another reason is not that case.
+    [Fact]
+    public void KeywordUsedAsOperator_ErrorCarriesNoHint()
+    {
+        var program = Program.FromText("f := affine(1, 0)\nfloor(f");
+
+        Assert.NotEmpty(program.Errors);
+        Assert.All(program.Errors, error => Assert.Null(error.Hint));
+    }
+
     [Theory]
     [MemberData(nameof(VersionedKeywordCases))]
     public void VersionedKeywordIsAKeywordOfTheGrammar(string keyword)
     {
         // guards against a stale or misspelled entry, which would silently gate nothing
         Assert.True(
-            VersionedKeywords.KeywordTokenTypes().ContainsKey(keyword),
+            KeywordLexing.KeywordTokenTypes().ContainsKey(keyword),
             $"'{keyword}' is listed in VersionedKeywords.IntroducedIn but is not a keyword of the grammar.");
     }
 

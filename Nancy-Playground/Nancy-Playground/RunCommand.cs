@@ -128,14 +128,22 @@ public class RunCommand : Command<RunCommand.Settings>
             {
                 Console.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
                 foreach(var error in program.Errors)
-                    Console.MarkupLineInterpolated($"[red]\t - {error.ToString()}[/]");
+                {
+                    Console.MarkupLineInterpolated($"[red]\t - line {error.Line}:{error.Column} {error.Message}[/]");
+                    if (error.Hint is not null)
+                        Console.MarkupLineInterpolated($"[red]\t   {error.Hint}[/]");
+                }
                 return 1;
             }
             else
             {
                 Console.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
                 foreach(var error in program.Errors)
-                    Console.MarkupLineInterpolated($"[darkorange]\t - {error.ToString()}[/]");
+                {
+                    Console.MarkupLineInterpolated($"[darkorange]\t - line {error.Line}:{error.Column} {error.Message}[/]");
+                    if (error.Hint is not null)
+                        Console.MarkupLineInterpolated($"[darkorange]\t   {error.Hint}[/]");
+                }
             }
         }
 

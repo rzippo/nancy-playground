@@ -8,6 +8,22 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     public static readonly SyntaxVersion V1_3 = new(1, 3);
     public static readonly SyntaxVersion Latest = V1_3;
 
+    /// Every version of the syntax, in order.
+    public static readonly IReadOnlyList<SyntaxVersion> All = [V1_0, V1_1, V1_2, V1_3];
+
+    /// The version that precedes this one, or null if this is the first.
+    public SyntaxVersion? Previous()
+    {
+        SyntaxVersion? previous = null;
+        foreach (var version in All)
+        {
+            if (version >= this)
+                break;
+            previous = version;
+        }
+        return previous;
+    }
+
     public static SyntaxVersion FromParts(int major, int minor) => new(major, minor);
 
     public static bool TryParseShebang(string shebang, out SyntaxVersion version)

@@ -26,9 +26,18 @@ public static class ExpressionParsing
         parser.ErrorHandler = new BailErrorStrategy();
         parser.SeedVariableTypes(state);
 
-        var context = parser.expression();
+        Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context;
+        try
+        {
+            context = parser.expression();
+        }
+        catch (Exception ex)
+        {
+            throw ex.WithVersionedKeywordHint(commonTokenStream);
+        }
+
         var visitor = new ExpressionVisitor(state);
-     
+
         return context.Accept(visitor);
     }
 }

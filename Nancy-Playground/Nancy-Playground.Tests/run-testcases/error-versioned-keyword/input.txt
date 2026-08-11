@@ -1,0 +1,5 @@
+// A script written before floor was an operator, which named a variable after it
+// The error has to say so, and how to keep the name
+C := affine(1, 0)
+floor := right-ext(stair(1, 1, 1))
+A := ( floor comp (C / 2) ) * 4

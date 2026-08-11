@@ -30,7 +30,16 @@ public abstract record class Statement
         parser.ErrorHandler = new BailErrorStrategy();
         parser.SeedVariableTypes(state);
 
-        var context = parser.statement();
+        Unipi.MppgParser.Grammar.MppgParser.StatementContext context;
+        try
+        {
+            context = parser.statement();
+        }
+        catch (Exception ex)
+        {
+            throw ex.WithVersionedKeywordHint(commonTokenStream);
+        }
+
         var visitor = new StatementVisitor();
         var statement = visitor.Visit(context);
         return statement ?? throw new SyntaxErrorException("Statement could not be parsed.");

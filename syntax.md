@@ -376,3 +376,5 @@ Declaring a version therefore keeps a program working as later versions add keyw
 
 Scripts that name a variable `floor`, as the ones that spell the floor function
 `right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.
+A program that uses one of these names without declaring a version is told which name it is and which
+directive keeps it.

@@ -24,7 +24,10 @@ public sealed record SyntaxErrorInfo(
     IReadOnlyList<string>? Expected,
 
     // Nice-to-have: a small source excerpt
-    string? SourceExcerpt
+    string? SourceExcerpt,
+
+    // What likely caused the error, when it can be told apart from the message alone
+    string? Hint = null
 )
 {
     public enum ErrorType { Lexer, Parser}
@@ -39,11 +42,12 @@ public sealed record SyntaxErrorInfo(
                    (RuleName != null ? $" [rule: {RuleName}]" : "") +
                    (Expected != null && Expected.Count > 0
                        ? $" expected: {string.Join(", ", Expected)}"
-                       : "");
+                       : "") +
+                   (Hint != null ? $" {Hint}" : "");
         }
         else
         {
-            return $"line {Line}:{Column} {Message}";
+            return $"line {Line}:{Column} {Message}" + (Hint != null ? $" {Hint}" : "");
         }
     }
 };
@@ -150,6 +154,7 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
         string? ruleName = null;
         IReadOnlyList<string>? ruleStack = null;
         IReadOnlyList<string>? expected = null;
+        string? hint = null;
 
         if (recognizer is Parser parser)
         {
@@ -161,6 +166,8 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             }
 
             expected = GetExpectedTokenNames(parser);
+            hint = VersionedKeywords.TryGetUsedAsNameHint(
+                VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol));
         }
 
         var excerpt = TryGetExcerptFromToken(offendingSymbol, _excerptRadius);
@@ -175,10 +182,11 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             RuleName: ruleName,
             RuleStack: ruleStack,
             Expected: expected,
-            SourceExcerpt: excerpt
+            SourceExcerpt: excerpt,
+            Hint: hint
         ));
     }
-    
+
     private static string? SafeRuleName(Parser parser, int ruleIndex)
     {
         if (parser.RuleNames == null) return null;
