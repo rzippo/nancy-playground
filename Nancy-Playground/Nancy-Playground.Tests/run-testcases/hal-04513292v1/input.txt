@@ -1,3 +1,4 @@
+#!syntax version 1.2
 T4 := 60
 A1 := stair(0, 60, 35)
 A2 := stair (0, 5, 2)

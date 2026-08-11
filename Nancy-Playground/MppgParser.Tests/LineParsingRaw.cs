@@ -21,7 +21,9 @@ public class LineParsingRaw
         "C + (A1 + A2 - C)*zero - D1",
         "C + (A4 - C)*zero",
         "right-ext(stair(1, 1, 1))",
-        "( floor comp (D2 / 2) ) * 4",
+        // 'flr' stands in for the floor curve of the source script, which spelled it 'floor':
+        // that name is reserved for the operator of a later syntax version
+        "( flr comp (D2 / 2) ) * 4",
         "C + (A3 + A4 - C)*zero - D4"
     ];
 

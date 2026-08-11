@@ -66,9 +66,11 @@ public class LineParsing
             []
         ),
         (
-            "( floor comp (D2 / 2) ) * 4",
+            // 'flr' stands in for the floor curve of the source script, which spelled it 'floor':
+            // that name is reserved for the operator of a later syntax version
+            "( flr comp (D2 / 2) ) * 4",
             [
-                ("floor", Expressions.Expressions.FromCurve(Curve.Zero(), "floor")), 
+                ("flr", Expressions.Expressions.FromCurve(Curve.Zero(), "flr")),
                 ("D2", Expressions.Expressions.FromCurve(Curve.Zero(), "D2"))
             ],
             []

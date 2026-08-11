@@ -13,7 +13,10 @@ public class ProgramExecution
 
     public static List<string> Programs =
     [
+        // Both scripts name the floor curve 'floor', a name later syntax versions reserve for the
+        // operator: they declare 1.2 to keep it, as any script written before the operator can.
         """
+        #!syntax version 1.2
         T4 := 60
         A1 := stair(0, 60, 35)
         A2 := stair (0, 5, 2)
@@ -28,6 +31,7 @@ public class ProgramExecution
         hDev(A3 , D3)
         """,
         """
+        #!syntax version 1.2
         T4 := 60
         A1 := stair(0, 60, 35)
         A2 := stair (0, 5, 2)
