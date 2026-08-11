@@ -351,22 +351,73 @@ public class CurveParsing
         Assert.Equal(expected, curve.ValueAt(time).Compute());
     }
 
-    // The floor of a curve was written as a composition with right-ext(stair(1, 1, 1)) before the
-    // operator existed: the operator must compute the same curve.
+    // Before the operators existed, scripts spelled the floor of a curve as a composition with
+    // right-ext(stair(1, 1, 1)) and its ceiling as one with stair(0, 1, 1), as the .nc files of
+    // NC-files still do: the operators must compute the same curves.
+    public static IEnumerable<object[]> FloorCeilCompositionEquivalenceTestCases =>
+        new List<(string mppg, string composition)>
+        {
+            ("floor(f)", "right-ext(stair(1, 1, 1)) comp f"),
+            ("ceil(f)", "stair(0, 1, 1) comp f"),
+            ("floor(g)", "right-ext(stair(1, 1, 1)) comp g"),
+            ("ceil(g)", "stair(0, 1, 1) comp g"),
+            // the release count of a task activated every 2 units of another's output, as in the
+            // hal-04513292v1 example, times the work each release brings
+            ("floor(f / 2) * 4", "(right-ext(stair(1, 1, 1)) comp (f / 2)) * 4"),
+            // a packetizer, which lets through whole packets of size 5 only
+            ("floor(f / 5) * 5", "(right-ext(stair(1, 1, 1)) comp (f / 5)) * 5"),
+            // the number of packets of size 5 needed to carry f
+            ("ceil(f / 5)", "stair(0, 1, 1) comp (f / 5)"),
+            // the arrival curve of a periodic task of period 4 and workload 3 per release
+            ("ceil(affine(1/4, 0)) * 3", "(stair(0, 1, 1) comp affine(1/4, 0)) * 3"),
+        }.ToXUnitTestCases();
+
     [Theory]
-    [InlineData("f")]
-    [InlineData("f / 2")]
-    [InlineData("g")]
-    public void FloorOfACurveMatchesTheCompositionItReplaces(string argument)
+    [MemberData(nameof(FloorCeilCompositionEquivalenceTestCases))]
+    public void FloorCeilMatchTheCompositionsTheyReplace(string mppg, string composition)
     {
         var state = StateWithVariables();
 
         var withOperator = Assert.IsAssignableFrom<CurveExpression>(
-            ExpressionParsing.Parse($"floor({argument})", state));
+            ExpressionParsing.Parse(mppg, state));
         var withComposition = Assert.IsAssignableFrom<CurveExpression>(
-            ExpressionParsing.Parse($"right-ext(stair(1, 1, 1)) comp ({argument})", state));
+            ExpressionParsing.Parse(composition, state));
 
         Assert.True(Curve.Equivalent(withComposition.Compute(), withOperator.Compute()));
+    }
+
+    // The staircase constructor is the arrival curve of a periodic task, which the ceiling of a line
+    // states directly: o is the first release, l the period and h the workload of a release.
+    [Theory]
+    [InlineData(4, 3)]
+    [InlineData(60, 35)]
+    [InlineData(5, 2)]
+    public void StaircaseIsTheCeilingOfALine(int period, int height)
+    {
+        var state = StateWithVariables();
+
+        var staircase = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse($"stair(0, {period}, {height})", state));
+        var ceiling = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse($"ceil(affine(1/{period}, 0)) * {height}", state));
+
+        Assert.True(Curve.Equivalent(staircase.Compute(), ceiling.Compute()));
+    }
+
+    // A packetizer outputs no more than its input, and lags by less than one packet.
+    [Theory]
+    [InlineData(5)]
+    [InlineData(2)]
+    public void PacketizerOfACurveStaysWithinOnePacketOfIt(int packetSize)
+    {
+        var state = StateWithVariables();
+        var input = BucketFunction();
+
+        var packetized = Assert.IsAssignableFrom<CurveExpression>(
+            ExpressionParsing.Parse($"floor(f / {packetSize}) * {packetSize}", state)).Compute();
+
+        Assert.True(packetized <= input);
+        Assert.True(input <= packetized.VerticalShift(packetSize));
     }
 
     [Fact]

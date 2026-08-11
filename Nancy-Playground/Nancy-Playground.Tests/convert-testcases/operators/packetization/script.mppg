@@ -1,0 +1,24 @@
+// Packetization, the use of floor and ceil that network calculus makes
+// The two curves named below are how the operators were spelled before they existed:
+// they are kept here to check that the operators compute the same thing
+oldFloor := right-ext( stair(1, 1, 1) )
+oldCeil := stair(0, 1, 1)
+f := bucket(3, 2)
+L := 5
+// only whole packets of size L leave a packetizer
+packetized := floor(f / L) * L
+assert( packetized = (oldFloor comp (f / L)) * L )
+// a packetizer outputs no more than its input, and lags by less than one packet
+assert( packetized <= f )
+assert( f <= packetized + L )
+// the number of packets needed to carry f, i.e. the arrival curve a per-packet resource sees
+packets := ceil(f / L)
+assert( packets = oldCeil comp (f / L) )
+assert( packets >= f / L )
+// a periodic task with period T and workload C per release
+T := 4
+C := 3
+release := ceil( affine(1/T, 0) ) * C
+assert( release = stair(0, T, C) )
+assert( release = (oldCeil comp affine(1/T, 0)) * C )
+release(9)
