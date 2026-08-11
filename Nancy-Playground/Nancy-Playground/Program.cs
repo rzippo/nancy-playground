@@ -36,17 +36,18 @@ public class Program
     public static int Main(string[] args)
     {
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        if (Console.IsInputRedirected)
-        {
-            // the line editor reads keys, which requires a terminal
-            AnsiConsole.Profile.Capabilities.Interactive = false;
-        }
         if (Console.IsOutputRedirected)
         {
+            // Encoding must be set first, since AnsiConsole captures Console.Out on first use
             Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             AnsiConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
             AnsiConsole.Profile.Capabilities.Ansi = false;
             AnsiConsole.Profile.Width = int.MaxValue;
+        }
+        if (Console.IsInputRedirected)
+        {
+            // the line editor reads keys, which requires a terminal
+            AnsiConsole.Profile.Capabilities.Interactive = false;
         }
 
         var app = BuildNancyPlaygroundApp();
