@@ -1,0 +1,4 @@
+# The ANTLR generator writes the line endings of the platform it runs on, so regenerating the grammar
+# on Windows would otherwise rewrite every line of the generated files.
+# Everything in the folder is stored and checked out with LF, whoever regenerates it.
+Nancy-Playground/MppgParser/Grammar/** text eol=lf
