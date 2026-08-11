@@ -621,7 +621,7 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Arithmetic",
-                        Formats = ["v1 + v2", "v1 - v2", "v1 * v2", "v1 ÷ v2", "v1 div v2"],
+                        Formats = ["v1 + v2", "v1 - v2", "v1 * v2", "v1 ÷ v2", "v1 div v2", "v1 mod v2"],
                         Description = "Standard scalar arithmetic operations.",
                         LongDescription = """
 - `v1 + v2`: addition
@@ -629,8 +629,11 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - `v1 * v2`: multiplication
 - `v1 ÷ v2`: division
 - `v1 div v2`: division (same semantics for this syntax)
+- `v1 mod v2`: remainder of the division, which takes the sign of v1, e.g. `-7/2 mod 3` is -1/2.
+  It binds like the other product operators, so `1 + x mod y` is `1 + (x mod y)`.
+  It requires syntax version 1.3 or later.
 """,
-                        Tags = ["scalars", "arithmetic", "addition", "multiplication", "division", "operations", "operation"]
+                        Tags = ["scalars", "arithmetic", "addition", "multiplication", "division", "remainder", "modulo", "operations", "operation"]
                     },
                     new HelpItem
                     {
@@ -648,18 +651,17 @@ They require syntax version 1.3 or later.
                     },
                     new HelpItem
                     {
-                        Name = "Remainder, gcd and lcm",
-                        Formats = ["mod(v1, v2)", "gcd(v1, v2)", "lcm(v1, v2)"],
-                        Description = "Remainder of a division, greatest common divisor and least common multiple.",
+                        Name = "Gcd and lcm",
+                        Formats = ["gcd(v1, v2)", "lcm(v1, v2)"],
+                        Description = "Greatest common divisor and least common multiple.",
                         LongDescription = """
-- `mod(v1, v2)`: remainder of v1 divided by v2, which takes the sign of v1, e.g. `mod(-7/2, 3)` is -1/2.
 - `gcd(v1, v2)`: greatest common divisor, e.g. `gcd(12, 18)` is 6.
 - `lcm(v1, v2)`: least common multiple, e.g. `lcm(4, 6)` is 12.
 
-All three work on rationals, not only on integers: `gcd(1/2, 1/3)` is 1/6.
+Both work on rationals, not only on integers: `gcd(1/2, 1/3)` is 1/6.
 They require syntax version 1.3 or later.
 """,
-                        Tags = ["scalars", "remainder", "modulo", "gcd", "lcm", "divisor", "multiple", "operations", "operation"]
+                        Tags = ["scalars", "gcd", "lcm", "divisor", "multiple", "operations", "operation"]
                     },
                     new HelpItem
                     {

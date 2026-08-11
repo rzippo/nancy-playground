@@ -889,17 +889,6 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitNumberNegative([NotNull] MppgParser.NumberNegativeContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>numberMod</c>
-	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitNumberMod([NotNull] MppgParser.NumberModContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>numberSumSubMinMax</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// <para>
@@ -1042,17 +1031,6 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitEncNumberPow([NotNull] MppgParser.EncNumberPowContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by the <c>encNumberMod</c>
-	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitEncNumberMod([NotNull] MppgParser.EncNumberModContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>encNumberGcd</c>
 	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.

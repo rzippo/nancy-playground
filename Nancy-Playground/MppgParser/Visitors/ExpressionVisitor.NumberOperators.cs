@@ -32,6 +32,14 @@ public partial class ExpressionVisitor
 
                 throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
             }
+
+            case Unipi.MppgParser.Grammar.MppgParser.MOD_OP:
+            {
+                if (ilE is RationalExpression lRE && irE is RationalExpression rRE)
+                    return Expressions.Expressions.Remainder(lRE, rRE);
+
+                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+            }
             
             default: 
                 throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
@@ -119,16 +127,6 @@ public partial class ExpressionVisitor
 
     public override IExpression VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         Pow(context.numberExpression(), context);
-
-    public override IExpression VisitNumberMod(Unipi.MppgParser.Grammar.MppgParser.NumberModContext context) =>
-        Expressions.Expressions.Remainder(
-            Operand(context.numberExpression(0), context),
-            Operand(context.numberExpression(1), context));
-
-    public override IExpression VisitEncNumberMod(Unipi.MppgParser.Grammar.MppgParser.EncNumberModContext context) =>
-        Expressions.Expressions.Remainder(
-            Operand(context.numberExpression(0), context),
-            Operand(context.numberExpression(1), context));
 
     public override IExpression VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
         Expressions.Expressions.GreatestCommonDivisor(

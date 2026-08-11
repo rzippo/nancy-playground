@@ -9,10 +9,10 @@
 1/4
 > pow ( - 7 / 2 , 3 )
 -343/8
-// the remainder takes the sign of the dividend
-> mod ( 7 , 3 )
+// mod is infix, like div, and the remainder takes the sign of the dividend
+> 7 mod 3
 1
-> mod ( - 7 , 3 )
+> - 7 mod 3
 -1
 // gcd and lcm are defined on rationals, not only on integers
 > gcd ( 12 , 18 )
@@ -30,7 +30,7 @@ x = 4
 y = 6
 > assert ( gcd ( x , y ) * lcm ( x , y ) = x * y )
 true
-> assert ( abs ( mod ( - 7 , 3 ) ) = 1 )
+> assert ( abs ( - 7 mod 3 ) = 1 )
 true
 > assert ( floor ( pow ( 3 , 2 ) / 2 ) = 4 )
 true
@@ -41,7 +41,7 @@ f = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new 
 scaled = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,3) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 3)
 > assert ( scaled ( 2 ) = 6 )
 true
-> shifted := f + mod ( 7 , 3 )
+> shifted := f + ( 7 mod 3 )
 shifted = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,1), new Segment(0,1,1,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
 > shifted ( 0 )
 1

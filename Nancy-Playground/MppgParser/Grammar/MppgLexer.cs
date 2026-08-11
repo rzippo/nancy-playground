@@ -47,7 +47,7 @@ public partial class MppgLexer : Lexer {
 		PLUS=68, MINUS=69, WEDGE=70, VEE=71, PROD_SIGN=72, DIV_SIGN=73, DIV_OP=74, 
 		STRING_LITERAL=75, VERSION_DIRECTIVE_START=76, DIRECTIVE_START=77, INLINABLE_COMMENT=78, 
 		PRINT_EXPRESSION=79, PLOT_TIKZ=80, SUBADD_CLOSURE=81, SUPERADD_CLOSURE=82, 
-		LOWCLOSURE=83, NNLOWCLOSURE=84, FLOOR=85, CEIL=86, ABS=87, POW=88, MOD=89, 
+		LOWCLOSURE=83, NNLOWCLOSURE=84, FLOOR=85, CEIL=86, ABS=87, POW=88, MOD_OP=89, 
 		GCD=90, LCM=91, VARIABLE_NAME=92;
 	public static string[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
@@ -70,8 +70,8 @@ public partial class MppgLexer : Lexer {
 		"ASSIGN", "PLUS", "MINUS", "WEDGE", "VEE", "PROD_SIGN", "DIV_SIGN", "DIV_OP", 
 		"STRING_LITERAL", "VERSION_DIRECTIVE_START", "DIRECTIVE_START", "INLINABLE_COMMENT", 
 		"PRINT_EXPRESSION", "PLOT_TIKZ", "SUBADD_CLOSURE", "SUPERADD_CLOSURE", 
-		"LOWCLOSURE", "NNLOWCLOSURE", "FLOOR", "CEIL", "ABS", "POW", "MOD", "GCD", 
-		"LCM", "VARIABLE_NAME"
+		"LOWCLOSURE", "NNLOWCLOSURE", "FLOOR", "CEIL", "ABS", "POW", "MOD_OP", 
+		"GCD", "LCM", "VARIABLE_NAME"
 	};
 
 
@@ -176,7 +176,7 @@ public partial class MppgLexer : Lexer {
 		"PLUS", "MINUS", "WEDGE", "VEE", "PROD_SIGN", "DIV_SIGN", "DIV_OP", "STRING_LITERAL", 
 		"VERSION_DIRECTIVE_START", "DIRECTIVE_START", "INLINABLE_COMMENT", "PRINT_EXPRESSION", 
 		"PLOT_TIKZ", "SUBADD_CLOSURE", "SUPERADD_CLOSURE", "LOWCLOSURE", "NNLOWCLOSURE", 
-		"FLOOR", "CEIL", "ABS", "POW", "MOD", "GCD", "LCM", "VARIABLE_NAME"
+		"FLOOR", "CEIL", "ABS", "POW", "MOD_OP", "GCD", "LCM", "VARIABLE_NAME"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -227,7 +227,7 @@ public partial class MppgLexer : Lexer {
 		case 85 : return CEIL_sempred(_localctx, predIndex);
 		case 86 : return ABS_sempred(_localctx, predIndex);
 		case 87 : return POW_sempred(_localctx, predIndex);
-		case 88 : return MOD_sempred(_localctx, predIndex);
+		case 88 : return MOD_OP_sempred(_localctx, predIndex);
 		case 89 : return GCD_sempred(_localctx, predIndex);
 		case 90 : return LCM_sempred(_localctx, predIndex);
 		}
@@ -293,7 +293,7 @@ public partial class MppgLexer : Lexer {
 		}
 		return true;
 	}
-	private bool MOD_sempred(RuleContext _localctx, int predIndex) {
+	private bool MOD_OP_sempred(RuleContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 10: return IsVersion1_3OrLater();
 		}

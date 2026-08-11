@@ -58,16 +58,16 @@ public class RationalParsing
         ( "pow(-7/2, 3)", new Rational(-343, 8) ),
         ( "pow(5, 0)", new Rational(1) ),
         // the remainder takes the sign of the dividend
-        ( "mod(7, 3)", new Rational(1) ),
-        ( "mod(-7, 3)", new Rational(-1) ),
-        ( "mod(-7/2, 3)", new Rational(-1, 2) ),
+        ( "7 mod 3", new Rational(1) ),
+        ( "-7 mod 3", new Rational(-1) ),
+        ( "-7/2 mod 3", new Rational(-1, 2) ),
         ( "gcd(12, 18)", new Rational(6) ),
         ( "lcm(4, 6)", new Rational(12) ),
         // and these are defined on rationals, not only on integers
         ( "gcd(1/2, 1/3)", new Rational(1, 6) ),
         ( "lcm(1/2, 1/3)", new Rational(1) ),
         // nesting, and the operators of the same version composing with each other
-        ( "abs(mod(-7, 3))", new Rational(1) ),
+        ( "abs(-7 mod 3)", new Rational(1) ),
         ( "gcd(lcm(4, 6), 18)", new Rational(6) ),
         ( "pow(abs(-2), 3)", new Rational(8) ),
         ( "floor(pow(3, 2) / 2)", new Rational(4) ),
@@ -108,7 +108,11 @@ public class RationalParsing
         ( "floor(7/2) / floor(9/2)", new Rational(3, 4) ),
         ( "abs(x - y)", new Rational(1) ),
         ( "pow(x, y)", new Rational(8) ),
-        ( "mod(y, x)", new Rational(1) ),
+        ( "y mod x", new Rational(1) ),
+        // mod binds like the other product operators, and folds left to right with them
+        ( "y mod x + 1", new Rational(2) ),
+        ( "1 + y mod x", new Rational(2) ),
+        ( "x * y mod 2", new Rational(0) ),
         ( "gcd(x, y) * lcm(x, y)", new Rational(6) ),
     ];
 

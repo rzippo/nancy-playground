@@ -358,7 +358,7 @@ public class CodeConversion
             ("f * ceil(3/2)", "((Rational)(", ".Ceil()"),
             ("f * abs(3)", "Rational.Abs(", ".AbsoluteValue()"),
             ("f * pow(2, 3)", "Rational.Pow(", ".Pow("),
-            ("f * mod(7, 3)", "Rational.Remainder(", ".Remainder("),
+            ("f * (7 mod 3)", "Rational.Remainder(", ".Remainder("),
             ("f * gcd(4, 6)", "Rational.GreatestCommonDivisor(", ".GreatestCommonDivisor("),
             ("f * lcm(4, 6)", "Rational.LeastCommonMultiple(", ".LeastCommonMultiple("),
         }

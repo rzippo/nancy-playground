@@ -125,7 +125,6 @@ grammar Mppg;
     {
         "abs",
         "pow",
-        "mod",
         "gcd",
         "lcm"
     };
@@ -332,7 +331,7 @@ grammar Mppg;
 
     // Scans only the current expression segment or operand. 
     // Number-returning calls are skipped so f(x) and hDev(f, g) stay scalar at their call site.
-    private bool ExpressionSegmentContainsFunctionUntil(int startIndex, Func<string, bool> isDelimiter)
+    private bool ExpressionSegmentContainsFunctionUntil(int startIndex, Func<IToken, bool> isDelimiter)
     {
         var depth = 0;
 
@@ -344,7 +343,7 @@ grammar Mppg;
             if (token.Type == TokenConstants.EOF || token.Type == NEW_LINE)
                 return false;
 
-            if (depth == 0 && isDelimiter(text))
+            if (depth == 0 && isDelimiter(token))
                 return false;
 
             var numberReturningCallEnd = TryGetNumberReturningFunctionCallEnd(index);
@@ -373,33 +372,35 @@ grammar Mppg;
         }
     }
 
-    private bool IsExpressionDelimiter(string text) =>
-        text == ","
-        || text == ")"
-        || text == "="
-        || text == "!="
-        || text == "<"
-        || text == "<="
-        || text == ">"
-        || text == ">=";
+    private bool IsExpressionDelimiter(IToken token) =>
+        token.Text == ","
+        || token.Text == ")"
+        || token.Text == "="
+        || token.Text == "!="
+        || token.Text == "<"
+        || token.Text == "<="
+        || token.Text == ">"
+        || token.Text == ">=";
 
-    private bool IsSumExpressionDelimiter(string text) =>
-        text == "+"
-        || text == "-"
-        || text == "/\\"
-        || text == "\\/"
-        || IsExpressionDelimiter(text);
+    private bool IsSumExpressionDelimiter(IToken token) =>
+        token.Text == "+"
+        || token.Text == "-"
+        || token.Text == "/\\"
+        || token.Text == "\\/"
+        || IsExpressionDelimiter(token);
 
-    private bool IsProductExpressionDelimiter(string text) =>
-        text == "comp"
-        || text == "*"
-        || text == "*_"
-        || text == "*^"
-        || text == "/"
-        || text == "/_"
-        || text == "/^"
-        || text == "div"
-        || IsSumExpressionDelimiter(text);
+    private bool IsProductExpressionDelimiter(IToken token) =>
+        token.Text == "comp"
+        || token.Text == "*"
+        || token.Text == "*_"
+        || token.Text == "*^"
+        || token.Text == "/"
+        || token.Text == "/_"
+        || token.Text == "/^"
+        || token.Text == "div"
+        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
+        || (token.Type != VARIABLE_NAME && token.Text == "mod")
+        || IsSumExpressionDelimiter(token);
 
     private int TryGetNumberReturningFunctionCallEnd(int lookaheadIndex)
     {
@@ -479,7 +480,7 @@ FLOOR : 'floor' {IsVersion1_3OrLater()}?;
 CEIL : 'ceil' {IsVersion1_3OrLater()}?;
 ABS : 'abs' {IsVersion1_3OrLater()}?;
 POW : 'pow' {IsVersion1_3OrLater()}?;
-MOD : 'mod' {IsVersion1_3OrLater()}?;
+MOD_OP : 'mod' {IsVersion1_3OrLater()}?;
 GCD : 'gcd' {IsVersion1_3OrLater()}?;
 LCM : 'lcm' {IsVersion1_3OrLater()}?;
 
@@ -643,7 +644,6 @@ numberExpression
     | CEIL '(' numberExpression ')' #numberCeil
     | ABS '(' numberExpression ')' #numberAbs
     | POW '(' numberExpression ',' numberExpression ')' #numberPow
-    | MOD '(' numberExpression ',' numberExpression ')' #numberMod
     | GCD '(' numberExpression ',' numberExpression ')' #numberGcd
     | LCM '(' numberExpression ',' numberExpression ')' #numberLcm
     | '(' numberExpression ')' #numberBrackets
@@ -651,7 +651,7 @@ numberExpression
     | MINUS numberExpression #numberNegative
     | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #numberVariableExp
     | numberLiteral #numberLiteralExp
-    | numberExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP) numberExpression #numberMulDiv
+    | numberExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberExpression #numberMulDiv
     | numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberExpression #numberSumSubMinMax
     ;
 
@@ -661,7 +661,6 @@ numberEnclosedExpression
     | CEIL '(' numberExpression ')' #encNumberCeil
     | ABS '(' numberExpression ')' #encNumberAbs
     | POW '(' numberExpression ',' numberExpression ')' #encNumberPow
-    | MOD '(' numberExpression ',' numberExpression ')' #encNumberMod
     | GCD '(' numberExpression ',' numberExpression ')' #encNumberGcd
     | LCM '(' numberExpression ',' numberExpression ')' #encNumberLcm
     | {!(ExpressionSegmentContainsFunction(2))}? '(' numberExpression ')' #encNumberBrackets

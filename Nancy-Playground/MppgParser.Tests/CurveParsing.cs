@@ -315,7 +315,7 @@ public class CurveParsing
             ("f * abs(0 - x)", BucketFunction().Scale(XValue)),
             ("f / gcd(4, 6)", BucketFunction().Scale(new Rational(1, 2))),
             ("f * pow(x, 3)", BucketFunction().Scale(new Rational(8))),
-            ("f + mod(7, 3)", BucketFunction().VerticalShift(new Rational(1))),
+            ("f + (7 mod 3)", BucketFunction().VerticalShift(new Rational(1))),
             ("lcm(2, 3) + f", BucketFunction().VerticalShift(new Rational(6))),
             ("f * abs(f(x))", BucketFunction().Scale(new Rational(7))),
         }.ToXUnitTestCases();

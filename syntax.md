@@ -247,11 +247,11 @@ These operations work between scalars, and return scalars.
 | v1 * v2 | Multiplication of v1 and v2. | ✅ |
 | v1 ÷ v2 | Division of v1 and v2. | ✅ |
 | v1 div v2 | Division of v1 by v2. | ✅ |
+| v1 mod v2 | Remainder of v1 divided by v2, which takes the sign of v1. Requires syntax version 1.3 or later. | ✅ |
 | floor(v) | Largest integer not above $v$, i.e. $\lfloor v \rfloor$. Requires syntax version 1.3 or later. | ✅ |
 | ceil(v) | Smallest integer not below $v$, i.e. $\lceil v \rceil$. Requires syntax version 1.3 or later. | ✅ |
 | abs(v) | Absolute value of $v$. Requires syntax version 1.3 or later. | ✅ |
 | pow(v, n) | $v$ raised to $n$, which must be an integer. Requires syntax version 1.3 or later. | ✅ |
-| mod(v1, v2) | Remainder of $v_1$ divided by $v_2$, which takes the sign of $v_1$. Requires syntax version 1.3 or later. | ✅ |
 | gcd(v1, v2) | Greatest common divisor of $v_1$ and $v_2$. Requires syntax version 1.3 or later. | ✅ |
 | lcm(v1, v2) | Least common multiple of $v_1$ and $v_2$. Requires syntax version 1.3 or later. | ✅ |
 

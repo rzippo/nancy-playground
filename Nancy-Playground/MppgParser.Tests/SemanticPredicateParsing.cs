@@ -86,7 +86,7 @@ public class SemanticPredicateParsing
             // the scalar operators, which are a scalar operand wherever they appear
             "abs(x)",
             "pow(x, y)",
-            "mod(x, y)",
+            "x mod y",
             "gcd(x, y)",
             "lcm(x, y)",
             "abs(x) * f",
@@ -319,7 +319,7 @@ public class SemanticPredicateParsing
             ("f * abs(x)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
             ("f / gcd(x, y)", typeof(GrammarMppgParser.FunctionScalarDivSuffixContext)),
             ("pow(x, y) + f", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
-            ("f + mod(x, y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
+            ("f + (x mod y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("f /\\ lcm(x, y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("lcm(x, y) comp f", typeof(GrammarMppgParser.FunctionScalarCompositionRevContext)),
             ("f comp abs(x)", typeof(GrammarMppgParser.FunctionScalarCompositionSuffixContext)),
@@ -493,7 +493,7 @@ public class SemanticPredicateParsing
             // the scalar operators take scalars and return one, whatever their arguments are built from
             "abs(x)",
             "pow(x, y)",
-            "mod(x, y)",
+            "x mod y",
             "gcd(x, y)",
             "lcm(x, y)",
             "abs(f(x))",

@@ -969,12 +969,6 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         [PowCode(Operands(context.numberExpression()))];
 
-    public override List<string> VisitNumberMod(Unipi.MppgParser.Grammar.MppgParser.NumberModContext context) =>
-        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
-
-    public override List<string> VisitEncNumberMod(Unipi.MppgParser.Grammar.MppgParser.EncNumberModContext context) =>
-        [BinaryRationalCode("Remainder", Operands(context.numberExpression()))];
-
     public override List<string> VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
         [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
 
@@ -1013,6 +1007,9 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             case Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN:
             case Unipi.MppgParser.Grammar.MppgParser.DIV_OP:
                 return [$"{first} / {second}"];
+
+            case Unipi.MppgParser.Grammar.MppgParser.MOD_OP:
+                return [$"Rational.Remainder({first}, {second})"];
             default: 
                 throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
         }

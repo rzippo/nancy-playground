@@ -562,13 +562,6 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberNegative([NotNull] MppgParser.NumberNegativeContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>numberMod</c>
-	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitNumberMod([NotNull] MppgParser.NumberModContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>numberSumSubMinMax</c>
 	/// labeled alternative in <see cref="MppgParser.numberExpression"/>.
 	/// </summary>
@@ -659,13 +652,6 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitEncNumberPow([NotNull] MppgParser.EncNumberPowContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>encNumberMod</c>
-	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitEncNumberMod([NotNull] MppgParser.EncNumberModContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>encNumberGcd</c>
 	/// labeled alternative in <see cref="MppgParser.numberEnclosedExpression"/>.
