@@ -34,6 +34,7 @@ public abstract record class Statement
         try
         {
             context = parser.statement();
+            EnsureWholeLineWasParsed(commonTokenStream);
         }
         catch (Exception ex)
         {
@@ -43,5 +44,20 @@ public abstract record class Statement
         var visitor = new StatementVisitor();
         var statement = visitor.Visit(context);
         return statement ?? throw new SyntaxErrorException("Statement could not be parsed.");
+    }
+
+    /// <summary>
+    /// Rejects a line the statement rule stopped short of.
+    /// Its empty alternative matches without consuming anything, so a line that starts with something no
+    /// statement can start with would otherwise be read as an empty statement rather than reported.
+    /// </summary>
+    private static void EnsureWholeLineWasParsed(ITokenStream tokens)
+    {
+        var next = tokens.LT(1);
+        if (next.Type == TokenConstants.EOF
+            || next.Type == Unipi.MppgParser.Grammar.MppgLexer.INLINABLE_COMMENT)
+            return;
+
+        throw new SyntaxErrorException($"Unexpected input '{next.Text}'.");
     }
 }

@@ -625,6 +625,25 @@ public class SyntaxVersioning
         Assert.Contains($"#!syntax version {introducedIn.Previous()}", exception.Message);
     }
 
+    // A line that starts with something no statement can start with used to be read as an empty
+    // statement, because the empty alternative matches without consuming anything.
+    [Theory]
+    [InlineData("mod := 3")]
+    [InlineData("mod 3")]
+    [InlineData(") := 3")]
+    public void InteractiveMode_LineThatNoStatementStartsWith_IsRejected(string line)
+    {
+        Assert.ThrowsAny<Exception>(() => Statement.FromLine(line, new State(), SyntaxVersion.Latest));
+    }
+
+    [Fact]
+    public void InteractiveMode_InlineCommentIsStillAccepted()
+    {
+        var statement = Statement.FromLine("x := 1 // a comment", new State(), SyntaxVersion.Latest);
+
+        Assert.IsType<Assignment>(statement);
+    }
+
     // The hint is about a name used where the syntax expects an operator or a command: a call of the
     // keyword that fails to parse for another reason is not that case.
     [Fact]
