@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class CodeConversion
@@ -144,6 +146,38 @@ public class CodeConversion
         Assert.DoesNotContain("Expressions.FromRational(new Rational(1)).Compute() <= f.Compute()", assertionLine);
     }
 
+    public static IEnumerable<object[]> CompoundAssertionSideTestCases =>
+        new List<string>
+        {
+            "assert( x = 7/2 )",
+            "assert( x / 2 = 7/4 )",
+            "assert( x - 1 != 3 )",
+            "assert( f(3) + 1 = 3 )",
+            "assert( 3 = f(3) + 1 )",
+            "assert( f + 1 >= 1 )",
+        }.ToXUnitTestCases();
+
+    // Appended to a compound side, .Compute() would apply to its last operand only: the emitted code
+    // would then compare expressions instead of values, when it compiles at all.
+    [Theory]
+    [MemberData(nameof(CompoundAssertionSideTestCases))]
+    public void AssertionConversionComputesEachSideAsAWhole(string assertion)
+    {
+        var code = Program.ToNancyCode(
+            $"""
+            x := 7/2
+            f := ratency(1, 1)
+            {assertion}
+            """,
+            useNancyExpressions: true);
+
+        var assertionLine = code.Single(line => line.StartsWith("Console.WriteLine("));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", assertionLine);
+        foreach (var computed in Regex.Matches(assertionLine, @".{1}\.Compute\(\)").Select(m => m.Value))
+            Assert.Equal(").Compute()", computed);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -231,7 +265,7 @@ public class CodeConversion
         var assertionLine = code.Single(line => line.StartsWith("Console.WriteLine("));
 
         if (useNancyExpressions)
-            Assert.Contains("!Curve.Equivalent(f.Compute(), g.Compute())", assertionLine);
+            Assert.Contains("!Curve.Equivalent((f).Compute(), (g).Compute())", assertionLine);
         else
             Assert.Contains("!Curve.Equivalent(f, g)", assertionLine);
     }

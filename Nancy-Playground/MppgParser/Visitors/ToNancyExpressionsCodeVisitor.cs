@@ -398,20 +398,20 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
         if (leftType == ExpressionType.Function && rightType == ExpressionType.Number)
         {
-            leftExpr = $"{leftExpr}.Compute()";
+            leftExpr = ComputeExpression(leftExpr);
             rightExpr = ToConstantCurveCode(WrapRationalExpression(rightExpr));
             rightType = ExpressionType.Function;
         }
         else if (leftType == ExpressionType.Number && rightType == ExpressionType.Function)
         {
             leftExpr = ToConstantCurveCode(WrapRationalExpression(leftExpr));
-            rightExpr = $"{rightExpr}.Compute()";
+            rightExpr = ComputeExpression(rightExpr);
             leftType = ExpressionType.Function;
         }
         else
         {
-            leftExpr = $"{leftExpr}.Compute()";
-            rightExpr = $"{rightExpr}.Compute()";
+            leftExpr = ComputeExpression(leftExpr);
+            rightExpr = ComputeExpression(rightExpr);
         }
 
         if (leftType == ExpressionType.Function && rightType == ExpressionType.Function)
@@ -781,6 +781,15 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     private string WrapRationalExpression(string expressionCode)
     {
         // todo: simplify code by omitting parentheses when not needed
+        return ComputeExpression(expressionCode);
+    }
+
+    /// <summary>
+    /// Emits the code that computes an expression.
+    /// The expression is parenthesized, so that .Compute() applies to all of it and not to its last operand.
+    /// </summary>
+    private static string ComputeExpression(string expressionCode)
+    {
         return $"({expressionCode}).Compute()";
     }
 

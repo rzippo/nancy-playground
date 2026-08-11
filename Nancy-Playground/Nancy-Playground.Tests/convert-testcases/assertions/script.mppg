@@ -1,0 +1,14 @@
+// Test assertions whose sides are compound expressions
+// Each side must be computed as a whole, or the comparison is between expressions, not values
+x := 7/2
+assert( x = 7/2 )
+assert( x / 2 = 7/4 )
+assert( x - 1 != 3 )
+f := ratency(1, 1)
+assert( f + 1 = 1 + ratency(1, 1) )
+assert( f(3) + 1 = 3 )
+assert( 3 = f(3) + 1 )
+assert( f >= f * f )
+assert( f + 1 >= 1 )
+assert( 1 <= f + 1 )
+x - 1
