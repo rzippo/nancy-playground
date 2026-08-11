@@ -356,6 +356,11 @@ public class CodeConversion
             // to keep what surrounds it rational; on expressions the return type is already right
             ("f * floor(3/2)", "((Rational)(", ".Floor()"),
             ("f * ceil(3/2)", "((Rational)(", ".Ceil()"),
+            ("f * abs(3)", "Rational.Abs(", ".AbsoluteValue()"),
+            ("f * pow(2, 3)", "Rational.Pow(", ".Pow("),
+            ("f * mod(7, 3)", "Rational.Remainder(", ".Remainder("),
+            ("f * gcd(4, 6)", "Rational.GreatestCommonDivisor(", ".GreatestCommonDivisor("),
+            ("f * lcm(4, 6)", "Rational.LeastCommonMultiple(", ".LeastCommonMultiple("),
         }
         .SelectMany(
             testCase => new[]

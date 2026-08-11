@@ -310,6 +310,14 @@ public class CurveParsing
             ("f / floor(x)", BucketFunction().Scale(new Rational(1, 2))),
             ("floor(f(x)) + g", ServiceCurve().VerticalShift(new Rational(7))),
             ("g + ceil(f(x) / 2)", ServiceCurve().VerticalShift(new Rational(4))),
+            // the scalar operators scale and shift, as any other scalar does
+            ("abs(-3) * f", BucketFunction().Scale(new Rational(3))),
+            ("f * abs(0 - x)", BucketFunction().Scale(XValue)),
+            ("f / gcd(4, 6)", BucketFunction().Scale(new Rational(1, 2))),
+            ("f * pow(x, 3)", BucketFunction().Scale(new Rational(8))),
+            ("f + mod(7, 3)", BucketFunction().VerticalShift(new Rational(1))),
+            ("lcm(2, 3) + f", BucketFunction().VerticalShift(new Rational(6))),
+            ("f * abs(f(x))", BucketFunction().Scale(new Rational(7))),
         }.ToXUnitTestCases();
 
     [Theory]

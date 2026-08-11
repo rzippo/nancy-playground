@@ -49,6 +49,28 @@ public class RationalParsing
         ( "floor(0.25)", new Rational(0) ),
         ( "ceil(0.25)", new Rational(1) ),
         ( "floor(ceil(7/2))", new Rational(4) ),
+        ( "abs(-7/2)", new Rational(7, 2) ),
+        ( "abs(7/2)", new Rational(7, 2) ),
+        ( "abs(0)", new Rational(0) ),
+        ( "abs(-inf)", Rational.PlusInfinity ),
+        ( "pow(2, 10)", new Rational(1024) ),
+        ( "pow(2, -2)", new Rational(1, 4) ),
+        ( "pow(-7/2, 3)", new Rational(-343, 8) ),
+        ( "pow(5, 0)", new Rational(1) ),
+        // the remainder takes the sign of the dividend
+        ( "mod(7, 3)", new Rational(1) ),
+        ( "mod(-7, 3)", new Rational(-1) ),
+        ( "mod(-7/2, 3)", new Rational(-1, 2) ),
+        ( "gcd(12, 18)", new Rational(6) ),
+        ( "lcm(4, 6)", new Rational(12) ),
+        // and these are defined on rationals, not only on integers
+        ( "gcd(1/2, 1/3)", new Rational(1, 6) ),
+        ( "lcm(1/2, 1/3)", new Rational(1) ),
+        // nesting, and the operators of the same version composing with each other
+        ( "abs(mod(-7, 3))", new Rational(1) ),
+        ( "gcd(lcm(4, 6), 18)", new Rational(6) ),
+        ( "pow(abs(-2), 3)", new Rational(8) ),
+        ( "floor(pow(3, 2) / 2)", new Rational(4) ),
     ];
 
     public static IEnumerable<object[]> KnownMppgRationalTestCases =>
@@ -84,6 +106,10 @@ public class RationalParsing
         ( "ceil(7/2) / 4", new Rational(1) ),
         // both operands round to integers, yet the division between them is not an integer division
         ( "floor(7/2) / floor(9/2)", new Rational(3, 4) ),
+        ( "abs(x - y)", new Rational(1) ),
+        ( "pow(x, y)", new Rational(8) ),
+        ( "mod(y, x)", new Rational(1) ),
+        ( "gcd(x, y) * lcm(x, y)", new Rational(6) ),
     ];
 
     public static IEnumerable<object[]> AmbiguousVariableRationalExpressionTestCases =>
@@ -99,6 +125,21 @@ public class RationalParsing
         var expression = Assert.IsAssignableFrom<RationalExpression>(ie);
 
         Assert.Equal(expected, expression.Compute());
+    }
+
+    // The exponent is truncated to an integer by the operation itself, which would silently give the
+    // power of a different exponent: the syntax rejects it instead.
+    [Theory]
+    [InlineData("pow(2, 1/2)")]
+    [InlineData("pow(4, 0.5)")]
+    [InlineData("pow(2, -3/2)")]
+    [InlineData("pow(2, inf)")]
+    public void PowRejectsANonIntegerExponent(string mppg)
+    {
+        var exception = Assert.ThrowsAny<Exception>(
+            () => ExpressionParsing.Parse(mppg, new State()));
+
+        Assert.Contains("exponent of pow must be an integer", exception.Message);
     }
 
     private static State StateWithFunctionAndNumberVariable() =>

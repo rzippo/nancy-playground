@@ -83,6 +83,22 @@ public class SemanticPredicateParsing
             "floor(x + y) * f",
             "floor(ceil(x))",
             "floor(ceil(f))",
+            // the scalar operators, which are a scalar operand wherever they appear
+            "abs(x)",
+            "pow(x, y)",
+            "mod(x, y)",
+            "gcd(x, y)",
+            "lcm(x, y)",
+            "abs(x) * f",
+            "f * abs(x)",
+            "f + gcd(x, y)",
+            "gcd(x, y) + f",
+            "f comp lcm(x, y)",
+            "abs(f(x))",
+            "gcd(f(x), y)",
+            "abs(hDev(f, g))",
+            "abs(x + y) * f",
+            "floor(abs(x))",
         }.ToXUnitTestCases();
 
     [Theory]
@@ -298,6 +314,18 @@ public class SemanticPredicateParsing
             // the argument is scanned as a whole, so a scalar-returning call inside keeps it scalar
             ("f * floor(g(x))", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
             ("f * floor(x + y)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            // a scalar operator is the scalar side of a mixed operator, on either side of it
+            ("abs(x) * f", typeof(GrammarMppgParser.FunctionScalarMulRevContext)),
+            ("f * abs(x)", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            ("f / gcd(x, y)", typeof(GrammarMppgParser.FunctionScalarDivSuffixContext)),
+            ("pow(x, y) + f", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
+            ("f + mod(x, y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
+            ("f /\\ lcm(x, y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
+            ("lcm(x, y) comp f", typeof(GrammarMppgParser.FunctionScalarCompositionRevContext)),
+            ("f comp abs(x)", typeof(GrammarMppgParser.FunctionScalarCompositionSuffixContext)),
+            // the arguments may be scalar-returning calls on curves without changing that
+            ("f * abs(g(x))", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
+            ("f * abs(hDev(f, g))", typeof(GrammarMppgParser.FunctionScalarMulSuffixContext)),
         }.ToXUnitTestCases();
 
     [Theory]
@@ -462,6 +490,19 @@ public class SemanticPredicateParsing
             "floor(hDev(f, g))",
             "floor(ceil(x))",
             "-floor(x)",
+            // the scalar operators take scalars and return one, whatever their arguments are built from
+            "abs(x)",
+            "pow(x, y)",
+            "mod(x, y)",
+            "gcd(x, y)",
+            "lcm(x, y)",
+            "abs(f(x))",
+            "gcd(f(x), y)",
+            "abs(hDev(f, g))",
+            "gcd(x, y) * lcm(x, y)",
+            "abs(x + y)",
+            "floor(abs(x))",
+            "abs(floor(x))",
         }.ToXUnitTestCases();
 
     [Theory]
