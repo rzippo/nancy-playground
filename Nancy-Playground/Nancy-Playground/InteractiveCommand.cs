@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.Nancy.Playground.Cli.Plots;
@@ -22,7 +23,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
     public sealed class Settings : CommonExecutionSettings
     {
-
+        [Description("Directory the files exported by the session are saved in, i.e. plots, !export and !convert. Relative paths are resolved against it. Default: the current directory.")]
+        [CommandOption("--export-root")]
+        public string? ExportRoot { get; init; }
     }
 
     /// <summary>
@@ -50,8 +53,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         // typing at a terminal already shows the command, piping it does not
         var echoInput = settings.EchoInput ?? useLineInput;
 
-        // todo: make this configurable
-        var plotsRoot = Environment.CurrentDirectory;
+        var exportRoot = ExportRoot.ForInteractive(settings.ExportRoot);
+        if (exportRoot.Validate() is { } exportRootError)
+        {
+            Console.MarkupLineInterpolated($"[red]{exportRootError}[/]");
+            return 1;
+        }
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
@@ -60,9 +67,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             {
                 Console = Console,
                 // todo: make this configurable
-                PlotFormatter = new ScottPlotFormatter(plotsRoot) { Console = Console },
-                // PlotFormatter = new XPlotPlotFormatter(plotsRoot),
-                TikzPlotFormatter = new TikzPlotFormatter(plotsRoot) { Console = Console },
+                PlotFormatter = new ScottPlotFormatter(exportRoot) { Console = Console },
+                // PlotFormatter = new XPlotPlotFormatter(exportRoot),
+                TikzPlotFormatter = new TikzPlotFormatter(exportRoot) { Console = Console },
                 PrintInputAsConfirmation = true,
                 EchoInput = echoInput
             },
@@ -108,12 +115,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 else if (line.StartsWith("!export") || line.StartsWith("!save"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
-                    ExportProgram(args, programContext);
+                    ExportProgram(args, programContext, exportRoot);
                 }
                 else if (line.StartsWith("!convert"))
                 {
                     var args = line.Split(' ').Skip(1).ToArray();
-                    ConvertProgram(args, programContext);
+                    ConvertProgram(args, programContext, exportRoot);
                 }
                 else if (line.StartsWith("!load"))
                 {
@@ -213,7 +220,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// </summary>
     /// <param name="args"></param>
     /// <param name="programContext"></param>
-    private void ExportProgram(string[] args, ProgramContext programContext)
+    /// <param name="exportRoot">The directory a relative path is resolved against.</param>
+    private void ExportProgram(string[] args, ProgramContext programContext, ExportRoot exportRoot)
     {
         if (args.Length != 1)
         {
@@ -221,7 +229,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             return;
         }
 
-        var outputPath = args[0];
+        var outputPath = exportRoot.Resolve(args[0]);
         try
         {
             var statementLines = programContext.ToProgramLines();
@@ -240,7 +248,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// </summary>
     /// <param name="args"></param>
     /// <param name="programContext"></param>
-    private void ConvertProgram(string[] args, ProgramContext programContext)
+    /// <param name="exportRoot">The directory a relative path is resolved against.</param>
+    private void ConvertProgram(string[] args, ProgramContext programContext, ExportRoot exportRoot)
     {
         if (args.Length != 1)
         {
@@ -248,7 +257,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             return;
         }
 
-        var outputPath = args[0];
+        var outputPath = exportRoot.Resolve(args[0]);
         try
         {
             var statementLines = programContext.ToProgramLines();
@@ -268,7 +277,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         }
         catch (Exception e)
         {
-            Console.MarkupLine($"[red]Error:[/] Could not export program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
+            Console.MarkupLine($"[red]Error:[/] Could not convert program to [blue]{Escape(outputPath)}[/]: {Escape(e.Message)}");
         }
     }
 

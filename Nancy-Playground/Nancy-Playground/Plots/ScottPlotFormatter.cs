@@ -16,15 +16,13 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 /// </summary>
 public class ScottPlotFormatter : IPlotFormatter
 {
-    public string PlotsExportRoot { get; set; }
+    public ExportRoot PlotsExportRoot { get; set; }
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
     public bool AutoOpenPlots { get; init; } = true;
 
-    public ScottPlotFormatter(string? plotsRoot)
+    public ScottPlotFormatter(ExportRoot plotsRoot)
     {
-        PlotsExportRoot = string.IsNullOrWhiteSpace(plotsRoot) ?
-            Environment.CurrentDirectory :
-            plotsRoot;
+        PlotsExportRoot = plotsRoot;
     }
 
     public void FormatPlot(PlotOutput plotOutput)
@@ -60,7 +58,7 @@ public class ScottPlotFormatter : IPlotFormatter
             var saveToFile = !plotOutput.Settings.OutPath.IsNullOrWhiteSpace();
 
             var imagePath = saveToFile ?
-                Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath) :
+                PlotsExportRoot.Resolve(plotOutput.Settings.OutPath) :
                 Path.GetTempPath() + Guid.NewGuid().ToString() + ".png";
             File.WriteAllBytes(imagePath, imageBytes);
 

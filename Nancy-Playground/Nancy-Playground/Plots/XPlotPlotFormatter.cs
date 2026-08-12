@@ -16,13 +16,11 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 /// </summary>
 public class XPlotPlotFormatter: IPlotFormatter
 {
-    public string PlotsExportRoot { get; set; }
+    public ExportRoot PlotsExportRoot { get; set; }
 
-    public XPlotPlotFormatter(string? plotsRoot)
+    public XPlotPlotFormatter(ExportRoot plotsRoot)
     {
-        PlotsExportRoot = string.IsNullOrWhiteSpace(plotsRoot) ?
-            Environment.CurrentDirectory :
-            plotsRoot;
+        PlotsExportRoot = plotsRoot;
     }
 
     public void FormatPlot(PlotOutput plotOutput)
@@ -81,7 +79,7 @@ public class XPlotPlotFormatter: IPlotFormatter
 
             if (!plotOutput.Settings.OutPath.IsNullOrWhiteSpace())
             {
-                var imagePath = Path.Join(PlotsExportRoot, (string?)plotOutput.Settings.OutPath);
+                var imagePath = PlotsExportRoot.Resolve(plotOutput.Settings.OutPath);
                 byte[] imageBytes;
                 try
                 {

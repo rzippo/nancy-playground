@@ -85,34 +85,15 @@ public class RunCommand : Command<RunCommand.Settings>
         // in interactive mode, the default is not to echo each command
         var echoInput = settings.EchoInput ?? true;
 
-        // Determine plots root based on the selected mode
-        // If --plots-root is specified, --plots-root-mode must be Custom (or omitted, which defaults to Custom)
-        string? plotsRoot;
-        
-        if (!string.IsNullOrWhiteSpace(settings.PlotsRoot))
+        var plotsRoot = ExportRoot.ForRun(settings.PlotsRoot, settings.PlotsRootMode, mppgFile.Directory?.FullName);
+        if (plotsRoot.Validate() is { } plotsRootError)
         {
-            // Explicit path provided
-            if (settings.PlotsRootMode.HasValue && settings.PlotsRootMode.Value != PlotRootMode.Custom)
-            {
-                throw new InvalidOperationException("--plots-root is specified with an explicit path, so --plots-root-mode must be Custom or omitted.");
-            }
-            plotsRoot = Path.GetFullPath(settings.PlotsRoot);
-        }
-        else
-        {
-            // Use mode to determine location
-            var mode = settings.PlotsRootMode ?? PlotRootMode.ScriptDirectory;
-            plotsRoot = mode switch
-            {
-                PlotRootMode.ScriptDirectory => mppgFile.Directory?.FullName,
-                PlotRootMode.CurrentDirectory => Directory.GetCurrentDirectory(),
-                PlotRootMode.Custom => throw new InvalidOperationException("--plots-root-mode is Custom but --plots-root was not specified."),
-                _ => mppgFile.Directory?.FullName,
-            };
+            Console.MarkupLineInterpolated($"[red]{plotsRootError}[/]");
+            return 1;
         }
 
         if(!settings.Deterministic)
-            Console.MarkupLine($"[yellow]Plots will be saved in: {plotsRoot}[/]");
+            Console.MarkupLineInterpolated($"[yellow]Plots will be saved in: {plotsRoot}[/]");
 
         var parsingStopwatch = Stopwatch.StartNew();
         var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);

@@ -13,14 +13,12 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 /// </summary>
 public class TikzPlotFormatter
 {
-    public string PlotsExportRoot { get; set; }
+    public ExportRoot PlotsExportRoot { get; set; }
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
-    public TikzPlotFormatter(string? plotsRoot)
+    public TikzPlotFormatter(ExportRoot plotsRoot)
     {
-        PlotsExportRoot = string.IsNullOrWhiteSpace(plotsRoot) ?
-            Environment.CurrentDirectory :
-            plotsRoot;
+        PlotsExportRoot = plotsRoot;
     }
 
     public void FormatTikzPlot(PlotOutput plotOutput)
@@ -60,7 +58,7 @@ public class TikzPlotFormatter
         var saveToFile = !plotOutput.Settings.OutPath.IsNullOrWhiteSpace();
         if (saveToFile)
         {
-            var codePath = Path.Join(PlotsExportRoot, plotOutput.Settings.OutPath);
+            var codePath = PlotsExportRoot.Resolve(plotOutput.Settings.OutPath);
             File.WriteAllText(codePath, tikzCode);
             Console.MarkupLineInterpolated($"[gray]Plot TikZ code written to: {codePath}[/]");
         }
