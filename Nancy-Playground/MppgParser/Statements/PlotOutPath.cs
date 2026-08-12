@@ -19,7 +19,7 @@ public enum PlotOutputKind
 public static class PlotOutPath
 {
     private static readonly string[] ImageExtensions = [".png"];
-    private static readonly string[] TikzExtensions = [".tex", ".tikz"];
+    private static readonly string[] TikzExtensions = [".tikz", ".tex"];
 
     /// <summary>
     /// Returns <paramref name="outPath"/> with an extension that fits <paramref name="kind"/>.
@@ -30,7 +30,7 @@ public static class PlotOutPath
     {
         var (extensions, defaultExtension) = kind switch
         {
-            PlotOutputKind.Tikz => (TikzExtensions, ".tex"),
+            PlotOutputKind.Tikz => (TikzExtensions, ".tikz"),
             _ => (ImageExtensions, ".png")
         };
 

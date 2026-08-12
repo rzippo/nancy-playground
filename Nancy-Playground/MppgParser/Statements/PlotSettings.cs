@@ -31,7 +31,7 @@ public record PlotSettings
 
     /// <summary>
     /// Name of the file to save the plot to.
-    /// Its extension depends on the plot command used, i.e. .png for <c>plot</c> and .tex for <c>plotTikz</c>.
+    /// Its extension depends on the plot command used, i.e. .png for <c>plot</c> and .tikz for <c>plotTikz</c>.
     /// </summary>
     public string OutPath { get; init; } = string.Empty;
 

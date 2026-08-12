@@ -314,8 +314,8 @@ public class CodeConversion
         // the names of the functions to plot are passed explicitly, to be used in the legend
         Assert.Contains("[\"f\", \"g\"]", fullCode);
         Assert.Contains("XLimit = new Interval(0, 10)", fullCode);
-        // an extensionless out path gets the .tex extension, and the code is written there
-        Assert.Contains("File.WriteAllText(\"coverage.tex\", plotTikzCode);", fullCode);
+        // an extensionless out path gets the .tikz extension, and the code is written there
+        Assert.Contains("File.WriteAllText(\"coverage.tikz\", plotTikzCode);", fullCode);
         // without out, the TikZ code is printed instead
         Assert.Contains("Console.WriteLine(plotTikzCode);", fullCode);
     }

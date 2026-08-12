@@ -789,14 +789,14 @@ The code is printed to the console, unless `out` is used to write it to file.
 The arguments are the same as `plot`, with these differences:
 - `main`, `title`: graph title. (Not supported by Nancy.Plots.Tikz)
 - `xlab`, `ylab`: labels for the axes. (Nancy.Plots.Tikz always uses "time" and "data")
-- `out="file.tex"`: save the TikZ code to file. The .tex extension is enforced, so it can be omitted, while .tikz is also accepted.
+- `out="file.tikz"`: save the TikZ code to file. The .tikz extension is enforced, so it can be omitted, while .tex is also accepted.
 - `gui="no"`: no effect, as no GUI is used.
 """,
                         Examples = """
 plotTikz(f1)
 plotTikz(f1, f2)
 plotTikz(service2, service1, xlim=[-0.3, 15], ylim=[-0.3, 15])
-plotTikz(f1, main="f1 for J=" +J +"Jitter", xlab="time", ylab="packets", out="plot.tex")
+plotTikz(f1, main="f1 for J=" +J +"Jitter", xlab="time", ylab="packets", out="plot.tikz")
 """,
                         Tags = ["plots", "plotTikz", "tikz", "latex", "graph", "visualization", "xlim", "ylim", "xlab", "ylab", "out"]
                     }

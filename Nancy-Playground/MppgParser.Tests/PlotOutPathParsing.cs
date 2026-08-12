@@ -19,17 +19,17 @@ public class PlotOutPathParsing
     [Theory]
     // a missing extension is added
     [InlineData("plot(f, out = \"chart\")", "chart.png")]
-    [InlineData("plotTikz(f, out = \"chart\")", "chart.tex")]
+    [InlineData("plotTikz(f, out = \"chart\")", "chart.tikz")]
     // a compatible extension is left as is
     [InlineData("plot(f, out = \"chart.png\")", "chart.png")]
-    [InlineData("plotTikz(f, out = \"chart.tex\")", "chart.tex")]
     [InlineData("plotTikz(f, out = \"chart.tikz\")", "chart.tikz")]
+    [InlineData("plotTikz(f, out = \"chart.tex\")", "chart.tex")]
     // a wrong extension is replaced, rather than doubled
     [InlineData("plot(f, out = \"chart.tex\")", "chart.png")]
-    [InlineData("plotTikz(f, out = \"chart.png\")", "chart.tex")]
+    [InlineData("plotTikz(f, out = \"chart.png\")", "chart.tikz")]
     // something that is not an extension is part of the name, hence preserved
     [InlineData("plot(f, out = \"rate-0.5\")", "rate-0.5.png")]
-    [InlineData("plotTikz(f, out = \"rate-0.5\")", "rate-0.5.tex")]
+    [InlineData("plotTikz(f, out = \"rate-0.5\")", "rate-0.5.tikz")]
     public void OutOptionGetsExtensionOfItsPlotKind(string line, string expectedOutPath)
     {
         var statement = Statement.FromLine(line, StateWithFunction());

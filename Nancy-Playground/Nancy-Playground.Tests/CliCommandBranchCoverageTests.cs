@@ -241,7 +241,7 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
-    public void RunPlotTikzWithOutWritesFileWithTexExtension()
+    public void RunPlotTikzWithOutWritesFileWithTikzExtension()
     {
         using var script = TemporaryScript.Create(
             """
@@ -260,10 +260,10 @@ public class CliCommandBranchCoverageTests
 
         Assert.Equal(0, exitCode);
         // the wrong extension is replaced, and the confirmation reports the file actually written
-        var codePath = Path.Combine(root.Path, "chart.tex");
+        var codePath = Path.Combine(root.Path, "chart.tikz");
         Assert.True(File.Exists(codePath));
         Assert.False(File.Exists(Path.Combine(root.Path, "chart.png")));
-        Assert.Contains("chart.tex", output);
+        Assert.Contains("chart.tikz", output);
         Assert.Contains("\\begin{tikzpicture}", File.ReadAllText(codePath));
     }
 

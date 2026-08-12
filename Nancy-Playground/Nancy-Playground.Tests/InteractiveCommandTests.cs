@@ -52,7 +52,7 @@ public class InteractiveCommandTests
     {
         // in interactive mode, plots are saved in the current directory
         var outName = $"interactive-plot-{Guid.NewGuid():N}";
-        var codePath = Path.Combine(Environment.CurrentDirectory, $"{outName}.tex");
+        var codePath = Path.Combine(Environment.CurrentDirectory, $"{outName}.tikz");
 
         var console = CreateConsole();
         console.Input.PushTypedLine("f := ratency(1, 3)");
@@ -65,7 +65,7 @@ public class InteractiveCommandTests
 
             // the wrong extension is replaced, and the confirmation reports the file actually written
             Assert.True(File.Exists(codePath), $"TikZ code not written to: {codePath}");
-            Assert.Contains($"{outName}.tex", console.Output);
+            Assert.Contains($"{outName}.tikz", console.Output);
             Assert.Contains("\\begin{tikzpicture}", File.ReadAllText(codePath));
         }
         finally
