@@ -90,7 +90,7 @@ public class RunCommand : Command<RunCommand.Settings>
         }
 
         if(!settings.Deterministic)
-            Console.MarkupLineInterpolated($"[yellow]Plots will be saved in: {plotsRoot}[/]");
+            Console.MarkupLineInterpolated($"[yellow]Plots with the out option will be saved in: {plotsRoot}[/]");
 
         var parsingStopwatch = Stopwatch.StartNew();
         var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);
