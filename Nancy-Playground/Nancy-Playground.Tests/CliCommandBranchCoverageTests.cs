@@ -268,6 +268,25 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void RunBannerSaysWhichPlotsThePlotsRootHolds()
+    {
+        using var script = TemporaryScript.Create("1");
+        using var root = TemporaryDirectory.Create();
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--no-welcome",
+            "--plots-root", root.Path
+        ]);
+
+        Assert.Equal(0, exitCode);
+        // a plot without the out option is transient, and goes to the temp directory instead
+        Assert.Contains("Plots with the out option will be saved in", output);
+        Assert.Contains(root.Path, output);
+    }
+
+    [Fact]
     public void RunNoGuiWritesThePlotWithoutOpeningIt()
     {
         using var script = TemporaryScript.Create(
