@@ -385,6 +385,124 @@ public class InteractiveCommandTests
         }
     }
 
+    // The export root, --export-root, is the directory the files written by the session are saved in.
+
+    [Fact]
+    public void Export_RelativePath_IsResolvedAgainstTheExportRoot()
+    {
+        var exportRoot = CreateTempDirectory();
+        var outputPath = Path.Combine(exportRoot, "session.mppg");
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine("!export session.mppg");
+        console.Input.PushTypedLine("!quit");
+
+        try
+        {
+            RunInteractive(console, exportRoot);
+
+            Assert.True(File.Exists(outputPath), $"Program not exported to: {outputPath}");
+            Assert.Contains("ratency", File.ReadAllText(outputPath));
+            // the confirmation reports where the file was actually written
+            Assert.Contains(outputPath, console.Output);
+        }
+        finally
+        {
+            Directory.Delete(exportRoot, true);
+        }
+    }
+
+    [Fact]
+    public void Export_AbsolutePath_IgnoresTheExportRoot()
+    {
+        var exportRoot = CreateTempDirectory();
+        var elsewhere = CreateTempDirectory();
+        var outputPath = Path.Combine(elsewhere, "session.mppg");
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine($"!export {outputPath}");
+        console.Input.PushTypedLine("!quit");
+
+        try
+        {
+            RunInteractive(console, exportRoot);
+
+            Assert.True(File.Exists(outputPath), $"Program not exported to: {outputPath}");
+            Assert.Empty(Directory.GetFiles(exportRoot));
+        }
+        finally
+        {
+            Directory.Delete(exportRoot, true);
+            Directory.Delete(elsewhere, true);
+        }
+    }
+
+    [Fact]
+    public void Convert_RelativePath_IsResolvedAgainstTheExportRoot()
+    {
+        var exportRoot = CreateTempDirectory();
+        var outputPath = Path.Combine(exportRoot, "session.cs");
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine("!convert session.cs");
+        console.Input.PushTypedLine("!quit");
+
+        try
+        {
+            RunInteractive(console, exportRoot);
+
+            Assert.True(File.Exists(outputPath), $"Program not converted to: {outputPath}");
+            Assert.Contains("new RateLatencyServiceCurve", File.ReadAllText(outputPath));
+        }
+        finally
+        {
+            Directory.Delete(exportRoot, true);
+        }
+    }
+
+    [Fact]
+    public void PlotTikz_WithOut_IsSavedInTheExportRoot()
+    {
+        var exportRoot = CreateTempDirectory();
+        var codePath = Path.Combine(exportRoot, "plot.tex");
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine("plotTikz(f, out = \"plot.tex\")");
+        console.Input.PushTypedLine("!quit");
+
+        try
+        {
+            RunInteractive(console, exportRoot);
+
+            Assert.True(File.Exists(codePath), $"TikZ code not written to: {codePath}");
+            Assert.Contains("\\begin{tikzpicture}", File.ReadAllText(codePath));
+        }
+        finally
+        {
+            Directory.Delete(exportRoot, true);
+        }
+    }
+
+    [Fact]
+    public void ExportRoot_ThatDoesNotExist_StopsBeforeTheSession()
+    {
+        var missingRoot = Path.Combine(Path.GetTempPath(), $"nancy-playground-{Guid.NewGuid():N}");
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("!quit");
+
+        var exitCode = RunInteractive(console, missingRoot);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("directory not found", console.Output);
+        // the session never started, so the quit was not read
+        Assert.DoesNotContain("Bye.", console.Output);
+    }
+
     [Fact]
     public void Clear_ResetsVariables()
     {
@@ -498,11 +616,19 @@ public class InteractiveCommandTests
         return console;
     }
 
-    private static int RunInteractive(TestConsole console) =>
+    private static int RunInteractive(TestConsole console, string? exportRoot = null) =>
         new TestableInteractiveCommand(console).Invoke(new InteractiveCommand.Settings
         {
-            MuteWelcomeMessage = true
+            MuteWelcomeMessage = true,
+            ExportRoot = exportRoot
         });
+
+    private static string CreateTempDirectory()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"nancy-playground-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(path);
+        return path;
+    }
 
     private sealed class TestableInteractiveCommand : InteractiveCommand
     {

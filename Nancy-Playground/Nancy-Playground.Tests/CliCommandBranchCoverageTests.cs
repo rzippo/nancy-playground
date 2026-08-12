@@ -65,6 +65,30 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void RunSavesPlotsNextToTheScriptByDefault()
+    {
+        using var scriptDirectory = TemporaryDirectory.Create();
+        using var script = TemporaryScript.Create(
+            """
+            f := affine(1, 0)
+            plotTikz(f, out = "chart.tex")
+            """,
+            scriptDirectory.Path);
+
+        var (exitCode, _) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        // no plot root is given, so the default mode, ScriptDirectory, applies
+        var codePath = Path.Combine(scriptDirectory.Path, "chart.tex");
+        Assert.True(File.Exists(codePath), $"TikZ code not written to: {codePath}");
+    }
+
+    [Fact]
     public void RunAcceptsCurrentDirectoryPlotRootMode()
     {
         using var script = TemporaryScript.Create("1");
@@ -107,6 +131,50 @@ public class CliCommandBranchCoverageTests
 
         var ex = Assert.Throws<InvalidOperationException>(() => InvokeRunCommand(settings));
         Assert.Contains("--plots-root", ex.Message);
+    }
+
+    [Fact]
+    public void RunMissingPlotsRootIsReportedBeforeParsing()
+    {
+        using var script = TemporaryScript.Create("1");
+        var missingRoot = Path.Combine(Path.GetTempPath(), $"nancy-playground-{Guid.NewGuid():N}");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--no-welcome",
+            "--plots-root", missingRoot
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("directory not found", output);
+        Assert.DoesNotContain("Parsing completed in", output);
+    }
+
+    [Fact]
+    public void RunPlotTikzWithAbsoluteOutIgnoresThePlotsRoot()
+    {
+        using var root = TemporaryDirectory.Create();
+        using var elsewhere = TemporaryDirectory.Create();
+        var codePath = Path.Combine(elsewhere.Path, "chart.tex");
+
+        using var script = TemporaryScript.Create(
+            $"""
+            f := affine(1, 0)
+            plotTikz(f, out = "{codePath}")
+            """);
+
+        var (exitCode, _) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--plots-root", root.Path
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(codePath), $"TikZ code not written to: {codePath}");
+        Assert.Empty(Directory.GetFiles(root.Path));
     }
 
     [Fact]
@@ -393,10 +461,10 @@ public class CliCommandBranchCoverageTests
             Path = path;
         }
 
-        public static TemporaryScript Create(string text)
+        public static TemporaryScript Create(string text, string? directory = null)
         {
             var path = System.IO.Path.Combine(
-                System.IO.Path.GetTempPath(),
+                directory ?? System.IO.Path.GetTempPath(),
                 $"nancy-playground-{Guid.NewGuid():N}.mppg");
             File.WriteAllText(path, text, Encoding.UTF8);
             return new TemporaryScript(path);
