@@ -68,7 +68,7 @@ public class ScottPlotFormatter : IPlotFormatter
             {
                 if(!AutoOpenPlots)
                 {
-                    Console.MarkupLine($"[yellow]Auto-opening plots is disabled, command setting ignored.[/]");
+                    Console.MarkupLine($"[yellow]GUI disabled with --no-gui, the gui option of this plot is ignored.[/]");
                     return;
                 }
 

@@ -46,9 +46,6 @@ public class RunCommand : Command<RunCommand.Settings>
         [CommandOption("--plots-root")]
         public string? PlotsRoot { get; init; }
 
-        [Description("If enabled, plots are never opened automatically, regardless of the command used. Useful to implement tests.")]
-        [CommandOption("--no-plots-auto-open")]
-        public bool NoPlotsAutoOpen { get; init; } = false;
     }
 
     public RunCommand(IAnsiConsole console)
@@ -132,7 +129,7 @@ public class RunCommand : Command<RunCommand.Settings>
             new ScottPlotFormatter(plotsRoot)
             {
                 Console = Console,
-                AutoOpenPlots = !settings.NoPlotsAutoOpen
+                AutoOpenPlots = !settings.NoGui
             };
         // add option to use XPlotPlotFormatter?
 

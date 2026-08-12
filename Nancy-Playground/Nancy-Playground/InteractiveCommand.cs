@@ -67,7 +67,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             {
                 Console = Console,
                 // todo: make this configurable
-                PlotFormatter = new ScottPlotFormatter(exportRoot) { Console = Console },
+                PlotFormatter = new ScottPlotFormatter(exportRoot)
+                {
+                    Console = Console,
+                    AutoOpenPlots = !settings.NoGui
+                },
                 // PlotFormatter = new XPlotPlotFormatter(exportRoot),
                 TikzPlotFormatter = new TikzPlotFormatter(exportRoot) { Console = Console },
                 PrintInputAsConfirmation = true,

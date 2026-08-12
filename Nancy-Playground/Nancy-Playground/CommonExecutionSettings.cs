@@ -24,6 +24,10 @@ public class CommonExecutionSettings : CommandSettings
     [Description("Mutes the welcome message.")]
     public bool MuteWelcomeMessage { get; init; } = false;
 
+    [CommandOption("--no-gui")]
+    [Description("Never shows a plot in a GUI window, overriding the gui option of each plot command. The image is still written, and its path printed. Has no effect on plotTikz, which uses no GUI.")]
+    public bool NoGui { get; init; } = false;
+
     [CommandOption("--echo")]
     [Description("Echoes user input in interactive mode. Default: true in run mode, false in interactive mode.")]
     public bool? EchoInput { get; init; }

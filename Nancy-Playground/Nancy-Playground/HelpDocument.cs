@@ -750,7 +750,7 @@ Notes:
 - Functions must be variables (not inline expressions).
 - Args and function names can appear in any order.
 - Args can be numbers, intervals, or strings (possibly composed via sums).
-- `gui` behaves differently depending on rendering backend.
+- `gui` applies per plot, while --no-gui applies to the whole run and overrides it. The image is written either way.
 
 Supported args:
 - `main`: graph title.
@@ -762,7 +762,7 @@ Supported args:
 - `out="file.png"`: save to PNG file. The .png extension is enforced, so it can be omitted.
 - `grid="no"`: disable grid. (Not implemented)
 - `bg="no"`: white background instead of grey. (Not implemented)
-- `gui="no"`: custom flag to enable/skip GUI rendering.
+- `gui="no"`: custom flag to skip showing the plot in a GUI window. Default: "yes".
 """,
                         Examples = """
 plot(f1)

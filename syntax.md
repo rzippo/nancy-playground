@@ -291,14 +291,16 @@ Valid `args` are the following.
 | `out` | Name of png file to save plot to. The `.png` extension is enforced, so it can be omitted. | ✅ |
 | `grid ="no"` | Remove grid from plot. | ❌ |
 | `bg ="no"` | Use white background instead of default grey. | ❌ |
-| `gui ="no"` | Custom option, enables or skips rendering via GUI. | ✅ |
+| `gui ="no"` | Custom option, skips showing the plot in a GUI window. Default: `"yes"`. | ✅ |
 
 Notes: 
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
 of numbers, variables and strings for labels
 - *not documented*: args and function names can appear in any order
-- the `gui` option behaves differently depending on the plot rendering used.
+- the `gui` option applies per plot, while the `--no-gui` option of the command line applies to the
+whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders
+code rather than an image, so neither has any effect there.
 
 ### Examples
 - `plot(f1)`

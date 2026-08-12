@@ -136,7 +136,7 @@ public class ConvertCommandPlotTests
             scriptPath,
             "--no-welcome",
             "--plots-root", runOutputDir,
-            "--no-plots-auto-open"
+            "--no-gui"
         ];
         
         // Act: Run the MPPG script to generate plots
@@ -335,7 +335,7 @@ public class ConvertCommandPlotTests
             scriptPath,
             "--no-welcome",
             "--plots-root", runOutputDir,
-            "--no-plots-auto-open"
+            "--no-gui"
         ];
         
         var runConsole = new TestConsole();

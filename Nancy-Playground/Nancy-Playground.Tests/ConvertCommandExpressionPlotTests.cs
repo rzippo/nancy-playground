@@ -55,7 +55,7 @@ public class ConvertCommandExpressionPlotTests
             scriptPath,
             "--no-welcome",
             "--plots-root", runOutputDir,
-            "--no-plots-auto-open"
+            "--no-gui"
         ]);
 
         Assert.Equal(0, runResult.ExitCode);
