@@ -488,6 +488,29 @@ public class InteractiveCommandTests
     }
 
     [Fact]
+    public void NoGui_WritesThePlotWithoutOpeningIt()
+    {
+        var exportRoot = CreateTempDirectory();
+
+        var console = CreateConsole();
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine("plot(f, out = \"chart.png\")");
+        console.Input.PushTypedLine("!quit");
+
+        try
+        {
+            RunInteractive(console, exportRoot, noGui: true);
+
+            Assert.Contains("GUI disabled with --no-gui", console.Output);
+            Assert.True(File.Exists(Path.Combine(exportRoot, "chart.png")));
+        }
+        finally
+        {
+            Directory.Delete(exportRoot, true);
+        }
+    }
+
+    [Fact]
     public void ExportRoot_ThatDoesNotExist_StopsBeforeTheSession()
     {
         var missingRoot = Path.Combine(Path.GetTempPath(), $"nancy-playground-{Guid.NewGuid():N}");
@@ -616,11 +639,12 @@ public class InteractiveCommandTests
         return console;
     }
 
-    private static int RunInteractive(TestConsole console, string? exportRoot = null) =>
+    private static int RunInteractive(TestConsole console, string? exportRoot = null, bool noGui = false) =>
         new TestableInteractiveCommand(console).Invoke(new InteractiveCommand.Settings
         {
             MuteWelcomeMessage = true,
-            ExportRoot = exportRoot
+            ExportRoot = exportRoot,
+            NoGui = noGui
         });
 
     private static string CreateTempDirectory()

@@ -268,6 +268,30 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void RunNoGuiWritesThePlotWithoutOpeningIt()
+    {
+        using var script = TemporaryScript.Create(
+            """
+            f := affine(1, 0)
+            plot(f, out = "chart.png")
+            """);
+        using var root = TemporaryDirectory.Create();
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--no-welcome",
+            "--plots-root", root.Path,
+            "--no-gui"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        // the plot defaults to being shown, so the option of the command line is what skips it
+        Assert.Contains("GUI disabled with --no-gui", output);
+        Assert.True(File.Exists(Path.Combine(root.Path, "chart.png")));
+    }
+
+    [Fact]
     public void RunPlotTikzWithoutFunctionsReportsNothingToPlot()
     {
         using var script = TemporaryScript.Create(
