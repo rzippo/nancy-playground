@@ -121,8 +121,12 @@ upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
 > The * means optional. "period" is a mandatory field. 
 > First segment list is the finite part. 
 > The second part is the pseudo-periodic part. 
-> The increment is optional. 
-> The period is purely informational.
+> Both `incr` and `period` are optional.
+
+`incr` is authoritative: giving a height other than the one the periodic part implies produces a different curve.
+`period` is informational, and a length other than the one the periodic part implies is ignored.
+
+Unlike the endpoints and slopes of the segments, which are full [number expressions](#number-syntax), `incr` and `period` are literals: an integer, a decimal, an infinity, or a fraction of two of these.
 
 ##### Examples
 
@@ -132,6 +136,10 @@ upp( period( [(0, 0) 0 (2, 0)[ [(2, 0) 1 (7, 5)] ](7, 5) 0 (12, 5)[ ))
 
 ```
 upp( [(0, +Infinity) 0 (6, +Infinity)], period (](6, 0) 0 (10.5, 0)[ [(10.5, +Infinity) 0 (18, +Infinity)]), 0, 12)
+```
+
+```
+upp( period( [(0, 0)] ](0, 0) 0 (1, 0)[ ), 1/2, 1)
 ```
 
 ## Scalar values ✅
@@ -204,9 +212,27 @@ The supported precedence order is:
 
 Thus `f comp g * x` is parsed as `(f comp g) * x`, and `f * x comp g` is parsed as `(f * x) comp g`.
 
+#### Scalar operands of the mixed operators
+
+The scalar side of `+`, `-`, `/\` and `\/` is a whole product of scalars, so `f + 1/2` shifts by one half and `f + x * y` shifts by the product.
+It stops short of the sum operators, so `f - x + y` is `(f - x) + y`, not `f - (x + y)`.
+
+The scalar side of `*`, `/` and `comp` is one value at a time, and a chain of them folds left to right, exactly as it does between scalars.
+So `f / 1/2` is `(f / 1) / 2`, the same grouping that `a / 1/2` has when `a` is a scalar.
+
 Some mixed scalar/function forms are Nancy extensions beyond the subset that RTaW computes successfully.
 For example, `f(x) comp g` is accepted as a mixed scalar/function composition and returns a function.
 For syntax that RTaW computes successfully, the implementation is expected to match RTaW behavior.
+
+##### Division edge cases and divergence from RTaW
+
+RTaW groups divisions differently based on the type of the dividend:
+- a divisor that *starts with a number* is read as one whole value, e.g. it reads `f / 1/2` as `f / (1/2)`
+- a divisor that instead starts with a variable, sampled value, etc. is folded left, e.g. it reads `f / x/y` as `(f / x) / y`.
+
+`nancy-playground` instead will always fold left. 
+This is internally coherent but may lead to unexpected different results w.r.t. RTaW.
+For this reason, a `WARNING` recommending explicit parentheses will be printed whenever an expression like `f / 1 / 2` is used. 
 
 ## Scalar-returning operations
 
@@ -297,6 +323,8 @@ Notes:
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
 of numbers, variables and strings for labels
+- the bounds of the `xlim` and `ylim` intervals are literals, not expressions: an integer, a decimal, an infinity, or a fraction of two of these.
+  Fractions, as in `xlim=[1/3, 10]`, are a `nancy-playground` addition: RTaW takes a variable there but not a fraction
 - *not documented*: args and function names can appear in any order
 - the `gui` option applies per plot, while the `--no-gui` option of the command line applies to the
 whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders
