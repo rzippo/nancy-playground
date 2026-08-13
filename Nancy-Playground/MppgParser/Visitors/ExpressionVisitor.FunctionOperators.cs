@@ -1,4 +1,4 @@
-﻿using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Expressions;
 using Unipi.Nancy.Expressions.Internals;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
@@ -6,14 +6,6 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public partial class ExpressionVisitor
 {
     public override IExpression VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context)
-    {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
-
-        return context.GetChild(1).Accept(this);
-    }
-
-    public override IExpression VisitNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.NumberBracketsContext context)
     {
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
@@ -32,7 +24,7 @@ public partial class ExpressionVisitor
     public override IExpression VisitFunctionScalarMulRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
     {
-        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        var scalar = (RationalExpression)context.numberProductExpression().Accept(this);
         var curve = (CurveExpression)context.functionUnaryExpression().Accept(this);
 
         return curve.Scale(scalar);
@@ -41,7 +33,7 @@ public partial class ExpressionVisitor
     public override IExpression VisitFunctionScalarCompositionRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)
     {
-        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        var scalar = (RationalExpression)context.numberProductExpression().Accept(this);
         _ = context.functionUnaryExpression().Accept(this);
 
         return ConstantCurveExpression(scalar);
@@ -61,7 +53,7 @@ public partial class ExpressionVisitor
                         (CurveExpression)sum.functionProductExpression().Accept(this)),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxSuffixContext shift =>
                     ApplyFunctionNumberSum((CurveExpression)result, shift.op.Type,
-                        (RationalExpression)shift.numberEnclosedExpression().Accept(this)),
+                        (RationalExpression)shift.numberProductExpression().Accept(this)),
                 _ => throw new InvalidOperationException($"Unexpected function sum suffix: {suffix.GetType().Name}")
             };
         }
@@ -72,7 +64,7 @@ public partial class ExpressionVisitor
     public override IExpression VisitFunctionShiftMinMaxRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var scalar = (RationalExpression)context.numberEnclosedExpression().Accept(this);
+        var scalar = (RationalExpression)context.numberProductExpression().Accept(this);
         var curve = (CurveExpression)context.functionProductExpression().Accept(this);
 
         return ApplyNumberFunctionSum(scalar, context.op.Type, curve);
@@ -92,7 +84,7 @@ public partial class ExpressionVisitor
                         (CurveExpression)convolution.functionUnaryExpression().Accept(this)),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulSuffixContext scalarMul =>
                     ((CurveExpression)result).Scale(
-                        (RationalExpression)scalarMul.numberEnclosedExpression().Accept(this)),
+                        (RationalExpression)scalarMul.numberUnaryExpression().Accept(this)),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionSuffixContext convolution =>
                     Expressions.Expressions.MaxPlusConvolution((CurveExpression)result,
                         (CurveExpression)convolution.functionUnaryExpression().Accept(this)),
@@ -101,7 +93,7 @@ public partial class ExpressionVisitor
                         (CurveExpression)deconvolution.functionUnaryExpression().Accept(this)),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivSuffixContext scalarDiv =>
                     ((CurveExpression)result).Scale(
-                        ((RationalExpression)scalarDiv.numberEnclosedExpression().Accept(this)).Invert()),
+                        ((RationalExpression)scalarDiv.numberUnaryExpression().Accept(this)).Invert()),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionSuffixContext deconvolution =>
                     Expressions.Expressions.MaxPlusDeconvolution((CurveExpression)result,
                         (CurveExpression)deconvolution.functionUnaryExpression().Accept(this)),
@@ -111,7 +103,7 @@ public partial class ExpressionVisitor
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionSuffixContext scalarComposition =>
                     ConstantCurveExpression(
                         ((CurveExpression)result).ValueAt(
-                            (RationalExpression)scalarComposition.numberEnclosedExpression().Accept(this))),
+                            (RationalExpression)scalarComposition.numberUnaryExpression().Accept(this))),
                 _ => throw new InvalidOperationException($"Unexpected function product suffix: {suffix.GetType().Name}")
             };
         }

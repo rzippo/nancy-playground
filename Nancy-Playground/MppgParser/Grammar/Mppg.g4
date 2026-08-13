@@ -222,11 +222,51 @@ grammar Mppg;
 
     private bool IsNumberFunctionOperationStart(int lookaheadIndex, string operation)
     {
-        var numberEnd = TryGetNumberEnclosedExpressionEnd(lookaheadIndex);
+        var numberEnd = TryGetNumberProductExpressionEnd(lookaheadIndex);
         return numberEnd > 0
             && TokenStream.LT(numberEnd).Text == operation
             && IsFunctionOperandStart(numberEnd + 1);
     }
+
+    private bool IsNumberProductExpressionStart(int lookaheadIndex) =>
+        TryGetNumberProductExpressionEnd(lookaheadIndex) > 0;
+
+    // Index just past a chain of number operands joined by the product-level operators, matching numberProductExpression.
+    // It stops at an operator whose right side is not a number, which is exactly where a mixed form like 1/2 * f or x * y * f hands over to the function side.
+    private int TryGetNumberProductExpressionEnd(int lookaheadIndex)
+    {
+        var end = TryGetNumberUnaryExpressionEnd(lookaheadIndex);
+        if (end < 0)
+            return -1;
+
+        while (IsNumberProductOperator(TokenStream.LT(end)))
+        {
+            var operandEnd = TryGetNumberUnaryExpressionEnd(end + 1);
+            if (operandEnd < 0)
+                return end;
+
+            end = operandEnd;
+        }
+
+        return end;
+    }
+
+    // Index just past a number operand behind any number of signs, matching numberUnaryExpression.
+    private int TryGetNumberUnaryExpressionEnd(int lookaheadIndex)
+    {
+        var index = lookaheadIndex;
+        while (TokenStream.LT(index).Text is "+" or "-")
+            index++;
+
+        return TryGetNumberEnclosedExpressionEnd(index);
+    }
+
+    private bool IsNumberProductOperator(IToken token) =>
+        token.Text == "*"
+        || token.Text == "/"
+        || token.Text == "div"
+        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
+        || (token.Type != VARIABLE_NAME && token.Text == "mod");
 
     private bool IsNumberEnclosedExpressionStart(int lookaheadIndex)
     {
@@ -526,12 +566,12 @@ functionSumExpression
 // classify mixed scalar/function operands before ANTLR commits to an alternative.
 functionSumStart
     : {IsFunctionProductExpressionStart(1)}? functionProductExpression #functionSumFunctionStart
-    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev
+    | {IsNumberProductExpressionStart(1)}? numberProductExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev
     ;
 
 functionSumSuffix
     : {SumOperandContainsFunction(2)}? op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionSumSubMinMaxSuffix
-    | op=(PLUS|MINUS|WEDGE|VEE) numberEnclosedExpression #functionShiftMinMaxSuffix
+    | op=(PLUS|MINUS|WEDGE|VEE) numberProductExpression #functionShiftMinMaxSuffix
     ;
 
 functionProductExpression
@@ -540,23 +580,28 @@ functionProductExpression
 
 // Product-level predicates distinguish convolution/composition from scalar
 // multiplication, division, and sampling forms that share the same tokens.
+// The scalar on the left of '*' binds at the product tier, so 1/2 * f and x/y * f are a scalar times a function rather than a parse error.
+// The chain stops at the operator whose right side is not a number, which is where the function side takes over.
 functionProductStart
     : {IsFunctionOperandStart(1)}? functionUnaryExpression #functionProductFunctionStart
-    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression '*' functionUnaryExpression #functionScalarMulRev
-    | {IsNumberEnclosedExpressionStart(1)}? numberEnclosedExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
+    | {IsNumberProductExpressionStart(1)}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
+    | {IsNumberProductExpressionStart(1)}? numberProductExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
     ;
 
+// The scalar on the right of a product operator binds at the unary tier, one operand at a time, so that a chain keeps folding left to right.
+// f / 1/2 is (f / 1) / 2, as it is for plain scalars, and not f / (1/2).
+// The unary tier is what lets the operand carry a sign, so f * -x reads like f + -x.
 functionProductSuffix
     : {ProductOperandContainsFunction(2)}? '*' functionUnaryExpression #functionMinPlusConvolutionSuffix
-    | '*' numberEnclosedExpression #functionScalarMulSuffix
+    | '*' numberUnaryExpression #functionScalarMulSuffix
     | '*_' functionUnaryExpression #functionMinPlusConvolutionSuffix
     | '*^' functionUnaryExpression #functionMaxPlusConvolutionSuffix
     | {ProductOperandContainsFunction(2)}? '/' functionUnaryExpression #functionMinPlusDeconvolutionSuffix
-    | '/' numberEnclosedExpression #functionScalarDivSuffix
+    | '/' numberUnaryExpression #functionScalarDivSuffix
     | '/_' functionUnaryExpression #functionMinPlusDeconvolutionSuffix
     | '/^' functionUnaryExpression #functionMaxPlusDeconvolutionSuffix
     | {IsFunctionOperandStart(2)}? 'comp' functionUnaryExpression #functionComposition
-    | 'comp' numberEnclosedExpression #functionScalarCompositionSuffix
+    | 'comp' numberUnaryExpression #functionScalarCompositionSuffix
     ;
 
 functionUnaryExpression
@@ -618,8 +663,8 @@ ultimatelyAffineFunction: 'uaf' '(' sequence ')';
 ultimatelyPseudoPeriodicFunction: 'upp' '(' uppTransientPart?  uppPeriodicPart increment? ')';
 uppTransientPart: sequence ',';
 uppPeriodicPart: 'period' '(' sequence ')';
-increment: ',' numberLiteral periodLenght?;
-periodLenght: ',' numberLiteral;
+increment: ',' rationalLiteral periodLenght?;
+periodLenght: ',' rationalLiteral;
 
 // Segments
 sequence: element+;
@@ -638,21 +683,11 @@ segmentLeftClosedRightOpen: '[' endpoint numberExpression? endpoint '[';
 segmentLeftClosedRightClosed: '[' endpoint numberExpression? endpoint ']';
 
 // Numbers
+// One hierarchy of tiers, sum -> product -> unary -> atom, so that the atoms are spelled once and every construct takes the operand granularity it needs.
+// The mixed scalar/function operators bind their scalar side at the product tier, which is wide enough to carry a fraction (f + 1/2) but stops short of the sum operators the function chain has to keep for itself.
 numberExpression
-    : numberReturningfunctionOperation #numberReturningfunctionOperationExp
-    | FLOOR '(' numberExpression ')' #numberFloor
-    | CEIL '(' numberExpression ')' #numberCeil
-    | ABS '(' numberExpression ')' #numberAbs
-    | POW '(' numberExpression ',' numberExpression ')' #numberPow
-    | GCD '(' numberExpression ',' numberExpression ')' #numberGcd
-    | LCM '(' numberExpression ',' numberExpression ')' #numberLcm
-    | '(' numberExpression ')' #numberBrackets
-    | PLUS numberExpression #numberPositive
-    | MINUS numberExpression #numberNegative
-    | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #numberVariableExp
-    | numberLiteral #numberLiteralExp
-    | numberExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberExpression #numberMulDiv
-    | numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberExpression #numberSumSubMinMax
+    : numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberProductExpression #numberSumSubMinMax
+    | numberProductExpression #numberSumAtom
     ;
 
 numberEnclosedExpression
@@ -668,7 +703,28 @@ numberEnclosedExpression
     | numberLiteral #encNumberLiteralExp
     ;
 
+// The product tier, and the scalar operand of a mixed sum operator (f + 1/2): a chain of number atoms joined by the product-level operators.
+// It stops short of +, -, /\ and \/, so it cannot steal the sum-level operators that the function sum chain handles.
+// It is left-recursive, so a chain folds left-to-right (1/2/3 is (1/2)/3).
+numberProductExpression
+    : numberUnaryExpression #numberProductAtom
+    | numberProductExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberUnaryExpression #numberProductMulDiv
+    ;
+
+// The unary tier.
+// The atom comes first so that a signed literal stays one literal, as it did when numberLiteral was reached directly.
+// -3 is the literal -3, while -x, -(x + y) and -f(3), which no literal can spell, take the sign alternatives.
+numberUnaryExpression
+    : numberEnclosedExpression #numberUnaryAtom
+    | PLUS numberUnaryExpression #numberPositive
+    | MINUS numberUnaryExpression #numberNegative
+    ;
+
 numberLiteral: (PLUS|MINUS)? NUMBER_ABS_LITERAL;
+
+// A literal-only rational, for the positions that take a constant rather than an expression: the pseudo-period fields of upp, which are informational, and the plot intervals.
+// It exists so that a fraction, which is how Nancy writes a non-decimal rational, is accepted wherever the same value written as an integer or a decimal is.
+rationalLiteral: numberLiteral (DIV_SIGN numberLiteral)?;
 
 // Number-returning function operations
 numberReturningfunctionOperation
@@ -711,7 +767,7 @@ string
 stringLiteral: STRING_LITERAL;
 stringVariable: {IsKnownVariable(CurrentToken.Text)}? VARIABLE_NAME;
 
-interval: '[' numberLiteral ',' numberLiteral ']';
+interval: '[' rationalLiteral ',' rationalLiteral ']';
 
 // Assertions
 assertion

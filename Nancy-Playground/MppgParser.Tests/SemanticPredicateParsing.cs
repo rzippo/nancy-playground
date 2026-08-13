@@ -239,6 +239,8 @@ public class SemanticPredicateParsing
             ("f + (x)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("f + (x + y)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("(x + y) + f", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
+            ("f + 1/2", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
+            ("1/2 + f", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
             ("f(x) + g", typeof(GrammarMppgParser.FunctionShiftMinMaxRevContext)),
             ("g + f(x)", typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)),
             ("f + x comp g", typeof(GrammarMppgParser.FunctionSumSubMinMaxSuffixContext)),
@@ -355,7 +357,26 @@ public class SemanticPredicateParsing
                 expressionContext,
                 typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)));
 
-        Assert.NotNull(functionContext.numberEnclosedExpression());
+        Assert.NotNull(functionContext.numberProductExpression());
+    }
+
+    [Fact]
+    public void FractionAfterSumOperatorParsesAsANumberProduct()
+    {
+        var (context, _, errors) = ParseExpression("f + 1/2");
+
+        Assert.Empty(errors.Select(error => error.ToString(verbose: true)));
+
+        var expressionContext = context.functionExpression();
+        Assert.NotNull(expressionContext);
+
+        var shiftContext = Assert.IsType<GrammarMppgParser.FunctionShiftMinMaxSuffixContext>(
+            FindDescendant(
+                expressionContext,
+                typeof(GrammarMppgParser.FunctionShiftMinMaxSuffixContext)));
+
+        Assert.NotNull(
+            FindDescendant(shiftContext, typeof(GrammarMppgParser.NumberProductMulDivContext)));
     }
 
     public static IEnumerable<object[]> InvalidNumberLeftDivisionByFunctionCases =>

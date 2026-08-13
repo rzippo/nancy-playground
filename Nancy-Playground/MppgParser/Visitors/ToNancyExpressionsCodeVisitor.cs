@@ -292,8 +292,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     argsDict["XLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
@@ -304,8 +304,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     argsDict["YLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
@@ -452,12 +452,6 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         }
     }
 
-    public override List<string> VisitNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.NumberVariableExpContext context)
-    {
-        var name = context.GetChild(0).GetText();
-        return [name];
-    }
-
     public override List<string> VisitEncNumberVariableExp(Unipi.MppgParser.Grammar.MppgParser.EncNumberVariableExpContext context)
     {
         var name = context.GetChild(0).GetText();
@@ -496,12 +490,6 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         return [$"( {innerCode} )"];
     }
 
-    public override List<string> VisitNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.NumberBracketsContext context)
-    {
-        var innerCode = context.GetChild(1).Accept(this).Single();
-        return [$"( {innerCode} )"];
-    }
-
     public override List<string> VisitEncNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context)
     {
         var innerCode = context.numberExpression().Accept(this).Single();
@@ -513,7 +501,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitFunctionScalarMulRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
     {
-        var first = context.numberEnclosedExpression().Accept(this).Single();
+        var first = context.numberProductExpression().Accept(this).Single();
         var second = context.functionUnaryExpression().Accept(this).Single();
 
         return [$"{second} * {first}"];
@@ -522,7 +510,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitFunctionScalarCompositionRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)
     {
-        var first = context.numberEnclosedExpression().Accept(this).Single();
+        var first = context.numberProductExpression().Accept(this).Single();
         _ = context.functionUnaryExpression().Accept(this).Single();
 
         return [ConstantCurveExpressionCode(first)];
@@ -540,7 +528,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
                 Unipi.MppgParser.Grammar.MppgParser.FunctionSumSubMinMaxSuffixContext sum =>
                     ApplyFunctionFunctionSumCode(result, sum.op.Type, sum.functionProductExpression().Accept(this).Single()),
                 Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxSuffixContext shift =>
-                    ApplyFunctionNumberSumCode(result, shift.op.Type, shift.numberEnclosedExpression().Accept(this).Single()),
+                    ApplyFunctionNumberSumCode(result, shift.op.Type, shift.numberProductExpression().Accept(this).Single()),
                 _ => throw new InvalidOperationException($"Unexpected function sum suffix: {suffix.GetType().Name}")
             };
         }
@@ -551,7 +539,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitFunctionShiftMinMaxRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var first = context.numberEnclosedExpression().Accept(this).Single();
+        var first = context.numberProductExpression().Accept(this).Single();
         var second = context.functionProductExpression().Accept(this).Single();
 
         return [ApplyNumberFunctionSumCode(first, context.op.Type, second)];
@@ -569,19 +557,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusConvolutionSuffixContext convolution =>
                     $"{result}.Convolution({convolution.functionUnaryExpression().Accept(this).Single()})",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulSuffixContext scalarMul =>
-                    $"{result} * {scalarMul.numberEnclosedExpression().Accept(this).Single()}",
+                    $"{result} * {scalarMul.numberUnaryExpression().Accept(this).Single()}",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusConvolutionSuffixContext convolution =>
                     $"{result}.MaxPlusConvolution({convolution.functionUnaryExpression().Accept(this).Single()})",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMinPlusDeconvolutionSuffixContext deconvolution =>
                     $"{result}.Deconvolution({deconvolution.functionUnaryExpression().Accept(this).Single()})",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDivSuffixContext scalarDiv =>
-                    $"{result} / {scalarDiv.numberEnclosedExpression().Accept(this).Single()}",
+                    $"{result} / {scalarDiv.numberUnaryExpression().Accept(this).Single()}",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionMaxPlusDeconvolutionSuffixContext deconvolution =>
                     $"{result}.MaxPlusDeconvolution({deconvolution.functionUnaryExpression().Accept(this).Single()})",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionCompositionContext composition =>
                     $"{result}.Composition({composition.functionUnaryExpression().Accept(this).Single()})",
                 Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionSuffixContext scalarComposition =>
-                    ConstantCurveExpressionCode($"{result}.ValueAt({scalarComposition.numberEnclosedExpression().Accept(this).Single()})"),
+                    ConstantCurveExpressionCode($"{result}.ValueAt({scalarComposition.numberUnaryExpression().Accept(this).Single()})"),
                 _ => throw new InvalidOperationException($"Unexpected function product suffix: {suffix.GetType().Name}")
             };
         }
@@ -983,14 +971,14 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
     public override List<string> VisitNumberPositive(Unipi.MppgParser.Grammar.MppgParser.NumberPositiveContext context)
     {
-        var value = context.numberExpression().Accept(this).Single();
+        var value = context.numberUnaryExpression().Accept(this).Single();
 
         return [value];
     }
 
     public override List<string> VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
     {
-        var value = context.numberExpression().Accept(this).Single();
+        var value = context.numberUnaryExpression().Accept(this).Single();
 
         return value switch
         {
@@ -1000,38 +988,20 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         };
     }
 
-    public override List<string> VisitNumberFloor(Unipi.MppgParser.Grammar.MppgParser.NumberFloorContext context) =>
-        [$"({context.numberExpression().Accept(this).Single()}).Floor()"];
-
-    public override List<string> VisitNumberCeil(Unipi.MppgParser.Grammar.MppgParser.NumberCeilContext context) =>
-        [$"({context.numberExpression().Accept(this).Single()}).Ceil()"];
-
     public override List<string> VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
         [$"({context.numberExpression().Accept(this).Single()}).Floor()"];
 
     public override List<string> VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
         [$"({context.numberExpression().Accept(this).Single()}).Ceil()"];
 
-    public override List<string> VisitNumberAbs(Unipi.MppgParser.Grammar.MppgParser.NumberAbsContext context) =>
-        [$"({context.numberExpression().Accept(this).Single()}).AbsoluteValue()"];
-
     public override List<string> VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
         [$"({context.numberExpression().Accept(this).Single()}).AbsoluteValue()"];
-
-    public override List<string> VisitNumberPow(Unipi.MppgParser.Grammar.MppgParser.NumberPowContext context) =>
-        [BinaryRationalCode("Pow", Operands(context.numberExpression()))];
 
     public override List<string> VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         [BinaryRationalCode("Pow", Operands(context.numberExpression()))];
 
-    public override List<string> VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
-        [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
-
     public override List<string> VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
         [BinaryRationalCode("GreatestCommonDivisor", Operands(context.numberExpression()))];
-
-    public override List<string> VisitNumberLcm(Unipi.MppgParser.Grammar.MppgParser.NumberLcmContext context) =>
-        [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
 
     public override List<string> VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
         [BinaryRationalCode("LeastCommonMultiple", Operands(context.numberExpression()))];
@@ -1043,10 +1013,19 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     private static string BinaryRationalCode(string method, (string Left, string Right) operands) =>
         $"({operands.Left}).{method}({operands.Right})";
 
-    public override List<string> VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
+    public override List<string> VisitNumberSumAtom(Unipi.MppgParser.Grammar.MppgParser.NumberSumAtomContext context) =>
+        context.numberProductExpression().Accept(this);
+
+    public override List<string> VisitNumberUnaryAtom(Unipi.MppgParser.Grammar.MppgParser.NumberUnaryAtomContext context) =>
+        context.numberEnclosedExpression().Accept(this);
+
+    public override List<string> VisitNumberProductAtom(Unipi.MppgParser.Grammar.MppgParser.NumberProductAtomContext context) =>
+        context.numberUnaryExpression().Accept(this);
+
+    public override List<string> VisitNumberProductMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberProductMulDivContext context)
     {
-        var first = context.GetChild(0).Accept(this).Single();
-        var second = context.GetChild(2).Accept(this).Single();
+        var first = context.numberProductExpression().Accept(this).Single();
+        var second = context.numberUnaryExpression().Accept(this).Single();
         var operation = context.op;
 
         switch (operation.Type)
@@ -1060,8 +1039,8 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
 
             case Unipi.MppgParser.Grammar.MppgParser.MOD_OP:
                 return [$"({first}).Remainder({second})"];
-            
-            default: 
+
+            default:
                 throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
         }
     }

@@ -6,6 +6,20 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
 {
+    public override Rational VisitRationalLiteral(Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext context)
+    {
+        var literals = context.numberLiteral();
+        var numerator = VisitNumberLiteral(literals[0]);
+        if (literals.Length == 1)
+            return numerator;
+
+        var denominator = VisitNumberLiteral(literals[1]);
+        if (denominator.IsZero)
+            throw new Exception($"Invalid rational literal, its denominator is zero: {context.GetText()}");
+
+        return numerator / denominator;
+    }
+
     public override Rational VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var numberText = context.GetText();

@@ -161,8 +161,8 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     settings = settings with
@@ -176,8 +176,8 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
                     var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext>(1);
+                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
+                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
                     var leftLimit = numberVisitor.Visit(leftLimitContext);
                     var rightLimit = numberVisitor.Visit(rightLimitContext);
                     settings = settings with

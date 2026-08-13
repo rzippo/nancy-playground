@@ -5,47 +5,32 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
-    public override IExpression VisitNumberMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberMulDivContext context)
+    public override IExpression VisitNumberProductAtom(
+        Unipi.MppgParser.Grammar.MppgParser.NumberProductAtomContext context) =>
+        context.numberUnaryExpression().Accept(this);
+
+    public override IExpression VisitNumberProductMulDiv(
+        Unipi.MppgParser.Grammar.MppgParser.NumberProductMulDivContext context)
     {
-        if (context.ChildCount != 3)
-            throw new Exception("Expected 3 child expression");
+        var left = (RationalExpression)context.numberProductExpression().Accept(this);
+        var right = (RationalExpression)context.numberUnaryExpression().Accept(this);
 
-        var ilE = context.GetChild(0).Accept(this);
-        var irE = context.GetChild(2).Accept(this);
-        var operation = context.op;
-
-        switch (operation.Type)
-        {
-            case Unipi.MppgParser.Grammar.MppgParser.PROD_SIGN:
-            {
-                if (ilE is RationalExpression lRE && irE is RationalExpression rRE)
-                    return RationalExpression.Product(lRE, rRE);
-
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-
-            case Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN:
-            case Unipi.MppgParser.Grammar.MppgParser.DIV_OP:
-            {
-                if (ilE is RationalExpression lRE && irE is RationalExpression rRE)
-                    return RationalExpression.Division(lRE, rRE);
-
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-
-            case Unipi.MppgParser.Grammar.MppgParser.MOD_OP:
-            {
-                if (ilE is RationalExpression lRE && irE is RationalExpression rRE)
-                    return Expressions.Expressions.Remainder(lRE, rRE);
-
-                throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
-            }
-            
-            default: 
-                throw new InvalidOperationException($"Unexpected operation: {operation.Text}");
-        }
+        return ApplyNumberMulDiv(left, context.op.Type, right);
     }
-    
+
+    private static RationalExpression ApplyNumberMulDiv(
+        RationalExpression left,
+        int operationType,
+        RationalExpression right) =>
+        operationType switch
+        {
+            Unipi.MppgParser.Grammar.MppgParser.PROD_SIGN => RationalExpression.Product(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN => RationalExpression.Division(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.DIV_OP => RationalExpression.Division(left, right),
+            Unipi.MppgParser.Grammar.MppgParser.MOD_OP => Expressions.Expressions.Remainder(left, right),
+            _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
+        };
+
     public override IExpression VisitNumberSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.NumberSumSubMinMaxContext context)
     {
         if (context.ChildCount != 3)
@@ -94,12 +79,6 @@ public partial class ExpressionVisitor
         }
     }
 
-    public override IExpression VisitNumberFloor(Unipi.MppgParser.Grammar.MppgParser.NumberFloorContext context) =>
-        Floor(context.numberExpression().Accept(this), context);
-
-    public override IExpression VisitNumberCeil(Unipi.MppgParser.Grammar.MppgParser.NumberCeilContext context) =>
-        Ceil(context.numberExpression().Accept(this), context);
-
     public override IExpression VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
         Floor(context.numberExpression().Accept(this), context);
 
@@ -116,30 +95,14 @@ public partial class ExpressionVisitor
             ? Expressions.Expressions.Ceil(rE)
             : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
 
-    public override IExpression VisitNumberAbs(Unipi.MppgParser.Grammar.MppgParser.NumberAbsContext context) =>
-        Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
-
     public override IExpression VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
         Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
-
-    public override IExpression VisitNumberPow(Unipi.MppgParser.Grammar.MppgParser.NumberPowContext context) =>
-        Pow(context.numberExpression(), context);
 
     public override IExpression VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         Pow(context.numberExpression(), context);
 
-    public override IExpression VisitNumberGcd(Unipi.MppgParser.Grammar.MppgParser.NumberGcdContext context) =>
-        Expressions.Expressions.GreatestCommonDivisor(
-            Operand(context.numberExpression(0), context),
-            Operand(context.numberExpression(1), context));
-
     public override IExpression VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
         Expressions.Expressions.GreatestCommonDivisor(
-            Operand(context.numberExpression(0), context),
-            Operand(context.numberExpression(1), context));
-
-    public override IExpression VisitNumberLcm(Unipi.MppgParser.Grammar.MppgParser.NumberLcmContext context) =>
-        Expressions.Expressions.LeastCommonMultiple(
             Operand(context.numberExpression(0), context),
             Operand(context.numberExpression(1), context));
 

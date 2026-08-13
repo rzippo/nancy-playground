@@ -4,6 +4,10 @@ namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 public class CodeConversion
 {
+    /// <summary>
+    /// A sign in front of a number is part of the literal, wherever the literal appears and whatever separates the two.
+    /// The lexer skips the blanks, so '- 4' and '-4' are the same tokens, and both are one negative literal rather than a negation applied to a positive one.
+    /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -14,16 +18,38 @@ public class CodeConversion
             f := ratency(1, 2)
             v := f + -3
             n := - 4
+            m := -5
             """,
             useNancyExpressions);
 
         var fullCode = string.Join(Environment.NewLine, code);
 
         Assert.Contains("new Rational(-3)", fullCode);
+        Assert.Contains("new Rational(-4)", fullCode);
+        Assert.Contains("new Rational(-5)", fullCode);
+    }
+
+    /// <summary>
+    /// A sign in front of anything a literal cannot spell stays a negation, which is what the sign alternatives of the unary tier are for.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConversionEmitsNegationForWhatIsNotALiteral(bool useNancyExpressions)
+    {
+        var code = Program.ToNancyCode(
+            """
+            x := 4
+            n := -x
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
         if (useNancyExpressions)
-            Assert.Contains("(Expressions.FromRational(new Rational(4))).Negate()", fullCode);
+            Assert.Contains("(x).Negate()", fullCode);
         else
-            Assert.Contains("-(new Rational(4))", fullCode);
+            Assert.Contains("-(x)", fullCode);
     }
 
     [Theory]
@@ -361,6 +387,7 @@ public class CodeConversion
             ("f * (7 mod 3)", "Rational.Remainder(", ".Remainder("),
             ("f * gcd(4, 6)", "Rational.GreatestCommonDivisor(", ".GreatestCommonDivisor("),
             ("f * lcm(4, 6)", "Rational.LeastCommonMultiple(", ".LeastCommonMultiple("),
+            ("f + 1/2", ".VerticalShift(new Rational(1) / new Rational(2))", ".VerticalShift(Expressions.FromRational(new Rational(1)) / Expressions.FromRational(new Rational(2)))"),
         }
         .SelectMany(
             testCase => new[]
