@@ -1,0 +1,28 @@
+WARNING: in "f / 1 / 2", scalar factors fold left to right, so the divisor is 1 alone and the rest applies to the result. RTaW reads a divisor that starts with a number as one whole value, so it computes a different curve here. Parenthesise the divisor to say which one you mean.
+WARNING: in "f / 1 / 2 / 3", scalar factors fold left to right, so the divisor is 1 alone and the rest applies to the result. RTaW reads a divisor that starts with a number as one whole value, so it computes a different curve here. Parenthesise the divisor to say which one you mean.
+WARNING: in "f / 0.5 / 2", scalar factors fold left to right, so the divisor is 0.5 alone and the rest applies to the result. RTaW reads a divisor that starts with a number as one whole value, so it computes a different curve here. Parenthesise the divisor to say which one you mean.
+WARNING: in "f / 1 / y", scalar factors fold left to right, so the divisor is 1 alone and the rest applies to the result. RTaW reads a divisor that starts with a number as one whole value, so it computes a different curve here. Parenthesise the divisor to say which one you mean.
+WARNING: in "f / 1 * y", scalar factors fold left to right, so the divisor is 1 alone and the rest applies to the result. RTaW reads a divisor that starts with a number as one whole value, so it computes a different curve here. Parenthesise the divisor to say which one you mean.
+21/2
+21/2
+42
+7/2
+7/2
+126
+21
+21
+84
+7
+7
+63
+63
+63
+7
+7/2
+7/2
+21/4
+21/4
+21/4
+21/4
+21/2
+21/2

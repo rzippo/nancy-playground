@@ -318,6 +318,32 @@ public class CurveParsing
             ("f + (7 mod 3)", BucketFunction().VerticalShift(new Rational(1))),
             ("lcm(2, 3) + f", BucketFunction().VerticalShift(new Rational(6))),
             ("f * abs(f(x))", BucketFunction().Scale(new Rational(7))),
+            // a fraction is the scalar operand of a sum operator, unparenthesised
+            ("f + 1/2", BucketFunction().VerticalShift(new Rational(1, 2))),
+            ("1/2 + f", BucketFunction().VerticalShift(new Rational(1, 2))),
+            ("f - 1/2", BucketFunction().VerticalShift(new Rational(-1, 2))),
+            ("1/2 - f", BucketFunction().Negate().VerticalShift(new Rational(1, 2))),
+            ("f /\\ 1/2", BucketFunction().Minimum(ConstantFunction(new Rational(1, 2)))),
+            ("f \\/ 1/2", BucketFunction().Maximum(ConstantFunction(new Rational(1, 2)))),
+            ("f + x / 3", BucketFunction().VerticalShift(new Rational(2, 3))),
+            // a division chain folds left-to-right, as it does in a plain number expression
+            ("f + 1/2/3", BucketFunction().VerticalShift(new Rational(1, 6))),
+            // a fraction is also the scalar operand on the left of the product operators
+            ("1/2 * f", BucketFunction().Scale(new Rational(1, 2))),
+            ("1/2 * f + g", BucketFunction().Scale(new Rational(1, 2)).Addition(ServiceCurve())),
+            ("f + 1/2 * g", BucketFunction().Addition(ServiceCurve().Scale(new Rational(1, 2)))),
+            ("x/2 * f", BucketFunction().Scale(XValue / 2)),
+            ("x * x * f", BucketFunction().Scale(XValue * XValue)),
+            // The scalar operand carries its sign, whichever operator it belongs to.
+            // A sign in front of something no literal can spell reads the same as one in front of a literal.
+            ("f + -x", BucketFunction().VerticalShift(-XValue)),
+            ("f - -x", BucketFunction().VerticalShift(XValue)),
+            ("f + +x", BucketFunction().VerticalShift(XValue)),
+            ("f * +x", BucketFunction().Scale(XValue)),
+            ("f * -(-x)", BucketFunction().Scale(XValue)),
+            ("f / -(-x)", BucketFunction().Scale(new Rational(1, 2))),
+            ("-(-x) * f", BucketFunction().Scale(XValue)),
+            ("+x * f", BucketFunction().Scale(XValue)),
         }.ToXUnitTestCases();
 
     [Theory]
@@ -573,6 +599,22 @@ public class CurveParsing
             ("f \\/ x + g", "(f \\/ x) + g", "f \\/ (x + g)", new Rational(10)),
             ("f(x) + g * y", "f(x) + (g * y)", "(f(x) + g) * y", new Rational(10)),
             ("f(x) comp g + y", "(f(x) comp g) + y", "f(x) comp (g + y)", new Rational(10)),
+            // a fraction is a single operand of a sum operator, not the denominator of a larger fraction
+            ("f + 1/2", "f + (1/2)", "(f + 1) / 2", new Rational(10)),
+            ("f - 1/2", "f - (1/2)", "(f - 1) / 2", new Rational(10)),
+            ("f + 3/2", "f + (3/2)", "(f + 3) / 2", new Rational(10)),
+            // the product tier is absorbed into the scalar operand, the sum tier is not
+            ("f - x + y", "(f - x) + y", "f - (x + y)", new Rational(10)),
+            ("f - x - y", "(f - x) - y", "f - (x - y)", new Rational(10)),
+            ("f - x * y", "f - (x * y)", "(f - x) * y", new Rational(10)),
+            ("f + x * y", "f + (x * y)", "(f + x) * y", new Rational(10)),
+            ("f + x / y", "f + (x / y)", "(f + x) / y", new Rational(10)),
+            ("f - x / y", "f - (x / y)", "(f - x) / y", new Rational(10)),
+            ("f + x / y * z", "f + (x / y * z)", "f + x / (y * z)", new Rational(10)),
+            // Scalar division folds left; ScalarDivisionDivergenceTestCases owns that case.
+            // The scalar on the left of a product binds the whole scalar chain before the function takes over, so x * y * f is (x * y) * f.
+            // The value cases cover x/2 * f, whose only other grouping, x / (2 * f), is not an expression at all.
+            ("x * y * f", "(x * y) * f", "x * (y + f)", new Rational(10)),
         }.ToXUnitTestCases();
 
     [Theory]
@@ -590,6 +632,66 @@ public class CurveParsing
 
         Assert.Equal(expected, actual);
         Assert.NotEqual(unexpected, actual);
+    }
+
+    /// <summary>
+    /// Where the two tools differ, middle column ours and right column RTaW's.
+    /// Changing one is a change of decision, not a bug fix: see "Scalar operands of the mixed operators" in syntax.md.
+    /// </summary>
+    public static IEnumerable<object[]> ScalarDivisionDivergenceTestCases =>
+        new List<(string expression, string ours, string rtaw, Rational observation)>
+        {
+            ("f / 1/2", "(f / 1) / 2", "f / (1/2)", new Rational(10)),
+            ("f / 1/2/3", "((f / 1) / 2) / 3", "f / ((1/2) / 3)", new Rational(10)),
+            ("f / 0.5/2", "(f / 0.5) / 2", "f / (0.5 / 2)", new Rational(10)),
+            ("f / 2/0.25", "(f / 2) / 0.25", "f / (2 / 0.25)", new Rational(10)),
+            ("f / 1/y", "(f / 1) / y", "f / (1 / y)", new Rational(10)),
+            ("f / 1 * y", "(f / 1) * y", "f / (1 * y)", new Rational(10)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(ScalarDivisionDivergenceTestCases))]
+    public void ScalarDivisionFoldsLeftWhereRTaWReadsTheDivisorWhole(
+        string expression,
+        string ours,
+        string rtaw,
+        Rational observation)
+    {
+        var state = StateWithPrecedenceVariables();
+        var actual = ParseCurveValueAt(expression, state, observation);
+
+        Assert.Equal(ParseCurveValueAt(ours, state, observation), actual);
+        Assert.NotEqual(ParseCurveValueAt(rtaw, state, observation), actual);
+    }
+
+    /// <summary>
+    /// The other side of the boundary, where the divisor is not number-initial and both tools agree.
+    /// Here so that narrowing or widening the divergence fails rather than passing quietly.
+    /// </summary>
+    public static IEnumerable<object[]> ScalarDivisionAgreementTestCases =>
+        new List<(string expression, string bothTools, Rational observation)>
+        {
+            ("f / x / y", "(f / x) / y", new Rational(10)),
+            ("f / x * y", "(f / x) * y", new Rational(10)),
+            ("f / x/2", "(f / x) / 2", new Rational(10)),
+            ("f / g(2)/2", "(f / g(2)) / 2", new Rational(10)),
+            // a multiplication first: the two groupings agree by associativity, so there is nothing to choose
+            ("f * 1/2", "(f * 1) / 2", new Rational(10)),
+            ("f * x / y", "(f * x) / y", new Rational(10)),
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(ScalarDivisionAgreementTestCases))]
+    public void ScalarDivisionAgreesWithRTaWWhereTheDivisorIsNotANumber(
+        string expression,
+        string bothTools,
+        Rational observation)
+    {
+        var state = StateWithPrecedenceVariables();
+
+        Assert.Equal(
+            ParseCurveValueAt(bothTools, state, observation),
+            ParseCurveValueAt(expression, state, observation));
     }
 
     public static IEnumerable<object[]> ReferenceProductCompositionPrecedenceTestCases =>

@@ -1,0 +1,66 @@
+// Divergence from RTaW on purpose: we fold scalar factors left, RTaW reads a number-initial divisor whole.
+// Block 1 must warn, block 2 must not. See "Scalar operands of the mixed operators" in syntax.md.
+
+x := 2
+y := 3
+f := affine(2, 1)
+g := affine(1, 0)
+
+// Block 1: number-initial divisor, the tools disagree, each declaration warns.
+divFraction := f / 1/2
+divFractionOurs := (f / 1) / 2
+divFractionRTaW := f / (1/2)
+
+divChain := f / 1/2/3
+divChainOurs := ((f / 1) / 2) / 3
+divChainRTaW := f / ((1/2) / 3)
+
+divDecimal := f / 0.5/2
+divDecimalOurs := (f / 0.5) / 2
+divDecimalRTaW := f / (0.5 / 2)
+
+divLiteralOverVariable := f / 1/y
+divLiteralOverVariableOurs := (f / 1) / y
+divLiteralOverVariableRTaW := f / (1 / y)
+
+divThenProduct := f / 1 * y
+divThenProductOurs := (f / 1) * y
+divThenProductRTaW := f / (1 * y)
+
+// Block 2: divisor starts with a variable or a sample, both tools fold left, no warning.
+divVariables := f / x / y
+divVariablesBoth := (f / x) / y
+
+divVariableOverLiteral := f / x/2
+divVariableOverLiteralBoth := (f / x) / 2
+
+divSample := f / g(2)/2
+divSampleBoth := (f / g(2)) / 2
+
+// Multiplication first: the groupings agree by associativity, no warning.
+mulFraction := f * 1/2
+mulFractionBoth := (f * 1) / 2
+
+divFraction(10)
+divFractionOurs(10)
+divFractionRTaW(10)
+divChain(10)
+divChainOurs(10)
+divChainRTaW(10)
+divDecimal(10)
+divDecimalOurs(10)
+divDecimalRTaW(10)
+divLiteralOverVariable(10)
+divLiteralOverVariableOurs(10)
+divLiteralOverVariableRTaW(10)
+divThenProduct(10)
+divThenProductOurs(10)
+divThenProductRTaW(10)
+divVariables(10)
+divVariablesBoth(10)
+divVariableOverLiteral(10)
+divVariableOverLiteralBoth(10)
+divSample(10)
+divSampleBoth(10)
+mulFraction(10)
+mulFractionBoth(10)
