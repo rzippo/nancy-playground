@@ -10,6 +10,8 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
 
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
+        foreach (var warning in statement.Warnings)
+            Console.WriteLine(warning);
         Console.WriteLine($">> {output.OutputText}");
     }
 

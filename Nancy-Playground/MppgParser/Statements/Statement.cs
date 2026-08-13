@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 using Unipi.Nancy.Playground.MppgParser.Visitors;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
@@ -10,6 +11,12 @@ public abstract record class Statement
     public string Text { get; init; } = string.Empty;
 
     public string InlineComment { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Diagnostics about the statement that do not stop it from running, reported by the formatters alongside its output.
+    /// See <see cref="Utility.ScalarDivisionGrouping"/> for the one case that currently produces them.
+    /// </summary>
+    public IReadOnlyList<string> Warnings { get; init; } = [];
 
     public abstract string Execute(State state);
 
@@ -42,8 +49,10 @@ public abstract record class Statement
         }
 
         var visitor = new StatementVisitor();
-        var statement = visitor.Visit(context);
-        return statement ?? throw new SyntaxErrorException("Statement could not be parsed.");
+        var statement = visitor.Visit(context)
+            ?? throw new SyntaxErrorException("Statement could not be parsed.");
+
+        return statement with { Warnings = ScalarDivisionGrouping.WarningsFor(context) };
     }
 
     /// <summary>

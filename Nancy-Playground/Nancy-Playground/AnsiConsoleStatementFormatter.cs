@@ -86,6 +86,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
+        foreach (var warning in statement.Warnings)
+            Console.MarkupLineInterpolated($"[yellow]{warning}[/]");
+
         switch (statement)
         {
             case ExpressionCommand expression:

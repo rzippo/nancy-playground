@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Playground.MppgParser.Statements;
+using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
@@ -48,6 +49,10 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
                     {
                          statement = vds with { IsDuplicate = true };
                     }
+                    statement = statement with
+                    {
+                         Warnings = ScalarDivisionGrouping.WarningsFor(statementLine)
+                    };
                     statements.Add(statement);
                }
           }
