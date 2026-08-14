@@ -12,7 +12,11 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
     {
         foreach (var warning in statement.Warnings)
             Console.WriteLine(warning);
-        Console.WriteLine($">> {output.OutputText}");
+
+        if (output is PlotOutput)
+            Console.WriteLine(">> Plots are not rendered in this output mode.");
+        else
+            Console.WriteLine($">> {output.OutputText}");
     }
 
     public void FormatError(Statement statement, ErrorOutput error)

@@ -41,7 +41,8 @@ public record class PlotCommand : Statement
             Settings = Settings,
             Time = stopwatch.Elapsed,
             StatementText = Text,
-            OutputText = "If you are reading this, the formatter does not implement plots."
+            // Plots produce no text; the formatter renders them, or explains that it cannot.
+            OutputText = string.Empty
         };
     }
 }
