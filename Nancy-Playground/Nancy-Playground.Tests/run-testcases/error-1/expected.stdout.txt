@@ -1,3 +1,7 @@
 ERROR! Syntax errors, run aborted:
 	 - line 3:14 no viable alternative at input '((f+1)('
+	   h := ((f + 1) (f - 1))
+	                 ^
 	 - line 4:12 no viable alternative at input 'h'
+	   assert( g = h )
+	               ^

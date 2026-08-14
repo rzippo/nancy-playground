@@ -23,8 +23,10 @@ public sealed record SyntaxErrorInfo(
     // Expected tokens (parser only)
     IReadOnlyList<string>? Expected,
 
-    // Nice-to-have: a small source excerpt
-    string? SourceExcerpt,
+    // The source line the offending token is on, and the line before it, raw and unescaped.
+    // Presentation, such as color or a caret, is up to the display layer.
+    string? SourceLine,
+    string? PreviousLine,
 
     // What likely caused the error, when it can be told apart from the message alone
     string? Hint = null
@@ -51,17 +53,75 @@ public sealed record SyntaxErrorInfo(
         }
     }
 };
+
+/// <summary>
+/// Extracts the offending line, and the line before it, from the character stream of an error.
+/// Pure data: the lines are returned raw, with no escaping or decoration.
+/// </summary>
+internal static class SourceLineExtractor
+{
+    public static string? GetText(ICharStream? input) =>
+        input is { Size: > 0 } ? input.GetText(Interval.Of(0, input.Size - 1)) : null;
+
+    /// <summary>
+    /// The source line containing <paramref name="charIndex"/>, and the line before it, or null if
+    /// the index is out of range.
+    /// </summary>
+    public static (string Line, string? Previous)? ExtractLines(string text, int charIndex)
+    {
+        if (string.IsNullOrEmpty(text) || charIndex < 0 || charIndex >= text.Length)
+            return null;
+
+        var lineStart = text.LastIndexOf('\n', Math.Max(0, charIndex - 1)) + 1;
+        var lineEnd = text.IndexOf('\n', charIndex);
+        if (lineEnd < 0)
+            lineEnd = text.Length;
+
+        var line = text[lineStart..lineEnd].TrimEnd('\r');
+
+        string? previous = null;
+        if (lineStart > 0)
+        {
+            var prevEnd = lineStart - 1;
+            var prevStart = text.LastIndexOf('\n', Math.Max(0, prevEnd - 1)) + 1;
+            previous = text[prevStart..prevEnd].TrimEnd('\r');
+        }
+
+        return (line, previous);
+    }
+
+    /// <summary>
+    /// The absolute character index of a 1-based line and 0-based column, or null if past the end.
+    /// </summary>
+    public static int? CharIndexOfLine(string text, int line1Based, int col0Based)
+    {
+        if (string.IsNullOrEmpty(text))
+            return null;
+
+        var targetLine = Math.Max(1, line1Based);
+        var line = 1;
+        var i = 0;
+        while (i < text.Length && line < targetLine)
+        {
+            if (text[i] == '\n')
+                line++;
+            i++;
+        }
+
+        var index = i + col0Based;
+        return index < text.Length ? index : text.Length - 1;
+    }
+}
+
 public sealed class DiagnosticLexerErrorListener : IAntlrErrorListener<int>
 {
     private readonly IList<SyntaxErrorInfo> _errors;
     private readonly ICharStream? _charStream;
-    private readonly int _excerptRadius;
 
-    public DiagnosticLexerErrorListener(IList<SyntaxErrorInfo> errors, ICharStream? charStream, int excerptRadius = 25)
+    public DiagnosticLexerErrorListener(IList<SyntaxErrorInfo> errors, ICharStream? charStream)
     {
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
         _charStream = charStream;
-        _excerptRadius = excerptRadius;
     }
     public void SyntaxError(
         TextWriter output,
@@ -78,11 +138,14 @@ public sealed class DiagnosticLexerErrorListener : IAntlrErrorListener<int>
             // offendingSymbol is a Unicode code point
             offendingText = char.ConvertFromUtf32(offendingSymbol);
         }
-        
-        // In the lexer callback we don't reliably get the absolute char index,
-        // so excerpt is best-effort based on (line,column).
-        // If you want perfect lexer excerpts, you typically override Lexer.NotifyListeners.
-        var excerpt = TryGetExcerptFromLineColumn(_charStream, line, charPositionInLine, _excerptRadius);
+
+        var text = SourceLineExtractor.GetText(_charStream);
+        var charIndex = text is null
+            ? null
+            : SourceLineExtractor.CharIndexOfLine(text, line, charPositionInLine);
+        var lines = text is not null && charIndex is int i
+            ? SourceLineExtractor.ExtractLines(text, i)
+            : null;
 
         _errors.Add(new SyntaxErrorInfo(
             Line: line,
@@ -94,53 +157,20 @@ public sealed class DiagnosticLexerErrorListener : IAntlrErrorListener<int>
             RuleName: null,
             RuleStack: null,
             Expected: null,
-            SourceExcerpt: excerpt
+            SourceLine: lines?.Line,
+            PreviousLine: lines?.Previous
         ));
-    }
-    
-    private static string? TryGetExcerptFromLineColumn(ICharStream? input, int line1Based, int col0Based, int radius)
-    {
-        if (input == null) return null;
-
-        // Convert to absolute index by scanning text for line breaks.
-        // This is O(n) per error, but lexer errors should be rare.
-        var text = input.GetText(new Interval(0, input.Size - 1));
-        if (string.IsNullOrEmpty(text)) return null;
-
-        int targetLine = Math.Max(1, line1Based);
-        int line = 1;
-        int i = 0;
-
-        while (i < text.Length && line < targetLine)
-        {
-            if (text[i] == '\n') line++;
-            i++;
-        }
-
-        int absIndex = i + Math.Max(0, col0Based);
-        absIndex = Math.Clamp(absIndex, 0, Math.Max(0, text.Length - 1));
-
-        int start = Math.Max(0, absIndex - radius);
-        int stop = Math.Min(text.Length - 1, absIndex + radius);
-
-        var excerpt = text.Substring(start, stop - start + 1)
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
-
-        return excerpt;
     }
 }
 
 public sealed class DiagnosticParserErrorListener : BaseErrorListener
 {
     private readonly IList<SyntaxErrorInfo> _errors;
-    private readonly int _excerptRadius;
 
 
-    public DiagnosticParserErrorListener(IList<SyntaxErrorInfo> errors, int excerptRadius = 25)
+    public DiagnosticParserErrorListener(IList<SyntaxErrorInfo> errors)
     {
         _errors = errors ?? throw new ArgumentNullException(nameof(errors));
-        _excerptRadius = excerptRadius;
     }
     public override void SyntaxError(
         TextWriter output,
@@ -170,7 +200,10 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
                 VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol));
         }
 
-        var excerpt = TryGetExcerptFromToken(offendingSymbol, _excerptRadius);
+        var text = SourceLineExtractor.GetText(offendingSymbol?.TokenSource?.InputStream);
+        var lines = text is not null && offendingSymbol?.StartIndex is int start and >= 0
+            ? SourceLineExtractor.ExtractLines(text, start)
+            : null;
 
         _errors.Add(new SyntaxErrorInfo(
             Line: line,
@@ -182,7 +215,8 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             RuleName: ruleName,
             RuleStack: ruleStack,
             Expected: expected,
-            SourceExcerpt: excerpt,
+            SourceLine: lines?.Line,
+            PreviousLine: lines?.Previous,
             Hint: hint
         ));
     }
@@ -217,25 +251,5 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             names.Add(vocab.GetLiteralName(t) ?? vocab.GetSymbolicName(t) ?? t.ToString());
         }
         return names;
-    }
-
-    private static string? TryGetExcerptFromToken(IToken? token, int radius)
-    {
-        if (token == null) return null;
-
-        // For parser errors, TokenSource.InputStream is typically the original ICharStream.
-        if (token.TokenSource?.InputStream is not { } input) return null;
-
-        // Prefer StartIndex when valid; fall back to stream index.
-        int idx = token.StartIndex >= 0 ? token.StartIndex : input.Index;
-        idx = Math.Clamp(idx, 0, Math.Max(0, input.Size - 1));
-
-        int start = Math.Max(0, idx - radius);
-        int stop = Math.Min(input.Size - 1, idx + radius);
-        if (stop < start) return null;
-
-        return input.GetText(new Interval(start, stop))
-            .Replace("\r", "\\r")
-            .Replace("\n", "\\n");
     }
 }
