@@ -274,7 +274,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     public override Statement? VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
     {
         var expression = new Expression(context);
-        var text = context.GetJoinedText();
+        var text = MppgReformatVisitor.Reformat(context);
         return new ExpressionCommand(expression) { Text = text };
     }
 
@@ -283,10 +283,10 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         if (context.ChildCount != 3)
             throw new Exception("Expected 3 child expression");
 
-        var text = context.GetJoinedText();
         var name = context.GetChild(0).GetText();
         var expressionContext = (Unipi.MppgParser.Grammar.MppgParser.ExpressionContext) context.GetChild(2);
         var expression = new Expression(expressionContext);
+        var text = $"{name} := {MppgReformatVisitor.Reformat(expressionContext)}";
           
         return new Assignment(name, expression) { Text = text };
     }
@@ -307,7 +307,6 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
         var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
         var operatorContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.AssertionOperatorContext>(0);
-        var text = context.GetJoinedText();
         
         var leftExpression = new Expression(leftExpressionContext);
         var rightExpression = new Expression(rightExpressionContext);
@@ -322,6 +321,8 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             ">=" => Assertion.AssertionOperator.GreaterOrEqual,
             _ => throw new ArgumentException($"Operator '{operatorText}' not recognized")
         };
+
+        var text = $"assert ( {MppgReformatVisitor.Reformat(leftExpressionContext)} {operatorText} {MppgReformatVisitor.Reformat(rightExpressionContext)} )";
 
         return new Assertion(leftExpression, rightExpression, @operator){ Text = text };
     }

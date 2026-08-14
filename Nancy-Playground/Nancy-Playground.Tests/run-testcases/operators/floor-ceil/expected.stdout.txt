@@ -1,36 +1,36 @@
 // Test floor and ceil, which return the kind of their argument
 // On a curve they round its values, on a scalar they round the value itself
-> f := affine ( 1 / 3 , 0 )
+> f := affine(1/3, 0)
 f = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,new Rational(1, 3)) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: new Rational(1, 3))
-> floorF := floor ( f )
+> floorF := floor(f)
 floorF = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,0,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
-> ceilF := ceil ( f )
+> ceilF := ceil(f)
 ceilF = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,1,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
-> assert ( floorF ( 5 ) = 1 )
+> assert ( floorF(5) = 1 )
 true
-> assert ( ceilF ( 5 ) = 2 )
+> assert ( ceilF(5) = 2 )
 true
 // the floor of a curve is what the composition with right-ext(stair(1, 1, 1)) used to compute
-> old := right-ext ( stair ( 1 , 1 , 1 ) ) comp f
+> old := right-ext(stair(1, 1, 1)) comp f
 old = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,0,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
 > assert ( floorF = old )
 true
 // on scalars, where the result stays a scalar
-> x := 7 / 2
+> x := 7/2
 x = 7/2
-> floor ( x )
+> floor(x)
 3
-> ceil ( x )
+> ceil(x)
 4
-> floor ( - x )
+> floor(-x)
 -4
-> ceil ( - x )
+> ceil(-x)
 -3
 // dividing one floor by another is not integer division
-> floor ( x ) / floor ( 9 / 2 )
+> floor(x) / floor(9/2)
 3/4
 // a scalar floor multiplying a curve scales it
-> scaled := floor ( x ) * f
+> scaled := floor(x) * f
 scaled = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
-> assert ( scaled ( 3 ) = 3 )
+> assert ( scaled(3) = 3 )
 true
