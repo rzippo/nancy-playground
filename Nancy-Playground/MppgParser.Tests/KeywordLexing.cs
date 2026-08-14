@@ -27,7 +27,7 @@ public static class KeywordLexing
         foreach (var keyword in VersionedKeywords.IntroducedIn.Keys)
         {
             var tokenType = LexAsSingleToken(keyword);
-            if (tokenType is not null && tokenType != Unipi.MppgParser.Grammar.MppgLexer.VARIABLE_NAME)
+            if (tokenType is not null && tokenType != Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER)
                 map[keyword] = tokenType.Value;
         }
 

@@ -469,6 +469,113 @@ public class SemanticPredicateParsing
         Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
     }
 
+    [Fact]
+    public void PlotOptionNameStaysAvailableAsAVariableInTheSameFile()
+    {
+        const string mppg = """
+            out := bucket(2, 5)
+            f := ratency(10, 5)
+            plot(f, out = "coverage.png")
+            """;
+
+        var program = Program.FromText(mppg);
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
+    [Fact]
+    public void PlotOptionNameAsFunctionVariableStillPlotsAsAFunction()
+    {
+        const string mppg = """
+            out := bucket(2, 5)
+            f := ratency(10, 5)
+            plot(out, f)
+            """;
+
+        var program = Program.FromText(mppg);
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
+    [Fact]
+    public void PlotOptionNameAsFunctionVariableWorksInExpressions()
+    {
+        const string mppg = """
+            out := bucket(2, 5)
+            scaled := out * 2
+            f := ratency(10, 5)
+            plot(f, out = "coverage.png")
+            """;
+
+        var program = Program.FromText(mppg);
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
+    [Fact]
+    public void PlotOptionNameAsNumberVariableCoexistsWithOption()
+    {
+        const string mppg = """
+            xlim := 5
+            y := xlim + 1
+            f := bucket(2, 3)
+            plot(f, xlim = [0, 10])
+            """;
+
+        var program = Program.FromText(mppg);
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
+    public static IEnumerable<object[]> UnknownPlotOptionNames =>
+        new List<string>
+        {
+            "bogus",
+            "MAIN",
+            "Out",
+            "xlims",
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(UnknownPlotOptionNames))]
+    public void UnknownPlotOptionNamesAreStillRejected(string name)
+    {
+        var mppg = $"""
+            f := bucket(2, 3)
+            plot(f, {name} = "x")
+            """;
+
+        var program = Program.FromText(mppg);
+
+        Assert.NotEmpty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
+    public static IEnumerable<object[]> PlotOptionNamesAsVariables =>
+        new List<string>
+        {
+            "main",
+            "title",
+            "xlim",
+            "ylim",
+            "xlab",
+            "ylab",
+            "out",
+            "grid",
+            "bg",
+            "gui",
+        }.ToXUnitTestCases();
+
+    [Theory]
+    [MemberData(nameof(PlotOptionNamesAsVariables))]
+    public void PlotOptionNamesParseAsVariableNames(string name)
+    {
+        var mppg = $"{name} := bucket(2, 5)";
+
+        var program = Program.FromText(mppg);
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+    }
+
     private static IParseTree? FindDescendant(IParseTree context, Type expectedType)
     {
         if (context.GetType() == expectedType)

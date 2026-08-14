@@ -103,7 +103,7 @@ public static class VersionedKeywords
     private static bool IsUsedAsName(IToken token, IToken? next)
     {
         // a name lexed as a variable is one, whatever it spells: it is not a keyword of this version
-        return token.Type != Unipi.MppgParser.Grammar.MppgLexer.VARIABLE_NAME
+        return token.Type != Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
             && IntroducedIn.ContainsKey(token.Text)
             && next?.Text != "(";
     }

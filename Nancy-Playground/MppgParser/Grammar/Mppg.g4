@@ -128,6 +128,28 @@ grammar Mppg;
         "gcd",
         "lcm"
     };
+    // Plot option names, grouped by the kind of value each takes.
+    // They are contextual keywords: recognized as options only inside a plot argument list, and lexed
+    // as IDENTIFIER everywhere else, so they stay available as variable names.
+    private static readonly HashSet<string> StringPlotOptionNames = new()
+    {
+        "main",
+        "title",
+        "xlab",
+        "ylab",
+        "out"
+    };
+    private static readonly HashSet<string> IntervalPlotOptionNames = new()
+    {
+        "xlim",
+        "ylim"
+    };
+    private static readonly HashSet<string> YesNoPlotOptionNames = new()
+    {
+        "grid",
+        "bg",
+        "gui"
+    };
 
     public IReadOnlyDictionary<string, VariableType> VariableTypes => _variableTypes;
 
@@ -154,13 +176,19 @@ grammar Mppg;
     private bool IsKnownVariable(string name) =>
         _variableTypes.ContainsKey(name);
 
+    private bool IsPlotStringOption(string name) => StringPlotOptionNames.Contains(name);
+
+    private bool IsPlotIntervalOption(string name) => IntervalPlotOptionNames.Contains(name);
+
+    private bool IsPlotYesNoOption(string name) => YesNoPlotOptionNames.Contains(name);
+
     private bool IsFunctionSampleStart() =>
             IsFunctionVariable(CurrentToken.Text) && TokenStream.LT(2).Text == "(";
 
     private bool IsFunctionVariableReferenceAt(int lookaheadIndex)
     {
         var token = TokenStream.LT(lookaheadIndex);
-        return token.Type == VARIABLE_NAME
+        return token.Type == IDENTIFIER
             && IsFunctionVariable(token.Text)
             && TokenStream.LT(lookaheadIndex + 1).Text != "(";
     }
@@ -186,7 +214,7 @@ grammar Mppg;
         if (text == "+" || text == "-")
             return IsFunctionOperandStart(lookaheadIndex + 1);
 
-        if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(lookaheadIndex))
+        if (token.Type == IDENTIFIER && IsFunctionVariableReferenceAt(lookaheadIndex))
             return true;
 
         var typePreservingArgument = TryGetTypePreservingCallArgumentStart(lookaheadIndex);
@@ -194,7 +222,7 @@ grammar Mppg;
             return ExpressionSegmentContainsFunction(typePreservingArgument);
 
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        return token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text);
+        return token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text);
     }
 
     // True if the tokens from lookaheadIndex are a call of one of the given keywords.
@@ -203,7 +231,7 @@ grammar Mppg;
         var token = TokenStream.LT(lookaheadIndex);
 
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        return token.Type != VARIABLE_NAME
+        return token.Type != IDENTIFIER
             && starters.Contains(token.Text)
             && TokenStream.LT(lookaheadIndex + 1).Text == "(";
     }
@@ -266,7 +294,7 @@ grammar Mppg;
         || token.Text == "/"
         || token.Text == "div"
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        || (token.Type != VARIABLE_NAME && token.Text == "mod");
+        || (token.Type != IDENTIFIER && token.Text == "mod");
 
     private bool IsNumberEnclosedExpressionStart(int lookaheadIndex)
     {
@@ -289,7 +317,7 @@ grammar Mppg;
         if (IsCallOf(lookaheadIndex, ScalarFunctionStarters))
             return true;
 
-        if (token.Type != VARIABLE_NAME)
+        if (token.Type != IDENTIFIER)
             return false;
 
         return IsNumberVariable(text)
@@ -325,7 +353,7 @@ grammar Mppg;
         if (numberReturningCallEnd > 0)
             return numberReturningCallEnd;
 
-        if (token.Type == VARIABLE_NAME && IsNumberVariable(text))
+        if (token.Type == IDENTIFIER && IsNumberVariable(text))
             return lookaheadIndex + 1;
 
         return -1;
@@ -393,11 +421,11 @@ grammar Mppg;
                 continue;
             }
 
-            if (token.Type == VARIABLE_NAME && IsFunctionVariableReferenceAt(index))
+            if (token.Type == IDENTIFIER && IsFunctionVariableReferenceAt(index))
                 return true;
 
             // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-            if (token.Type != VARIABLE_NAME && FunctionExpressionStarters.Contains(text))
+            if (token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text))
                 return true;
 
             if (text == "(")
@@ -439,7 +467,7 @@ grammar Mppg;
         || token.Text == "/^"
         || token.Text == "div"
         // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        || (token.Type != VARIABLE_NAME && token.Text == "mod")
+        || (token.Type != IDENTIFIER && token.Text == "mod")
         || IsSumExpressionDelimiter(token);
 
     private int TryGetNumberReturningFunctionCallEnd(int lookaheadIndex)
@@ -448,8 +476,8 @@ grammar Mppg;
         var text = token.Text;
 
         var isNumberReturningFunctionCall =
-            token.Type == VARIABLE_NAME && IsFunctionVariable(text)
-            || token.Type != VARIABLE_NAME && NumberReturningFunctionStarters.Contains(text);
+            token.Type == IDENTIFIER && IsFunctionVariable(text)
+            || token.Type != IDENTIFIER && NumberReturningFunctionStarters.Contains(text);
 
         if (!isNumberReturningFunctionCall || TokenStream.LT(lookaheadIndex + 1).Text != "(")
             return -1;
@@ -498,7 +526,7 @@ STRING_LITERAL : '"' ~([\r\n"])*? '"';
 // Directives are '#!'-prefixed lines, lexed as their own token type so the parser can tell a
 // directive apart from a plain comment without a content-dependent predicate (see versionDirective).
 // A specific directive keyword (like 'syntax') gets its own token declared ahead of the generic
-// DIRECTIVE_START, the same way versioned keywords below are declared ahead of VARIABLE_NAME, so it
+// DIRECTIVE_START, the same way versioned keywords below are declared ahead of IDENTIFIER, so it
 // wins the lexical tie; anything else starting with '#!' falls back to being a generic directive,
 // leaving room for other directive kinds to be added the same way in the future.
 VERSION_DIRECTIVE_START: '#!syntax' [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
@@ -506,10 +534,10 @@ DIRECTIVE_START: '#!' [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 
 // Keywords introduced after version 1.0.
-// Each is a keyword only from the version that introduced it, and lexes as VARIABLE_NAME before that,
+// Each is a keyword only from the version that introduced it, and lexes as IDENTIFIER before that,
 // so that a script declaring an earlier version can still use the name as a variable.
 // The predicate goes last, which is where the lexer evaluates it, and these rules precede
-// VARIABLE_NAME so they win the tie whenever their predicate holds.
+// IDENTIFIER so they win the tie whenever their predicate holds.
 PRINT_EXPRESSION : 'printExpression' {IsVersion1_1OrLater()}?;
 PLOT_TIKZ : 'plotTikz' {IsVersion1_1OrLater()}?;
 SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
@@ -524,7 +552,7 @@ MOD_OP : 'mod' {IsVersion1_3OrLater()}?;
 GCD : 'gcd' {IsVersion1_3OrLater()}?;
 LCM : 'lcm' {IsVersion1_3OrLater()}?;
 
-VARIABLE_NAME : [a-zA-Z_][a-zA-Z_0-9]*;
+IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
 
 // parser rules
 program : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
@@ -544,7 +572,7 @@ statement
     | directive
     | comment
     | empty;
-assignment : name=VARIABLE_NAME ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
+assignment : name=IDENTIFIER ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
 expressionCommand : expression;
 expression : {ExpressionSegmentContainsFunction(1)}? functionExpression | numberExpression;
 comment
@@ -631,7 +659,7 @@ functionEnclosedExpression
     | FLOOR '(' functionExpression ')' #functionFloor
     | CEIL '(' functionExpression ')' #functionCeil
     | functionConstructor #functionConstructorExp
-    | {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME #functionVariableExp
+    | {IsFunctionVariable(CurrentToken.Text)}? IDENTIFIER #functionVariableExp
     ;
 
 functionConstructor
@@ -699,7 +727,7 @@ numberEnclosedExpression
     | GCD '(' numberExpression ',' numberExpression ')' #encNumberGcd
     | LCM '(' numberExpression ',' numberExpression ')' #encNumberLcm
     | {!(ExpressionSegmentContainsFunction(2))}? '(' numberExpression ')' #encNumberBrackets
-    | {IsNumberVariable(CurrentToken.Text)}? VARIABLE_NAME #encNumberVariableExp
+    | {IsNumberVariable(CurrentToken.Text)}? IDENTIFIER #encNumberVariableExp
     | numberLiteral #encNumberLiteralExp
     ;
 
@@ -745,18 +773,11 @@ functionZDeviation : ('zDev'|'zdev') '(' functionExpression ',' functionExpressi
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';
 plotTikzCommand: PLOT_TIKZ '(' plotArg (',' plotArg)* ')';
 plotArg: functionName | plotOption;
-functionName: {IsFunctionVariable(CurrentToken.Text)}? VARIABLE_NAME;
+functionName: {IsFunctionVariable(CurrentToken.Text)}? IDENTIFIER;
 plotOption
-    : 'main' '=' string
-    | 'title' '=' string
-    | 'xlim' '=' interval
-    | 'ylim' '=' interval
-    | 'xlab' '=' string
-    | 'ylab' '=' string
-    | 'out' '=' string
-    | 'grid' '=' ('"no"'|'"yes"')
-    | 'bg' '=' ('"no"'|'"yes"')
-    | 'gui' '=' ('"no"'|'"yes"')
+    : {IsPlotStringOption(CurrentToken.Text)}? IDENTIFIER '=' string
+    | {IsPlotIntervalOption(CurrentToken.Text)}? IDENTIFIER '=' interval
+    | {IsPlotYesNoOption(CurrentToken.Text)}? IDENTIFIER '=' ('"no"'|'"yes"')
     ;
 
 string
@@ -765,7 +786,7 @@ string
     | stringVariable
     | numberLiteral;
 stringLiteral: STRING_LITERAL;
-stringVariable: {IsKnownVariable(CurrentToken.Text)}? VARIABLE_NAME;
+stringVariable: {IsKnownVariable(CurrentToken.Text)}? IDENTIFIER;
 
 interval: '[' rationalLiteral ',' rationalLiteral ']';
 
@@ -783,4 +804,4 @@ assertionOperator
 
 // extra commands
 printExpressionCommand
-    : PRINT_EXPRESSION '(' VARIABLE_NAME ')';
+    : PRINT_EXPRESSION '(' IDENTIFIER ')';
