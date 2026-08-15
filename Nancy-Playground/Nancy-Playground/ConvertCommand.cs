@@ -17,9 +17,13 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
 
-        [Description("Path to the .mppg file to convert to a Nancy program.")]
+        [Description("Path of the generated program. Defaults to the source path with .cs appended.")]
         [CommandOption("--output-file")]
         public string NancyCsFile { get; init; } = string.Empty;
+
+        [Description("If true, the header of the generated program records the full path of the source, rather than its name alone. The name alone keeps the generated program shareable, as it does not disclose the local directory layout.")]
+        [CommandOption("--full-source-path")]
+        public bool FullSourcePath { get; init; } = false;
 
         [Description("If true, the Nancy program will use Nancy.Expressions syntax.")]
         [CommandOption("--use-expressions")]
@@ -91,9 +95,10 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             return 1;
         }
         var programType = settings.UseNancyExpressions ? "Nancy.Expressions" : "Nancy";
+        var source = settings.FullSourcePath ? mppgFile.FullName : mppgFile.Name;
         code.InsertRange(0,[
             $"// Program automatically converted from MPPG syntax to a {programType} program",
-            $"// Original source was in {mppgFile.FullName}",
+            $"// Converted from {source}",
             string.Empty,
             $"// This is a file-based app: to run it, use the command `dotnet run file.cs`",
             $"// To extend it, it is recommended to convert it to a C# project with the command `dotnet project convert file.cs`",

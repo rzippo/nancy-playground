@@ -387,6 +387,50 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void ConvertRecordsTheSourceNameByDefault()
+    {
+        using var dir = TemporaryDirectory.Create();
+        var scriptPath = Path.Combine(dir.Path, "source.mppg");
+        File.WriteAllText(scriptPath, "1", Encoding.UTF8);
+        var outputPath = Path.Combine(dir.Path, "program.cs");
+
+        var (exitCode, _) = ConvertCommand([
+            "convert",
+            scriptPath,
+            "--output-file", outputPath,
+            "--overwrite",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        var program = File.ReadAllText(outputPath);
+        Assert.Contains("// Converted from source.mppg", program);
+        // the local directory layout is not disclosed, so the program can be shared as it is
+        Assert.DoesNotContain(dir.Path, program);
+    }
+
+    [Fact]
+    public void ConvertRecordsTheFullSourcePathOnRequest()
+    {
+        using var dir = TemporaryDirectory.Create();
+        var scriptPath = Path.Combine(dir.Path, "source.mppg");
+        File.WriteAllText(scriptPath, "1", Encoding.UTF8);
+        var outputPath = Path.Combine(dir.Path, "program.cs");
+
+        var (exitCode, _) = ConvertCommand([
+            "convert",
+            scriptPath,
+            "--output-file", outputPath,
+            "--full-source-path",
+            "--overwrite",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains($"// Converted from {scriptPath}", File.ReadAllText(outputPath));
+    }
+
+    [Fact]
     public void ConvertRefusesExistingOutputWithoutOverwrite()
     {
         using var dir = TemporaryDirectory.Create();
