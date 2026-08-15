@@ -1,0 +1,71 @@
+// The scalar operands of the mixed operators, as the run testcase of the same name pins them.
+// Here the generated program is compiled and run, so it is the codegen of each grouping that is
+// pinned: a fraction is one operand, and so is a product of numbers.
+x := 2
+y := 3
+f := affine(2, 1)
+
+// a fraction is a single scalar operand of a sum operator, on either side
+fractionSumRight := f + 1/2
+fractionSumRightGrouped := f + (1/2)
+fractionSumRightOther := (f + 1) / 2
+
+fractionSumLeft := 1/2 + f
+fractionSumLeftGrouped := (1/2) + f
+
+fractionSubRight := f - 1/2
+fractionSubRightGrouped := f - (1/2)
+fractionSubRightOther := (f - 1) / 2
+
+fractionSubLeft := 1/2 - f
+fractionSubLeftGrouped := (1/2) - f
+
+// a fraction is a single scalar operand of the product operators too
+fractionProductLeft := 1/2 * f
+fractionProductLeftGrouped := (1/2) * f
+
+// a product of numbers is one scalar operand, wherever it appears
+numberProductRightSum := f + x * y
+numberProductRightSumGrouped := f + (x * y)
+numberProductRightSumOther := (f + x) * y
+
+numberProductLeftProduct := x * y * f
+numberProductLeftProductGrouped := (x * y) * f
+
+numberProductLeftDivision := x / y * f
+numberProductLeftDivisionGrouped := (x / y) * f
+
+// the product tier is absorbed into the scalar operand, the sum tier is not
+sumLeftAssociative := f - x + y
+sumLeftAssociativeLeft := (f - x) + y
+sumLeftAssociativeRight := f - (x + y)
+
+productAbsorbed := f - x * y
+productAbsorbedGrouped := f - (x * y)
+productAbsorbedOther := (f - x) * y
+
+fractionSumRight(10)
+fractionSumRightGrouped(10)
+fractionSumRightOther(10)
+fractionSumLeft(10)
+fractionSumLeftGrouped(10)
+fractionSubRight(10)
+fractionSubRightGrouped(10)
+fractionSubLeft(10)
+fractionSubLeftGrouped(10)
+fractionSubRightOther(10)
+fractionProductLeft(10)
+fractionProductLeftGrouped(10)
+numberProductRightSum(10)
+numberProductRightSumGrouped(10)
+numberProductRightSumOther(10)
+numberProductLeftProduct(10)
+numberProductLeftProductGrouped(10)
+numberProductLeftDivision(10)
+numberProductLeftDivisionGrouped(10)
+sumLeftAssociative(10)
+sumLeftAssociativeLeft(10)
+sumLeftAssociativeRight(10)
+productAbsorbed(10)
+productAbsorbedGrouped(10)
+productAbsorbedOther(10)
