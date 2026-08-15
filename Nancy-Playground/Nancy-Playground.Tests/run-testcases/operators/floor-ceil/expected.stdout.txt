@@ -6,14 +6,14 @@ f = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new 
 floorF = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,0,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
 > ceilF := ceil(f)
 ceilF = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,1,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
-> assert ( floorF(5) = 1 )
+> assert(floorF(5) = 1)
 true
-> assert ( ceilF(5) = 2 )
+> assert(ceilF(5) = 2)
 true
 // the floor of a curve is what the composition with right-ext(stair(1, 1, 1)) used to compute
 > old := right-ext(stair(1, 1, 1)) comp f
 old = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,3,0,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 3, pseudoPeriodHeight: 1)
-> assert ( floorF = old )
+> assert(floorF = old)
 true
 // on scalars, where the result stays a scalar
 > x := 7/2
@@ -32,5 +32,5 @@ x = 7/2
 // a scalar floor multiplying a curve scales it
 > scaled := floor(x) * f
 scaled = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
-> assert ( scaled(3) = 3 )
+> assert(scaled(3) = 3)
 true

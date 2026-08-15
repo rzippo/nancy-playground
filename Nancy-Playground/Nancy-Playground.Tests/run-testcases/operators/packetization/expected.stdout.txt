@@ -12,19 +12,19 @@ L = 5
 // only whole packets of size L leave a packetizer
 > packetized := floor(f / L) * L
 packetized = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,0), new Point(1,5), new Segment(1,new Rational(5, 3),5,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: new Rational(5, 3), pseudoPeriodHeight: 5)
-> assert ( packetized = (oldFloor comp (f / L)) * L )
+> assert(packetized = (oldFloor comp (f / L)) * L)
 true
 // a packetizer outputs no more than its input, and lags by less than one packet
-> assert ( packetized <= f )
+> assert(packetized <= f)
 true
-> assert ( f <= packetized + L )
+> assert(f <= packetized + L)
 true
 // the number of packets needed to carry f, i.e. the arrival curve a per-packet resource sees
 > packets := ceil(f / L)
 packets = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,1,0), new Point(1,1), new Segment(1,new Rational(8, 3),2,0) }), pseudoPeriodStart: 1, pseudoPeriodLength: new Rational(5, 3), pseudoPeriodHeight: 1)
-> assert ( packets = oldCeil comp (f / L) )
+> assert(packets = oldCeil comp (f / L))
 true
-> assert ( packets >= f / L )
+> assert(packets >= f / L)
 true
 // a periodic task with period T and workload C per release
 > T := 4
@@ -33,9 +33,9 @@ T = 4
 C = 3
 > release := ceil(affine(1 / T, 0)) * C
 release = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,4,3,0) }), pseudoPeriodStart: 0, pseudoPeriodLength: 4, pseudoPeriodHeight: 3)
-> assert ( release = stair(0, T, C) )
+> assert(release = stair(0, T, C))
 true
-> assert ( release = (oldCeil comp affine(1 / T, 0)) * C )
+> assert(release = (oldCeil comp affine(1 / T, 0)) * C)
 true
 > release(9)
 9

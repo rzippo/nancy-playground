@@ -149,6 +149,32 @@ public class MppgReformatVisitorTests
         var program = Program.FromText($"{Declarations}\nassert(f * g * h = f)");
 
         Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
-        Assert.Equal("assert ( (f * g) * h = f )", program.Statements[^1].Text);
+        Assert.Equal("assert((f * g) * h = f)", program.Statements[^1].Text);
+    }
+
+    public static IEnumerable<object[]> SegmentCases =>
+        new (string Input, string Expected)[]
+        {
+            // the endpoints follow the comma of an argument list, the slope is spaced, the brackets are tight
+            ("uaf( [(0,-3)1(1,-2)[ [(1,-2)0(+inf,-2)[ )", "uaf([(0, -3) 1 (1, -2)[ [(1, -2) 0 (+inf, -2)[)"),
+            // a spot, and a segment whose slope is left to be computed
+            ("uaf( [(0,0)] ](0,0)(1,1)[ [(1,1)0(+inf,1)[ )", "uaf([(0, 0)] ](0, 0) (1, 1)[ [(1, 1) 0 (+inf, 1)[)"),
+            // every bracket combination
+            ("uaf( [(0,0)1(1,1)] ](1,1)0(+inf,1)[ )", "uaf([(0, 0) 1 (1, 1)] ](1, 1) 0 (+inf, 1)[)"),
+            // the transient part, the period and the increment are arguments of upp
+            ("upp( period( [(0,0)0(2,0)[ ), 1/2, 1)", "upp(period([(0, 0) 0 (2, 0)[), 1/2, 1)"),
+        }.ToXUnitTestCases();
+
+    /// <summary>
+    /// A segment reads as a bracketed pair of endpoints with the slope between them.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(SegmentCases))]
+    public void SegmentEchoesNormalized(string input, string expected)
+    {
+        var program = Program.FromText($"c := {input}");
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+        Assert.Equal($"c := {expected}", program.Statements[^1].Text);
     }
 }

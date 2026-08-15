@@ -322,7 +322,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             _ => throw new ArgumentException($"Operator '{operatorText}' not recognized")
         };
 
-        var text = $"assert ( {MppgReformatVisitor.Reformat(leftExpressionContext)} {operatorText} {MppgReformatVisitor.Reformat(rightExpressionContext)} )";
+        var text = MppgReformatVisitor.Reformat(context);
 
         return new Assertion(leftExpression, rightExpression, @operator){ Text = text };
     }

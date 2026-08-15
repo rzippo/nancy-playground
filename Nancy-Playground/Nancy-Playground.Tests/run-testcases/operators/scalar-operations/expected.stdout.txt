@@ -28,18 +28,18 @@
 x = 4
 > y := 6
 y = 6
-> assert ( gcd(x, y) * lcm(x, y) = x * y )
+> assert(gcd(x, y) * lcm(x, y) = x * y)
 true
-> assert ( abs(-7 mod 3) = 1 )
+> assert(abs(-7 mod 3) = 1)
 true
-> assert ( floor(pow(3, 2) / 2) = 4 )
+> assert(floor(pow(3, 2) / 2) = 4)
 true
 // and are a scalar wherever a scalar goes
 > f := affine(1, 0)
 f = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
 > scaled := abs(-3) * f
 scaled = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,0), new Segment(0,1,0,3) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 3)
-> assert ( scaled(2) = 6 )
+> assert(scaled(2) = 6)
 true
 > shifted := f + (7 mod 3)
 shifted = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,1), new Segment(0,1,1,1) }), pseudoPeriodStart: 0, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)

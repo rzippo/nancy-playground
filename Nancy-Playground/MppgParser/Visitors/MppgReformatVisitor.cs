@@ -75,6 +75,10 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
             ? $"{Render(context.GetChild(0))}/{Render(context.GetChild(2))}"
             : Render(context.GetChild(0));
 
+    // An assertion is call-shaped around a comparison: assert(f * g = g * f).
+    public override string? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context) =>
+        $"assert({Render(context.expression(0))} {context.assertionOperator().GetText()} {Render(context.expression(1))})";
+
     // The commands are call-shaped too: printExpression(f), plot(f, out="p.png").
     public override string? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context) =>
         RenderCall(context);
@@ -245,6 +249,27 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     public override string? VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context) =>
         $"uaf({Render(context.sequence())})";
 
+    // An endpoint is a pair, so it follows the comma of an argument list: (0, -3).
+    public override string? VisitEndpoint(Unipi.MppgParser.Grammar.MppgParser.EndpointContext context) =>
+        $"({Render(context.numberExpression(0))}, {Render(context.numberExpression(1))})";
+
+    // Brackets are tight against the endpoints, and the slope between them is spaced as an operator:
+    // [(0, -3)], [(0, -3) 1 (1, -2)[, ](0, -3) (1, -2)].
+    public override string? VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context) =>
+        $"[{Render(context.endpoint())}]";
+
+    public override string? VisitSegmentLeftOpenRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context) =>
+        RenderSegment("]", context, "[");
+
+    public override string? VisitSegmentLeftOpenRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context) =>
+        RenderSegment("]", context, "]");
+
+    public override string? VisitSegmentLeftClosedRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context) =>
+        RenderSegment("[", context, "[");
+
+    public override string? VisitSegmentLeftClosedRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context) =>
+        RenderSegment("[", context, "]");
+
     public override string? VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {
         var parts = new List<string>();
@@ -288,6 +313,19 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         }
 
         return $"{name}({string.Join(", ", args)})";
+    }
+
+    /// <summary>
+    /// Renders a segment as <c>[start slope end[</c>, with the given brackets, or as
+    /// <c>[start end[</c> when the slope is left to be computed.
+    /// </summary>
+    private string RenderSegment(string open, Antlr4.Runtime.ParserRuleContext context, string close)
+    {
+        var endpoints = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.EndpointContext>();
+        var slope = context.GetRuleContext<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+        var middle = slope is null ? "" : $"{Render(slope)} ";
+
+        return $"{open}{Render(endpoints[0])} {middle}{Render(endpoints[1])}{close}";
     }
 
     private string RenderOperand(IParseTree tree, bool compound) =>
