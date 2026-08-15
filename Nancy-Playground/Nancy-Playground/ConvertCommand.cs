@@ -2,6 +2,7 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
 
+using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.Cli;
@@ -78,9 +79,15 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         {
             code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
         }
+        catch (SyntaxErrorException ex) when (ex.Error is { } error)
+        {
+            Console.MarkupLine($"[red]Error:[/] Cannot compile program from {Markup.Escape(mppgFile.FullName)}:");
+            SyntaxErrorPrinter.PrintError(Console, error, "red");
+            return 1;
+        }
         catch (Exception ex)
         {
-            Console.MarkupLine($"[red]Error:[/] Cannot compile program from {mppgFile.FullName}: {Markup.Escape(ex.Message)}");
+            Console.MarkupLine($"[red]Error:[/] Cannot compile program from {Markup.Escape(mppgFile.FullName)}: {Markup.Escape(ex.Message)}");
             return 1;
         }
         var programType = settings.UseNancyExpressions ? "Nancy.Expressions" : "Nancy";

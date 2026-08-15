@@ -4,7 +4,6 @@ using System.Text;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.Nancy.Playground.Cli.Plots;
-using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
@@ -108,10 +107,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 Console.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
                 foreach(var error in program.Errors)
                 {
-                    Console.MarkupLineInterpolated($"[red]\t - line {error.Line}:{error.Column} {error.Message}[/]");
-                    if (error.Hint is not null)
-                        Console.MarkupLineInterpolated($"[red]\t   {error.Hint}[/]");
-                    PrintSourceExcerpt(error, "red");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red");
                 }
                 return 1;
             }
@@ -120,10 +116,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 Console.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
                 foreach(var error in program.Errors)
                 {
-                    Console.MarkupLineInterpolated($"[darkorange]\t - line {error.Line}:{error.Column} {error.Message}[/]");
-                    if (error.Hint is not null)
-                        Console.MarkupLineInterpolated($"[darkorange]\t   {error.Hint}[/]");
-                    PrintSourceExcerpt(error, "darkorange");
+                    SyntaxErrorPrinter.PrintError(Console, error, "darkorange");
                 }
             }
         }
@@ -186,35 +179,4 @@ public class RunCommand : Command<RunCommand.Settings>
             Console.WriteLine($"Total computation time: {totalComputationTime}");
         return 0;
     }
-
-    /// <summary>
-    /// Prints the source context of a syntax error: the line before the offending line, the offending
-    /// line with its offending token highlighted in <paramref name="color"/>, and a caret underneath.
-    /// </summary>
-    private void PrintSourceExcerpt(SyntaxErrorInfo error, string color)
-    {
-        if (error.SourceLine is null)
-            return;
-
-        const string indent = "\t   ";
-        var column = Math.Clamp(error.Column, 0, error.SourceLine.Length);
-        var length = Math.Clamp(error.OffendingText?.Length ?? 1, 0, error.SourceLine.Length - column);
-
-        // The line before only helps when the error is at the start of its line, where it explains
-        // the newline that appears in ANTLR's "no viable alternative at input '...'" span.
-        if (error.PreviousLine is not null && error.Column == 0)
-            Console.MarkupLine($"[gray]{indent}{EscapeMarkup(error.PreviousLine)}[/]");
-
-        var before = EscapeMarkup(error.SourceLine[..column]);
-        var offending = EscapeMarkup(error.SourceLine.Substring(column, length));
-        var after = EscapeMarkup(error.SourceLine[(column + length)..]);
-
-        Console.MarkupLine($"[gray]{indent}{before}[/][{color}]{offending}[/][gray]{after}[/]");
-
-        var caret = new string(' ', column) + new string('^', Math.Max(1, length));
-        Console.MarkupLine($"[{color}]{indent}{caret}[/]");
-    }
-
-    private static string EscapeMarkup(string text) =>
-        text.Replace("[", "[[").Replace("]", "]]");
 }

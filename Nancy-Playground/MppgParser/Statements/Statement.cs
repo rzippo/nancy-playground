@@ -29,24 +29,12 @@ public abstract record class Statement
 
     public static Statement FromLine(string line, State? state, SyntaxVersion syntaxVersion)
     {
-        var inputStream = CharStreams.fromString(line);
-        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
-        lexer.SetSyntaxVersion(syntaxVersion.Major, syntaxVersion.Minor);
-        var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
-        parser.ErrorHandler = new BailErrorStrategy();
-        parser.SeedVariableTypes(state);
+        var parse = MppgParsing.Create(line, ErrorRecovery.FirstError, syntaxVersion, state);
 
-        Unipi.MppgParser.Grammar.MppgParser.StatementContext context;
-        try
-        {
-            context = parser.statement();
-            EnsureWholeLineWasParsed(commonTokenStream);
-        }
-        catch (Exception ex)
-        {
-            throw ex.WithVersionedKeywordHint(commonTokenStream);
-        }
+        var context = parse.ParseOrThrow(static parser => parser.statement());
+
+        CheckWholeLineWasParsed(parse.Tokens, parse.Errors);
+        parse.ThrowIfErrors();
 
         var visitor = new StatementVisitor();
         var statement = visitor.Visit(context)
@@ -60,13 +48,31 @@ public abstract record class Statement
     /// Its empty alternative matches without consuming anything, so a line that starts with something no
     /// statement can start with would otherwise be read as an empty statement rather than reported.
     /// </summary>
-    private static void EnsureWholeLineWasParsed(ITokenStream tokens)
+    private static void CheckWholeLineWasParsed(ITokenStream tokens, IList<SyntaxErrorInfo> errors)
     {
         var next = tokens.LT(1);
         if (next.Type == TokenConstants.EOF
             || next.Type == Unipi.MppgParser.Grammar.MppgLexer.INLINABLE_COMMENT)
             return;
 
-        throw new SyntaxErrorException($"Unexpected input '{next.Text}'.");
+        var text = SourceLineExtractor.GetText(next.TokenSource?.InputStream);
+        var lines = text is not null && next.StartIndex >= 0
+            ? SourceLineExtractor.ExtractLines(text, next.StartIndex)
+            : null;
+
+        errors.Add(new SyntaxErrorInfo(
+            Line: next.Line,
+            Column: next.Column,
+            Message: $"Unexpected input '{next.Text}'.",
+            Type: SyntaxErrorInfo.ErrorType.Parser,
+            OffendingText: next.Text,
+            OffendingTokenType: next.Type,
+            RuleName: null,
+            RuleStack: null,
+            Expected: null,
+            SourceLine: lines?.Line,
+            PreviousLine: lines?.Previous,
+            Hint: VersionedKeywords.TryGetUsedAsNameHint(VersionedKeywords.TokensOfLine(tokens, next))
+        ));
     }
 }

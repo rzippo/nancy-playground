@@ -1,5 +1,4 @@
-﻿using Antlr4.Runtime;
-using Unipi.Nancy.Expressions;
+﻿using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 using Unipi.Nancy.Playground.MppgParser;
@@ -75,16 +74,10 @@ public class Expression
     /// </returns>
     public static IExpression ParseFromString(string expression, State? state, SyntaxVersion syntaxVersion = default)
     {
-        var inputStream = CharStreams.fromString(expression);
-        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         var version = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
-        lexer.SetSyntaxVersion(version.Major, version.Minor);
-        var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
-        parser.ErrorHandler = new BailErrorStrategy();
-        parser.SeedVariableTypes(state);
+        var parse = MppgParsing.Create(expression, ErrorRecovery.FirstError, version, state);
 
-        var context = parser.expression();
+        var context = parse.ParseOrThrow(static parser => parser.expression());
         var visitor = new ExpressionVisitor(state);
 
         return context.Accept(visitor);

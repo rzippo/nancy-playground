@@ -1,5 +1,4 @@
-﻿using Antlr4.Runtime;
-using Unipi.MppgParser.Grammar;
+﻿using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 using Unipi.Nancy.Playground.MppgParser.Utility;
@@ -88,28 +87,14 @@ public record class Program
     /// <returns></returns>
     public static Program FromText(string text)
     {
-        var errors = new List<SyntaxErrorInfo>();
+        var parse = MppgParsing.Create(text, ErrorRecovery.CollectAll);
 
-        var inputStream = CharStreams.fromString(text);
-        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
-        var lexerListener = new DiagnosticLexerErrorListener(errors, inputStream);
-        lexer.RemoveErrorListeners();
-        lexer.AddErrorListener(lexerListener);
-
-        var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
-        var parserListener = new DiagnosticParserErrorListener(errors);
-        parser.RemoveErrorListeners();
-        parser.AddErrorListener(parserListener);
-
-        var context = parser.program();
-        var (major, minor) = lexer.SyntaxVersion;
-        var syntaxVersion = SyntaxVersion.FromParts(major, minor);
-        var program = FromTree(context, errors, syntaxVersion);
+        var context = parse.Parser.program();
+        var program = FromTree(context, parse.Errors, parse.DeclaredSyntaxVersion);
         return program with
         {
             Text = text,
-            Errors = errors
+            Errors = parse.Errors
         };
     }
 
@@ -186,23 +171,18 @@ public record class Program
     /// <param name="text"></param>
     /// <param name="useNancyExpressions"></param>
     /// <returns></returns>
+    /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
     public static List<string> ToNancyCode(
-        string text, 
+        string text,
         bool useNancyExpressions = false
     )
     {
-        var inputStream = CharStreams.fromString(text);
-        var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
-        var commonTokenStream = new CommonTokenStream(lexer);
-        var parser = new Unipi.MppgParser.Grammar.MppgParser(commonTokenStream);
-        parser.ErrorHandler = new BailErrorStrategy();
+        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
 
-        var programContext = parser.program();
-        var (major, minor) = lexer.SyntaxVersion;
-        var syntaxVersion = SyntaxVersion.FromParts(major, minor);
-        MppgBaseVisitor<List<string>> visitor = useNancyExpressions 
-            ? new ToNancyExpressionsCodeVisitor(syntaxVersion)
-            : new ToNancyCodeVisitor(syntaxVersion);
+        var programContext = parse.ParseOrThrow(static parser => parser.program());
+        MppgBaseVisitor<List<string>> visitor = useNancyExpressions
+            ? new ToNancyExpressionsCodeVisitor(parse.DeclaredSyntaxVersion)
+            : new ToNancyCodeVisitor(parse.DeclaredSyntaxVersion);
         var code = programContext.Accept(visitor);
 
         return code;

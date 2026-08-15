@@ -424,6 +424,25 @@ public class CliCommandBranchCoverageTests
         Assert.Contains("Cannot compile program", output);
     }
 
+    [Fact]
+    public void ConvertInvalidSyntaxShowsTheOffendingLine()
+    {
+        using var script = TemporaryScript.Create("f := bucket(2, 5)\ng := f + missing");
+        using var dir = TemporaryDirectory.Create();
+
+        var (exitCode, output) = ConvertCommand([
+            "convert",
+            script.Path,
+            "--output-file", Path.Combine(dir.Path, "program.cs"),
+            "--overwrite",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("line 2:9", output);
+        Assert.Contains("g := f + missing", output);
+    }
+
     private static (int ExitCode, string Output) RunCommand(string[] args)
     {
         var console = CreateTestConsole();

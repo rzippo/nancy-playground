@@ -4,6 +4,7 @@ using Spectre.Console;
 using Spectre.Console.Cli;
 using Unipi.Nancy.Playground.Cli.Plots;
 using Unipi.Nancy.Playground.MppgParser;
+using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
@@ -176,6 +177,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
                     programContext.ExecuteStatement(statement, formatter, immediateComputeValue);
                 }
+                catch (SyntaxErrorException ex) when (ex.Error is { } error)
+                {
+                    Console.MarkupLine("[red]Syntax error:[/]");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red");
+                    continue;
+                }
                 catch (Exception ex)
                 {
                     Console.MarkupLine($"[red]Syntax error:[/] {Escape(line)}");
@@ -278,6 +285,11 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
             File.WriteAllLines(outputPath, (IEnumerable<string>)programNancyCode);
             Console.MarkupLine($"[green]Program converted successfully to[/] [blue]{Escape(outputPath)}[/].");
+        }
+        catch (SyntaxErrorException e) when (e.Error is { } error)
+        {
+            Console.MarkupLine($"[red]Error:[/] Could not convert program to [blue]{Escape(outputPath)}[/]:");
+            SyntaxErrorPrinter.PrintError(Console, error, "red");
         }
         catch (Exception e)
         {
@@ -383,6 +395,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
                     programContext.ExecuteStatement(statement, loadFormatter, immediateComputeValue);
                     successCount++;
+                }
+                catch (SyntaxErrorException ex) when (ex.Error is { } error)
+                {
+                    Console.MarkupLine("[red]Error executing line:[/]");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red");
+                    errorCount++;
                 }
                 catch (Exception ex)
                 {

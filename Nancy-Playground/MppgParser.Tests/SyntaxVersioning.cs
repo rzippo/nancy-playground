@@ -1,3 +1,4 @@
+using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
@@ -621,8 +622,10 @@ public class SyntaxVersioning
         var exception = Assert.ThrowsAny<Exception>(
             () => Statement.FromLine($"{keyword} := 3", new State(), introducedIn));
 
-        Assert.Contains($"'{keyword}'", exception.Message);
-        Assert.Contains($"#!syntax version {introducedIn.Previous()}", exception.Message);
+        var error = Assert.IsType<SyntaxErrorException>(exception).Error;
+        Assert.NotNull(error);
+        Assert.Contains($"'{keyword}'", error.Hint!);
+        Assert.Contains($"#!syntax version {introducedIn.Previous()}", error.Hint!);
     }
 
     // A line that starts with something no statement can start with used to be read as an empty
