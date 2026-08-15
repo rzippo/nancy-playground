@@ -86,7 +86,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new PlotCommand
         {
             FunctionsToPlot = variableNames,
-            Text = context.GetJoinedText(),
+            Text = MppgReformatVisitor.Reformat(context),
             Settings = settings
         };
     }
@@ -98,7 +98,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new PlotTikzCommand
         {
             FunctionsToPlot = variableNames,
-            Text = context.GetJoinedText(),
+            Text = MppgReformatVisitor.Reformat(context),
             Settings = settings
         };
     }
@@ -297,7 +297,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             throw new Exception("Expected 4 child expression");
         
         var name = context.GetChild(2).GetText();
-        var text = context.GetJoinedText();
+        var text = MppgReformatVisitor.Reformat(context);
 
         return new PrintExpressionCommand(name) { Text = text };
     }

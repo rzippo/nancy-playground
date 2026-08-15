@@ -95,7 +95,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         else
         {
             List<string> code = [
-                $"// code for: {context.GetJoinedText()}"
+                $"// code for: {MppgReformatVisitor.Reformat(context)}"
             ];
             
             var statementCode = statementContext.Accept(this);

@@ -118,6 +118,31 @@ public class MppgReformatVisitorTests
         Assert.Equal(expected, program.Statements[^1].Text);
     }
 
+    public static IEnumerable<object[]> CommandCases =>
+        new (string Input, string Expected)[]
+        {
+            ("printExpression ( f )", "printExpression(f)"),
+            ("plot ( f , g )", "plot(f, g)"),
+            ("plotTikz ( f )", "plotTikz(f)"),
+            ("""plot ( f , out = "p.png" )""", """plot(f, out="p.png")"""),
+            ("""plot(f, out="p.png", gui="no")""", """plot(f, out="p.png", gui="no")"""),
+            ("plot ( f , xlim = [ 0 , 10 ] )", "plot(f, xlim=[0, 10])"),
+            ("plot(f, ylim=[1/2, 10])", "plot(f, ylim=[1/2, 10])"),
+        }.ToXUnitTestCases();
+
+    /// <summary>
+    /// The commands are call-shaped, so they echo as one writes them rather than as spaced tokens.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(CommandCases))]
+    public void CommandEchoesTight(string input, string expected)
+    {
+        var program = Program.FromText($"{Declarations}\n{input}");
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+        Assert.Equal(expected, program.Statements[^1].Text);
+    }
+
     [Fact]
     public void AssertionEchoesOperandGrouping()
     {

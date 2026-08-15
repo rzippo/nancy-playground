@@ -19,7 +19,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public class MppgReformatVisitor : MppgBaseVisitor<string?>
 {
     /// <summary>
-    /// Reformats <paramref name="tree"/>, which must be an expression subtree.
+    /// Reformats <paramref name="tree"/>, which must be an expression or a command subtree.
     /// </summary>
     public static string Reformat(IParseTree tree) => tree.Accept(new MppgReformatVisitor()) ?? string.Empty;
 
@@ -74,6 +74,23 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         context.ChildCount == 3
             ? $"{Render(context.GetChild(0))}/{Render(context.GetChild(2))}"
             : Render(context.GetChild(0));
+
+    // The commands are call-shaped too: printExpression(f), plot(f, out="p.png").
+    public override string? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context) =>
+        RenderCall(context);
+
+    public override string? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context) =>
+        RenderCall(context);
+
+    public override string? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
+        RenderCall(context);
+
+    // A plot option is a name bound to a value, so it is tight: out="p.png", xlim=[0, 10].
+    public override string? VisitPlotOption(Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext context) =>
+        $"{context.GetChild(0).GetText()}={Render(context.GetChild(2))}";
+
+    public override string? VisitInterval(Unipi.MppgParser.Grammar.MppgParser.IntervalContext context) =>
+        $"[{Render(context.rationalLiteral(0))}, {Render(context.rationalLiteral(1))}]";
 
     // Grouping brackets are tight like call parentheses: (x + y), not ( x + y ).
     public override string? VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context) =>
