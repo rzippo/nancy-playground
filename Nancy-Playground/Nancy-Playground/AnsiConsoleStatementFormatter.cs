@@ -224,6 +224,13 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
         switch(error.Exception)
         {
+            case SyntaxErrorException { Error: { } syntaxError }:
+            {
+                Console.MarkupLine("[red]Syntax error[/]:");
+                SyntaxErrorPrinter.PrintError(Console, syntaxError, "red");
+                break;
+            }
+
             case SyntaxErrorException:
             {
                 Console.MarkupLineInterpolated($"[red]Syntax error[/]: {error.Exception.Message}");

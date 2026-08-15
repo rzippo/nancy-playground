@@ -24,7 +24,7 @@ public record class SyntaxErrorStatement : Statement
     {
         var message = SyntaxError?.ToString() ?? Message;
         return InnerException is null
-            ? new SyntaxErrorException(message)
-            : new SyntaxErrorException(message, InnerException);
+            ? new SyntaxErrorException(message) { Error = SyntaxError }
+            : new SyntaxErrorException(message, InnerException) { Error = SyntaxError };
     }
 }

@@ -35,8 +35,11 @@ public class ReleaseErrorHandlingTests
 
         Assert.Equal(0, exitCode);
         Assert.Contains("WARNING! Syntax errors:", output);
-        Assert.Contains("Syntax error", output);
-        Assert.Contains("2", output);
+        Assert.Contains("Syntax error:", output);
+        // the offending line is shown twice: among the errors of the program, and again at the statement
+        Assert.Equal(2, output.Split("1 = 2").Length - 1);
+        // the statements after the bad one are executed
+        Assert.Contains("b = 2", output);
 #endif
     }
 
