@@ -8,6 +8,9 @@ I aim to support as many constructs as possible, to run all existing code, but a
 
 This syntax is re-organized, compared to the source material [[1]](https://www.realtimeatwork.com/minplus-quickref-syntax/)[[2]](https://www.realtimeatwork.com/minplus-console/RTaW-MinplusConsole-UserManual.pdf), to better guide implementation.
 
+Spaces and tabs are ignored.
+A newline terminates a statement, so there is one statement per line.
+
 ## Comments ✅
 
 ### Line comments
