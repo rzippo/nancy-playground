@@ -186,7 +186,7 @@ These operations return a _function_.
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
 | upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
-| nnupclosure(f,n ) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
+| nnupclosure(f) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
 | lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. | ✅ |
 | nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. | ✅ |
 | floor(f) | Compute the function $g$ such that $g(x) = \lfloor f(x) \rfloor$. Requires syntax version 1.3 or later. | ✅ |
@@ -274,7 +274,7 @@ These operations work between scalars, and return scalars.
 | v1 + v2 | Sum of v1 and v2. | ✅ |
 | v1 - v2 | Substraction of v1 and v2. | ✅ |
 | v1 * v2 | Multiplication of v1 and v2. | ✅ |
-| v1 ÷ v2 | Division of v1 and v2. | ✅ |
+| v1 / v2 | Division of v1 and v2. | ✅ |
 | v1 div v2 | Division of v1 by v2. | ✅ |
 | v1 mod v2 | Remainder of v1 divided by v2, which takes the sign of v1. Requires syntax version 1.3 or later. | ✅ |
 | floor(v) | Largest integer not above $v$, i.e. $\lfloor v \rfloor$. Requires syntax version 1.3 or later. | ✅ |

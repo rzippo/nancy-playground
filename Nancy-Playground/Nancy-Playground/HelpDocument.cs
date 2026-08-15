@@ -484,11 +484,11 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Upper closure",
-                        Formats = ["upclosure(f)", "nnupclosure(f, n)"],
+                        Formats = ["upclosure(f)", "nnupclosure(f)"],
                         Description = "Upper non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `upclosure(f)`: upper non-decreasing closure of f.
-- `nnupclosure(f, n)`: non-negative upper non-decreasing closure, parameterized by n.
+- `nnupclosure(f)`: non-negative upper non-decreasing closure of f.
 """,
                         Tags = ["closure", "non-decreasing", "upper", "operation"]
                     },
@@ -621,13 +621,13 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                     new HelpItem
                     {
                         Name = "Arithmetic",
-                        Formats = ["v1 + v2", "v1 - v2", "v1 * v2", "v1 ÷ v2", "v1 div v2", "v1 mod v2"],
+                        Formats = ["v1 + v2", "v1 - v2", "v1 * v2", "v1 / v2", "v1 div v2", "v1 mod v2"],
                         Description = "Standard scalar arithmetic operations.",
                         LongDescription = """
 - `v1 + v2`: addition
 - `v1 - v2`: subtraction
 - `v1 * v2`: multiplication
-- `v1 ÷ v2`: division
+- `v1 / v2`: division
 - `v1 div v2`: division (same semantics for this syntax)
 - `v1 mod v2`: remainder of the division, which takes the sign of v1, e.g. `-7/2 mod 3` is -1/2.
   It binds like the other product operators, so `1 + x mod y` is `1 + (x mod y)`.
