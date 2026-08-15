@@ -64,8 +64,8 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     public override Statement? VisitVersionDirective(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext context)
     {
         var text = context.GetJoinedText();
-        SyntaxVersion.TryParseShebang(text, out var version);
-        return new VersionDirectiveStatement(version) { Text = text };
+        var version = VersionDirective.Read(text, out var error);
+        return new VersionDirectiveStatement(version) { Text = text, Error = error };
     }
 
     public override Statement? VisitDirective(Unipi.MppgParser.Grammar.MppgParser.DirectiveContext context)

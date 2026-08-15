@@ -209,6 +209,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     {
         var activeVersion = Escape(programContext.SyntaxVersion.ToString());
 
+        if (vds is { Version: null, Error: { } error })
+        {
+            Console.MarkupLine($"[red]Error:[/] {Escape(error)} Active version: {activeVersion}.");
+            return;
+        }
+
         if (programContext.SyntaxVersionDirectiveApplied)
         {
             Console.MarkupLine($"[yellow]WARNING:[/] Duplicate syntax version directive. Only the first one is applied. Active version: {activeVersion}. Use [blue]!clear[/] to start a new session.");
@@ -221,9 +227,10 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             return;
         }
 
-        programContext.SyntaxVersion = vds.Version;
+        var version = vds.Version!.Value;
+        programContext.SyntaxVersion = version;
         programContext.SyntaxVersionDirectiveApplied = true;
-        Console.MarkupLine($"[green]Syntax version set to {Escape(vds.Version.ToString())}.[/]");
+        Console.MarkupLine($"[green]Syntax version set to {Escape(version.ToString())}.[/]");
     }
 
     /// <summary>

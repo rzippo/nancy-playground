@@ -163,6 +163,36 @@ public class InteractiveCommandTests
     }
 
     [Fact]
+    public void MalformedVersionDirective_IsRejected_AndLeavesTheSessionVersion()
+    {
+        var console = CreateConsole();
+        console.Input.PushTypedLine("#!syntax version 1.x");
+        console.Input.PushTypedLine("f := ratency(1, 3)");
+        console.Input.PushTypedLine("lowclosure(f)");
+        console.Input.PushTypedLine("!quit");
+
+        RunInteractive(console);
+
+        Assert.Contains("is not a version directive", console.Output);
+        Assert.DoesNotContain("Syntax version set to", console.Output);
+        // the session stays at the latest, hence a keyword of 1.2 is still usable
+        Assert.DoesNotContain("Syntax error:", console.Output);
+    }
+
+    [Fact]
+    public void VersionDirectiveLaterThanLatest_IsRejected()
+    {
+        var console = CreateConsole();
+        console.Input.PushTypedLine("#!syntax version 9.9");
+        console.Input.PushTypedLine("!quit");
+
+        RunInteractive(console);
+
+        Assert.Contains("is not supported by this build", console.Output);
+        Assert.DoesNotContain("Syntax version set to", console.Output);
+    }
+
+    [Fact]
     public void Clear_AllowsANewVersionDirective()
     {
         var console = CreateConsole();

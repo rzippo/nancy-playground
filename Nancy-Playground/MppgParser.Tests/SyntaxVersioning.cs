@@ -138,7 +138,7 @@ public class SyntaxVersioning
     }
 
     [Fact]
-    public void PreambleShebangV2_0_AllowsPrintExpression()
+    public void PreambleShebangV2_0_IsReported_AndStillParsesAsTheLatest()
     {
         const string programText = """
         #!syntax version 2.0
@@ -148,7 +148,9 @@ public class SyntaxVersioning
 
         var program = Program.FromText(programText);
 
-        Assert.Empty(program.Errors);
+        var error = Assert.Single(program.Errors);
+        Assert.Contains("is not supported by this build", error.Message);
+        // the gating is unaffected, so what the script says about the constructs of this build stands
         Assert.Equal(new SyntaxVersion(2, 0), program.SyntaxVersion);
         Assert.Contains(program.Statements, s => s is PrintExpressionCommand { VariableName: "a" });
     }
@@ -323,7 +325,7 @@ public class SyntaxVersioning
 
         // Line 1: set version to 1.0
         var vds = Statement.FromLine("#!syntax version 1.0");
-        var version = Assert.IsType<VersionDirectiveStatement>(vds).Version;
+        var version = Assert.IsType<VersionDirectiveStatement>(vds).Version!.Value;
 
         // Line 2: with version 1.0, printExpression should throw (predicate fails)
         Assert.ThrowsAny<Exception>(() => Statement.FromLine("printExpression(x)", state, version));
@@ -886,5 +888,59 @@ public class SyntaxVersioning
         Assert.Empty(program.Errors);
         var directive = program.Statements.OfType<DirectiveStatement>().Single();
         Assert.Equal("#!some-future-directive", directive.Text);
+    }
+
+    /// <summary>
+    /// A version later than the latest gates the syntax as the latest, every predicate of the grammar
+    /// being an "or later" one, so a script that declares one and parses needs nothing beyond it.
+    /// </summary>
+    [Fact]
+    public void VersionLaterThanLatest_IsReported_AndSaysTheLatestWouldDo()
+    {
+        var program = Program.FromText($"#!syntax version 1.{SyntaxVersion.Latest.Minor + 1}\na := 1");
+
+        var error = Assert.Single(program.Errors);
+        Assert.Equal(1, error.Line);
+        Assert.Contains("is not supported by this build", error.Message);
+        Assert.Contains($"can declare '#!syntax version {SyntaxVersion.Latest}'", error.Hint);
+    }
+
+    [Fact]
+    public void VersionLaterThanLatest_WithOtherErrors_SaysTheyMayBeItsConstructs()
+    {
+        var program = Program.FromText($"#!syntax version 1.{SyntaxVersion.Latest.Minor + 1}\na := 1\nb := ]");
+
+        // the version comes first, being the cause of the errors a wrong gating produces
+        Assert.Contains("is not supported by this build", program.Errors[0].Message);
+        Assert.Contains("may be constructs of", program.Errors[0].Hint);
+        Assert.True(program.Errors.Count > 1);
+    }
+
+    [Fact]
+    public void VersionThatNeverExisted_IsReportedWithTheKnownOnes()
+    {
+        var program = Program.FromText("#!syntax version 0.9\na := 1");
+
+        var error = program.Errors[0];
+        Assert.Contains("0.9 is not a known version", error.Message);
+        Assert.Contains(SyntaxVersion.Latest.ToString(), error.Message);
+    }
+
+    [Fact]
+    public void MalformedVersionDirective_IsReportedRatherThanIgnored()
+    {
+        var program = Program.FromText("#!syntax version 1.x\na := 1");
+
+        var error = Assert.Single(program.Errors);
+        Assert.Contains("is not a version directive", error.Message);
+    }
+
+    [Fact]
+    public void MalformedVersionDirective_DeclaresNoVersionToApply()
+    {
+        var statement = Assert.IsType<VersionDirectiveStatement>(Statement.FromLine("#!syntax version 1.x"));
+
+        Assert.Null(statement.Version);
+        Assert.NotNull(statement.Error);
     }
 }
