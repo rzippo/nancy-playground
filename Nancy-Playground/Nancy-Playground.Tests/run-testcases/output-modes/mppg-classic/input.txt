@@ -1,0 +1,9 @@
+f := bucket(2, 5)
+f
+g := ratency(1, 3)
+h := f * g
+h
+f(10)
+1/2
+zero
+printExpression(h)

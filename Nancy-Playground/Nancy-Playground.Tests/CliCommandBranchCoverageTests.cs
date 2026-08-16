@@ -186,7 +186,7 @@ public class CliCommandBranchCoverageTests
             x
             """);
 
-        var (exitCode, _) = RunCommand([
+        var (exitCode, output) = RunCommand([
             "run",
             script.Path,
             "--deterministic",
@@ -196,6 +196,9 @@ public class CliCommandBranchCoverageTests
         ]);
 
         Assert.Equal(0, exitCode);
+        // the formatter of this mode writes to the console it is given, so its output is captured
+        Assert.Contains(">> x", output);
+        Assert.Contains(">> 1", output);
     }
 
     [Fact]

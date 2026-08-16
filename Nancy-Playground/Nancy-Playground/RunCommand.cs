@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using Spectre.Console;
@@ -143,7 +143,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 PlotFormatter = plotFormatter,
                 TikzPlotFormatter = tikzPlotFormatter,
             },
-            OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
+            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console },
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 Console = Console,
@@ -153,7 +153,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 PrintInputAsConfirmation = false,
                 EchoInput = echoInput
             },
-            _ => new PlainConsoleStatementFormatter()
+            _ => new MppgClassicStatementFormatter { Console = Console }
         };
 
         var immediateComputeValue = settings.RunMode switch

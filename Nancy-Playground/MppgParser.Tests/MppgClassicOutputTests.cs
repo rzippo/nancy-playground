@@ -1,24 +1,21 @@
-using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
-
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 /// <summary>
-/// The output style of the original console writes a value as the syntax writes it, so that it can be
-/// read back, rather than as the C# that builds it.
+/// The default notation writes a value as the syntax writes it, so that it can be read back, rather
+/// than as the C# that builds it.
+/// Read through the string output of a program, which is the text a formatter starts from.
 /// </summary>
 public class MppgClassicOutputTests
 {
-    private static string Run(string programText, bool compute = true)
+    /// <summary>
+    /// The lines a program writes, the echo of each statement among them, prefixed with "&gt;&gt; ".
+    /// </summary>
+    private static List<string> Run(string programText)
     {
-        var writer = new StringWriter();
-        var formatter = new PlainConsoleStatementFormatter { Out = writer };
         var program = Program.FromText(programText);
 
         Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
-        while (!program.IsEndOfProgram)
-            program.ExecuteNextStatement(formatter, compute);
-
-        return writer.ToString().ReplaceLineEndings("\n");
+        return program.ExecuteToStringOutput().ToList();
     }
 
     [Theory]
@@ -33,7 +30,7 @@ public class MppgClassicOutputTests
     {
         var output = Run($"x := {expression}\nx");
 
-        Assert.Contains($">> {expected}", output);
+        Assert.Contains(expected, output);
     }
 
     [Fact]
@@ -41,7 +38,7 @@ public class MppgClassicOutputTests
     {
         var output = Run("f := bucket(2, 5)\nf(10)");
 
-        Assert.Contains(">> 25", output);
+        Assert.Contains("25", output);
     }
 
     /// <summary>
@@ -53,7 +50,7 @@ public class MppgClassicOutputTests
     {
         var output = Run("f := bucket(2, 5)\ng := ratency(1, 3)\nh := f * g\nh");
 
-        Assert.Contains(">> uaf([(0, 0)] ](0, 0) 0 (3, 0)[ [(3, 0)] ](3, 0) 1 (+inf, +inf)[)", output);
+        Assert.Contains("uaf([(0, 0)] ](0, 0) 0 (3, 0)[ [(3, 0)] ](3, 0) 1 (+inf, +inf)[)", output);
     }
 
     /// <summary>
@@ -63,12 +60,11 @@ public class MppgClassicOutputTests
     public void WhatIsWrittenParsesBackToTheSameValue()
     {
         var written = Run("h := bucket(2, 5) * ratency(1, 3)\nh")
-            .Split('\n')
-            .Single(line => line.StartsWith(">> uaf("))[3..];
+            .Single(line => line.StartsWith("uaf("));
 
         var roundTrip = Run($"h := {written}\nassert( h = bucket(2, 5) * ratency(1, 3) )");
 
-        Assert.Contains(">> true", roundTrip);
+        Assert.Contains("true", roundTrip);
     }
 
     /// <summary>
@@ -82,11 +78,9 @@ public class MppgClassicOutputTests
     [InlineData("f * g / f", "(f * g) / f")]
     public void PrintedExpressionUsesTheNamesOfTheSyntax(string expression, string expected)
     {
-        var output = Run(
-            $"f := bucket(2, 5)\ng := ratency(1, 3)\nh := {expression}\nprintExpression(h)",
-            compute: false);
+        var output = Run($"f := bucket(2, 5)\ng := ratency(1, 3)\nh := {expression}\nprintExpression(h)");
 
-        Assert.Contains($">> {expected}", output);
+        Assert.Contains(expected, output);
     }
 
     /// <summary>
@@ -97,14 +91,13 @@ public class MppgClassicOutputTests
     {
         const string declarations = "f := bucket(2, 5)\ng := ratency(1, 3)\n";
 
-        // the assignments echo the names they assign, so the printed expression is the last line
-        var printed = Run($"{declarations}h := f + g\nprintExpression(h)", compute: false)
-            .Split('\n')
-            .Last(line => line.StartsWith(">> ") && line.Length > 3)[3..];
+        // the echo of each statement is prefixed, so the printed expression is the last bare line
+        var printed = Run($"{declarations}h := f + g\nprintExpression(h)")
+            .Last(line => !line.StartsWith(">> ") && line.Length > 0);
 
         var roundTrip = Run($"{declarations}k := {printed}\nassert( k = f + g )");
 
-        Assert.Contains(">> true", roundTrip);
+        Assert.Contains("true", roundTrip);
     }
 
     /// <summary>
@@ -115,6 +108,6 @@ public class MppgClassicOutputTests
     {
         var output = Run("f := bucket(2, 5)");
 
-        Assert.Contains(">> f", output);
+        Assert.Contains("f", output);
     }
 }

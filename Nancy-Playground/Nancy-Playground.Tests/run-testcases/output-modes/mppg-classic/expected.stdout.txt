@@ -1,0 +1,20 @@
+f := bucket(2, 5)
+>> f
+f
+>> bucket(2, 5)
+g := ratency(1, 3)
+>> g
+h := f * g
+>> h
+h
+>> uaf([(0, 0)] ](0, 0) 0 (3, 0)[ [(3, 0)] ](3, 0) 1 (+inf, +inf)[)
+f(10)
+>> 25
+1/2
+>> 1/2
+zero
+>> zero
+printExpression(h)
+>> f * g
+
+>> 

@@ -5,16 +5,12 @@ namespace Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 /// <summary>
 /// The output style of the original console, which writes a value as the syntax writes it.
+/// Depends on nothing but <see cref="Console"/>, for a consumer of the parser that has no console
+/// library: the CLI has its own, which writes to the console it was given.
 /// </summary>
 public class PlainConsoleStatementFormatter: IStatementFormatter
 {
-    /// <summary>
-    /// Where the output is written, or null to write to the console as it is when writing, rather
-    /// than as it was when this formatter was built.
-    /// </summary>
-    public TextWriter? Out { get; init; }
-
-    private TextWriter Writer => Out ?? Console.Out;
+    private static TextWriter Writer => Console.Out;
 
     public void FormatStatementPreamble(Statement statement)
     {

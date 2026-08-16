@@ -63,7 +63,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
-            OutputMode.MppgClassic => new PlainConsoleStatementFormatter(),
+            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console },
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 Console = Console,
@@ -78,7 +78,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 PrintInputAsConfirmation = true,
                 EchoInput = echoInput
             },
-            _ => new PlainConsoleStatementFormatter()
+            _ => new MppgClassicStatementFormatter { Console = Console }
         };
 
         var immediateComputeValue = settings.RunMode switch
