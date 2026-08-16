@@ -1,4 +1,6 @@
-﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
+﻿using Unipi.Nancy.Expressions;
+
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 public record class PrintExpressionCommand : Statement
 {
@@ -43,19 +45,17 @@ public record class PrintExpressionCommand : Statement
             throw new Exception($"Variable \"{VariableName}\" not found");
         else
         {
-            string output;
+            IExpression expression;
             switch (type)
             {
                 case ExpressionType.Function:
                 {
-                    var ce = state.GetFunctionVariable(VariableName);
-                    output = ce.ToUnicodeString();
+                    expression = state.GetFunctionVariable(VariableName);
                     break;
                 }
                 case ExpressionType.Number:
                 {
-                    var ne = state.GetNumberVariable(VariableName);
-                    output = ne.ToUnicodeString();
+                    expression = state.GetNumberVariable(VariableName);
                     break;
                 }
                 default:
@@ -64,10 +64,11 @@ public record class PrintExpressionCommand : Statement
                 }
             }
 
-            return new StatementOutput
+            return new PrintExpressionOutput
             {
                 StatementText = Text,
-                OutputText = output
+                OutputText = expression.ToUnicodeString(),
+                Expression = expression
             };
         }
     }

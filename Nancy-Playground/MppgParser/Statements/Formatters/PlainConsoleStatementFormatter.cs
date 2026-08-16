@@ -1,4 +1,5 @@
 ﻿using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Expressions.Visitors;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
@@ -43,8 +44,27 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
             AssignmentOutput => output.OutputText,
             ExpressionOutput { Expression: CurveExpression curve } => curve.Value.ToMppgString(),
             ExpressionOutput { Expression: RationalExpression rational } => rational.Value.ToMppgString(),
+            // printExpression shows the expression itself, which the syntax spells its own way
+            PrintExpressionOutput print => ToMppgText(print.Expression, print.OutputText),
             _ => output.OutputText
         };
+
+    /// <summary>
+    /// The expression as MPPG source text, or <paramref name="fallback"/> when it uses an operation
+    /// the syntax has no notation for, which the renderer reports rather than write something that
+    /// would not parse.
+    /// </summary>
+    private static string ToMppgText(IExpression expression, string fallback)
+    {
+        try
+        {
+            return expression.ToMppgString();
+        }
+        catch (MppgFormattingException)
+        {
+            return fallback;
+        }
+    }
 
     public void FormatError(Statement statement, ErrorOutput error)
     {

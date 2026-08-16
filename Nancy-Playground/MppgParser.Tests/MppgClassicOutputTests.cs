@@ -8,7 +8,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Tests;
 /// </summary>
 public class MppgClassicOutputTests
 {
-    private static string Run(string programText)
+    private static string Run(string programText, bool compute = true)
     {
         var writer = new StringWriter();
         var formatter = new PlainConsoleStatementFormatter { Out = writer };
@@ -16,7 +16,7 @@ public class MppgClassicOutputTests
 
         Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
         while (!program.IsEndOfProgram)
-            program.ExecuteNextStatement(formatter, immediateComputeValue: true);
+            program.ExecuteNextStatement(formatter, compute);
 
         return writer.ToString().ReplaceLineEndings("\n");
     }
@@ -67,6 +67,42 @@ public class MppgClassicOutputTests
             .Single(line => line.StartsWith(">> uaf("))[3..];
 
         var roundTrip = Run($"h := {written}\nassert( h = bucket(2, 5) * ratency(1, 3) )");
+
+        Assert.Contains(">> true", roundTrip);
+    }
+
+    /// <summary>
+    /// printExpression shows the expression rather than the value it computes, and the syntax names
+    /// its operators its own way: subaddclosure, where Nancy says subadditiveClosure.
+    /// </summary>
+    [Theory]
+    [InlineData("subaddclosure(f * g)", "subaddclosure(f * g)")]
+    [InlineData("f + g", "f + g")]
+    [InlineData("hDev(f, g)", "hDev(f, g)")]
+    [InlineData("f * g / f", "(f * g) / f")]
+    public void PrintedExpressionUsesTheNamesOfTheSyntax(string expression, string expected)
+    {
+        var output = Run(
+            $"f := bucket(2, 5)\ng := ratency(1, 3)\nh := {expression}\nprintExpression(h)",
+            compute: false);
+
+        Assert.Contains($">> {expected}", output);
+    }
+
+    /// <summary>
+    /// What printExpression writes is MPPG, so it parses back to the expression it came from.
+    /// </summary>
+    [Fact]
+    public void PrintedExpressionParsesBack()
+    {
+        const string declarations = "f := bucket(2, 5)\ng := ratency(1, 3)\n";
+
+        // the assignments echo the names they assign, so the printed expression is the last line
+        var printed = Run($"{declarations}h := f + g\nprintExpression(h)", compute: false)
+            .Split('\n')
+            .Last(line => line.StartsWith(">> ") && line.Length > 3)[3..];
+
+        var roundTrip = Run($"{declarations}k := {printed}\nassert( k = f + g )");
 
         Assert.Contains(">> true", roundTrip);
     }
