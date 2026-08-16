@@ -97,12 +97,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 var formattedTime = FormatStatementTime(expressionOutput.Time);
                 if (expressionOutput.Expression.IsComputed)
                 {
-                    var expressionValue = expressionOutput.Expression switch
-                    {
-                        CurveExpression ce => ce.Value.ToCodeString(),
-                        RationalExpression re => re.Value.ToPrettyString(),
-                        _ => throw new InvalidOperationException()
-                    };
+                    var expressionValue = MppgOutput.OfValue(expressionOutput.Expression);
                     Console.MarkupLineInterpolated(formattedTime.Concat($"[magenta]{expressionValue}[/]"));
                 }
                 else
@@ -118,17 +113,14 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 var formattedTime = FormatStatementTime(assignmentOutput.Time);
                 if (assignmentOutput.Expression.IsComputed)
                 {
-                    var expressionValue = assignmentOutput.Expression switch
-                    {
-                        CurveExpression ce => ce.Value.ToCodeString(),
-                        RationalExpression re => re.Value.ToPrettyString(),
-                        _ => throw new InvalidOperationException()
-                    };
+                    var expressionValue = MppgOutput.OfValue(assignmentOutput.Expression);
                     Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionValue}[/]"));
                 }
                 else
                 {
-                    Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{assignmentOutput.Expression.ToUnicodeString()}[/]"));
+                    var expressionText = MppgOutput.OfExpression(
+                        assignmentOutput.Expression, assignmentOutput.Expression.ToUnicodeString());
+                    Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionText}[/]"));
                 }
                 break;
             }
@@ -137,6 +129,14 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             {
                 var assertionOutput = (AssertionOutput) output;
                 Console.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
+                break;
+            }
+
+            case PrintExpressionCommand printExpression:
+            {
+                var printOutput = (PrintExpressionOutput) output;
+                var expressionText = MppgOutput.OfExpression(printOutput.Expression, printOutput.OutputText);
+                Console.MarkupLineInterpolated($"[magenta]{expressionText}[/]");
                 break;
             }
 

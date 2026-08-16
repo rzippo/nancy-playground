@@ -32,14 +32,9 @@ public class OutputOnlyFormatter : IStatementFormatter
             case ExpressionCommand expression:
             {
                 var expressionOutput = (ExpressionOutput)output;
-                // assume we are being *required* to compute the expression 
-                var expressionValue = expressionOutput.Expression switch
-                {
-                    CurveExpression ce => ce.Value.ToCodeString(),
-                    RationalExpression re => re.Value.ToPrettyString(),
-                    _ => throw new InvalidOperationException()
-                };
-                Console.WriteLine(expressionValue);
+                // assume we are being *required* to compute the expression
+                // this mode is the one compared against a converted program, so it prints as Nancy does
+                Console.WriteLine(NancyOutput.OfValue(expressionOutput.Expression));
                 break;
             }
             

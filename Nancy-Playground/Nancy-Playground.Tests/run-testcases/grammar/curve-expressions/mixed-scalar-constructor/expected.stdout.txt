@@ -1,10 +1,10 @@
 > g1 := ratency(1, 1) + 1
-g1 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,1), new Segment(0,1,1,0), new Point(1,1), new Segment(1,2,1,1) }), pseudoPeriodStart: 1, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
+g1 = uaf([(0, 1)] ](0, 1) 0 (1, 1)[ [(1, 1)] ](1, 1) 1 (+inf, +inf)[)
 > g2 := 1 + ratency(1, 1)
-g2 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,1), new Segment(0,1,1,0), new Point(1,1), new Segment(1,2,1,1) }), pseudoPeriodStart: 1, pseudoPeriodLength: 1, pseudoPeriodHeight: 1)
+g2 = uaf([(0, 1)] ](0, 1) 0 (1, 1)[ [(1, 1)] ](1, 1) 1 (+inf, +inf)[)
 > assert(g1 = g2)
 true
 > f := bucket(2, 3)
-f = new SigmaRhoArrivalCurve(3, 2)
+f = bucket(2, 3)
 > g3 := 5 - f
-g3 = new Curve(baseSequence: new Sequence(new List<Element>{ new Point(0,5), new Segment(0,1,2,-2), new Point(1,0), new Segment(1,2,0,-2) }), pseudoPeriodStart: 1, pseudoPeriodLength: 1, pseudoPeriodHeight: -2)
+g3 = uaf([(0, 5)] ](0, 2) -2 (1, 0)[ [(1, 0)] ](1, 0) -2 (+inf, -inf)[)

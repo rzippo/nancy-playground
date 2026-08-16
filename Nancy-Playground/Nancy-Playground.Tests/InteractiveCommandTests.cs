@@ -30,7 +30,7 @@ public class InteractiveCommandTests
 
         RunInteractive(console);
 
-        Assert.Contains("f = new RateLatencyServiceCurve(1, 3)", console.Output);
+        Assert.Contains("f = ratency(1, 3)", console.Output);
     }
 
     [Fact]
@@ -281,7 +281,7 @@ public class InteractiveCommandTests
             RunInteractive(console);
 
             Assert.Contains("Program loaded:", console.Output);
-            Assert.Contains("f = new RateLatencyServiceCurve(1, 3)", console.Output);
+            Assert.Contains("f = ratency(1, 3)", console.Output);
         }
         finally
         {

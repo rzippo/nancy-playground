@@ -15,6 +15,8 @@ using CliMarker = Cli.Program;
 /// depend on the machine it runs on.
 /// Covered here as well as by the golden cases, which would otherwise be the only place this shows up,
 /// and only on a machine whose code page happens not to be UTF-8.
+/// The cases are what the script itself carries, since the output now writes values and expressions in
+/// MPPG, which is ASCII: the Unicode form of an expression comes back with a print command for it.
 /// </remarks>
 public class CliOutputEncodingTests
 {
@@ -30,13 +32,10 @@ public class CliOutputEncodingTests
     public static IEnumerable<object[]> NonAsciiOutputCases =>
         new List<(string script, string expected)>
         {
-            // the unicode form of expressions, printed when a curve is assigned
-            ("f := affine(1, 0)\nresult := upclosure(f)", "↑"),
-            ("f := affine(1, 0)\nresult := floor(f)", "⌊"),
-            ("f := affine(1, 0)\nresult := ceil(f)", "⌉"),
-            ("f := affine(1, 0)\ng := affine(2, 0)\nresult := f * g", "⊗"),
-            // and text of the script itself, echoed back
+            // text of the script itself, echoed back
             ("// a comment with a ’ in it\nx := 1", "’"),
+            // and text of the script carried into what a command generates
+            ("f := affine(1, 0)\nplotTikz(f, main = \"a ’ in a label\")", "’"),
         }
         .Select(testCase => (object[])[testCase.script, testCase.expected]);
 
