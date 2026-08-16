@@ -119,7 +119,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 else
                 {
                     var expressionText = MppgOutput.OfExpression(
-                        assignmentOutput.Expression, assignmentOutput.Expression.ToUnicodeString());
+                        assignmentOutput.Expression, NancyOutput.OfExpression(assignmentOutput.Expression));
                     Console.MarkupLineInterpolated(formattedTime.Concat($"{assignmentOutput.AssignedVariable} = [magenta]{expressionText}[/]"));
                 }
                 break;
@@ -129,14 +129,6 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             {
                 var assertionOutput = (AssertionOutput) output;
                 Console.MarkupLineInterpolated(FormatStatementTime(assertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
-                break;
-            }
-
-            case PrintExpressionCommand printExpression:
-            {
-                var printOutput = (PrintExpressionOutput) output;
-                var expressionText = MppgOutput.OfExpression(printOutput.Expression, printOutput.OutputText);
-                Console.MarkupLineInterpolated($"[magenta]{expressionText}[/]");
                 break;
             }
 

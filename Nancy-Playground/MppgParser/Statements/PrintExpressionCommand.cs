@@ -1,4 +1,5 @@
 ﻿using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
@@ -21,14 +22,9 @@ public record class PrintExpressionCommand : Statement
             switch (type)
             {
                 case ExpressionType.Function:
-                {
-                    var ce = state.GetFunctionVariable(VariableName);
-                    return ce.ToUnicodeString();
-                }
                 case ExpressionType.Number:
                 {
-                    var ne = state.GetNumberVariable(VariableName);
-                    return ne.ToUnicodeString();
+                    return ExecuteToFormattable(state).OutputText;
                 }
                 default:
                 {
@@ -67,7 +63,9 @@ public record class PrintExpressionCommand : Statement
             return new PrintExpressionOutput
             {
                 StatementText = Text,
-                OutputText = expression.ToUnicodeString(),
+                // the default notation is the syntax itself, and the notation of Nancy is what stands
+                // in when the syntax cannot write an operation
+                OutputText = MppgOutput.OfExpression(expression, NancyOutput.OfExpression(expression)),
                 Expression = expression
             };
         }

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
@@ -17,17 +18,7 @@ public record class ExpressionCommand : Statement
     }
 
     public override string Execute(State state)
-    {
-        Expression.ParseTree(state);
-        var (c, r) = Expression.Compute();
-
-        if (c is not null)
-            return c.ToCodeString();
-        if (r is not null)
-            return r.ToString()!;
-        else
-            return "undefined";
-    }
+        => ExecuteToFormattable(state).OutputText;
 
     public override StatementOutput ExecuteToFormattable(State state)
     {
@@ -50,12 +41,9 @@ public record class ExpressionCommand : Statement
         }
         sw.Stop();
 
-        var output = Expression.NancyExpression switch
-        {
-            CurveExpression ce => ce.Value.ToCodeString(),
-            RationalExpression re => re.Value.ToCodeString(),
-            _ => throw new Exception($"Expression could not be parsed")
-        };
+        // the default notation is the syntax itself; a formatter that wants another one renders it
+        // from the expression this output carries
+        var output = MppgOutput.OfValue(Expression.NancyExpression!);
 
         return new ExpressionOutput()
         {

@@ -30,23 +30,9 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
         if (output is PlotOutput)
             Writer.WriteLine(">> Plots are not rendered in this output mode.");
         else
-            Writer.WriteLine($">> {ToMppgText(output)}");
+            // the output text is already in the default notation, which is the syntax itself
+            Writer.WriteLine($">> {output.OutputText}");
     }
-
-    /// <summary>
-    /// The value of <paramref name="output"/> as the syntax writes it, rather than as the C# that
-    /// builds it, which is what <see cref="StatementOutput.OutputText"/> carries.
-    /// An assignment keeps its text, which is the name it assigned.
-    /// </summary>
-    private static string ToMppgText(StatementOutput output)
-        => output switch
-        {
-            AssignmentOutput => output.OutputText,
-            ExpressionOutput expression => MppgOutput.OfValue(expression.Expression),
-            // printExpression shows the expression itself, which the syntax spells its own way
-            PrintExpressionOutput print => MppgOutput.OfExpression(print.Expression, print.OutputText),
-            _ => output.OutputText
-        };
 
     public void FormatError(Statement statement, ErrorOutput error)
     {

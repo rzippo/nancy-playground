@@ -178,7 +178,18 @@ public record class Program
         var statement = Statements[ProgramCounter++];
         if (statement is not Comment)
             yield return $">> {statement.Text}";
-        yield return statement.Execute(ProgramContext.State);
+
+        // over the same path the formatters use, so that the two cannot write a value differently
+        string text;
+        try
+        {
+            text = statement.ExecuteToFormattable(ProgramContext.State).OutputText;
+        }
+        catch (Exception e)
+        {
+            text = e.Message;
+        }
+        yield return text;
     }
 
     /// <summary>
