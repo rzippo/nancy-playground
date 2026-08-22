@@ -77,7 +77,8 @@ public class Expression
         var version = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
         var parse = MppgParsing.Create(expression, ErrorRecovery.FirstError, version, state);
 
-        var context = parse.ParseOrThrow(static parser => parser.expression());
+        // the entry rule is anchored at EOF, so input left over after the expression is reported
+        var context = parse.ParseOrThrow(static parser => parser.expressionEntry()).expression();
         var visitor = new ExpressionVisitor(state);
 
         return context.Accept(visitor);

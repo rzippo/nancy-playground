@@ -39,6 +39,18 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitProgram([NotNull] MppgParser.ProgramContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.statementEntry"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitStatementEntry([NotNull] MppgParser.StatementEntryContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.expressionEntry"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitExpressionEntry([NotNull] MppgParser.ExpressionEntryContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.preamble"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

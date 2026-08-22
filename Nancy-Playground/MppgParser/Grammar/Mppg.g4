@@ -2,16 +2,15 @@ grammar Mppg;
 
 @lexer::members {
     // Syntax versioning.
-    // Keywords are matched here, before any parser rule is reached, so a keyword introduced after 1.0
-    // has to be gated here for scripts declaring an earlier version to keep using that name as a variable.
+    // Keywords are matched here, before any parser rule is reached. 
+    // Keywords are gated since older scripts may use them as variable names.
     private int _syntaxVersionMajor = 1;
     private int _syntaxVersionMinor = 3;
     private bool _versionDirectiveApplied = false;
 
     public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
 
-    /// Sets the version explicitly, for input that does not carry the directive itself,
-    /// i.e. the single lines parsed in interactive mode.
+    /// Programmatically sets the syntax version.
     public void SetSyntaxVersion(int major, int minor)
     {
         _syntaxVersionMajor = major;
@@ -19,10 +18,9 @@ grammar Mppg;
         _versionDirectiveApplied = true;
     }
 
-    /// Applies a '#!syntax version X.Y' directive as it is lexed, so that the keywords of the rest of
-    /// the input are those of the declared version.
-    /// Only the first directive of the program applies, and only if nothing but blanks precedes it,
-    /// matching the preamble rule.
+    /// Applies a '#!syntax version X.Y' directive as it is lexed.
+    /// Must be done early so that the keywords of the rest of the input are those of the declared version.
+    /// Only the first directive of the program applies, and only if nothing but blanks precedes it, matching the preamble rule.
     private void TryApplyVersionDirective(string text)
     {
         if (_versionDirectiveApplied || !IsPrecededOnlyByBlanks())
@@ -36,13 +34,13 @@ grammar Mppg;
         }
     }
 
+    /// True if nothing but spaces and tabs comes before the token being matched, i.e. it opens the
+    /// input. A version directive is applied only there, which is where the preamble rule accepts it.
     private bool IsPrecededOnlyByBlanks()
     {
         if (TokenStartCharIndex == 0)
             return true;
 
-        // read by absolute interval: LA is relative to the current position, which during this action
-        // is the end of the matched token, not its start
         var before = ((ICharStream)InputStream)
             .GetText(Antlr4.Runtime.Misc.Interval.Of(0, TokenStartCharIndex - 1));
 
@@ -75,6 +73,9 @@ grammar Mppg;
     }
 
     private readonly Dictionary<string, VariableType> _variableTypes = new();
+    // The keyword sets below are matched against the text of a token, so every lookup is paired with a
+    // check that the token is not an IDENTIFIER: a gated keyword lexes as one where the declared
+    // version has no such keyword, e.g. 'lowclosure' under 1.1, and is a variable there.
     private static readonly HashSet<string> FunctionExpressionStarters = new()
     {
         "ratency",
@@ -221,8 +222,11 @@ grammar Mppg;
         if (typePreservingArgument > 0)
             return ExpressionSegmentContainsFunction(typePreservingArgument);
 
-        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
-        return token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text);
+        // version-gated keywords can be used as variable names in older versions
+        if (token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text))
+            return true;
+
+        return false;
     }
 
     // True if the tokens from lookaheadIndex are a call of one of the given keywords.
@@ -230,7 +234,6 @@ grammar Mppg;
     {
         var token = TokenStream.LT(lookaheadIndex);
 
-        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
         return token.Type != IDENTIFIER
             && starters.Contains(token.Text)
             && TokenStream.LT(lookaheadIndex + 1).Text == "(";
@@ -293,7 +296,6 @@ grammar Mppg;
         token.Text == "*"
         || token.Text == "/"
         || token.Text == "div"
-        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
         || (token.Type != IDENTIFIER && token.Text == "mod");
 
     private bool IsNumberEnclosedExpressionStart(int lookaheadIndex)
@@ -424,7 +426,6 @@ grammar Mppg;
             if (token.Type == IDENTIFIER && IsFunctionVariableReferenceAt(index))
                 return true;
 
-            // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
             if (token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text))
                 return true;
 
@@ -466,7 +467,6 @@ grammar Mppg;
         || token.Text == "/_"
         || token.Text == "/^"
         || token.Text == "div"
-        // a name lexed as a variable is one, whatever it spells: it may be a keyword of a later version
         || (token.Type != IDENTIFIER && token.Text == "mod")
         || IsSumExpressionDelimiter(token);
 
@@ -523,21 +523,12 @@ PROD_SIGN: '*';
 DIV_SIGN: '/';
 DIV_OP: 'div';
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
-// Directives are '#!'-prefixed lines, lexed as their own token type so the parser can tell a
-// directive apart from a plain comment without a content-dependent predicate (see versionDirective).
-// A specific directive keyword (like 'syntax') gets its own token declared ahead of the generic
-// DIRECTIVE_START, the same way versioned keywords below are declared ahead of IDENTIFIER, so it
-// wins the lexical tie; anything else starting with '#!' falls back to being a generic directive,
-// leaving room for other directive kinds to be added the same way in the future.
 VERSION_DIRECTIVE_START: '#!syntax' [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
 DIRECTIVE_START: '#!' [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 
 // Keywords introduced after version 1.0.
-// Each is a keyword only from the version that introduced it, and lexes as IDENTIFIER before that,
-// so that a script declaring an earlier version can still use the name as a variable.
-// The predicate goes last, which is where the lexer evaluates it, and these rules precede
-// IDENTIFIER so they win the tie whenever their predicate holds.
+// Each is a keyword only from the version that introduced it, and lexes as IDENTIFIER before that.
 PRINT_EXPRESSION : 'printExpression' {IsVersion1_1OrLater()}?;
 PLOT_TIKZ : 'plotTikz' {IsVersion1_1OrLater()}?;
 SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
@@ -554,8 +545,16 @@ LCM : 'lcm' {IsVersion1_3OrLater()}?;
 
 IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
 
-// parser rules
+// Parser rules
+
+// Entry point for parsing a self-contained script
 program : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
+
+// Entry points for parsing one line, or one expression, in isolation.
+// Needed to anchor those parses at EOF, so that input left over is reported rather than silently dropped.
+statementEntry : statementLine EOF;
+expressionEntry : expression EOF;
+
 preamble : preambleStatement (NEW_LINE preambleStatement)* NEW_LINE?;
 preambleStatement : versionDirective | directive;
 versionDirective : VERSION_DIRECTIVE_START;
@@ -606,10 +605,9 @@ functionProductExpression
     : functionProductStart functionProductSuffix* #functionProductChain
     ;
 
-// Product-level predicates distinguish convolution/composition from scalar
-// multiplication, division, and sampling forms that share the same tokens.
-// The scalar on the left of '*' binds at the product tier, so 1/2 * f and x/y * f are a scalar times a function rather than a parse error.
-// The chain stops at the operator whose right side is not a number, which is where the function side takes over.
+// Product-level predicates distinguish convolution/composition from scalar multiplication, division, and sampling forms that share the same tokens.
+// The scalar on the left of a product operator binds at the product tier: 1/2 * f groups as (1/2) * f, and x/y * f as (x/y) * f.
+// The scalar side ends at the first operator whose right side is not a number: in x * y * f it is x * y.
 functionProductStart
     : {IsFunctionOperandStart(1)}? functionUnaryExpression #functionProductFunctionStart
     | {IsNumberProductExpressionStart(1)}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
@@ -617,8 +615,8 @@ functionProductStart
     ;
 
 // The scalar on the right of a product operator binds at the unary tier, one operand at a time, so that a chain keeps folding left to right.
-// f / 1/2 is (f / 1) / 2, as it is for plain scalars, and not f / (1/2).
-// The unary tier is what lets the operand carry a sign, so f * -x reads like f + -x.
+// f / 1/2 groups as (f / 1) / 2, as a / 1/2 does between scalars.
+// The unary tier is what lets that operand carry a sign: f * -x.
 functionProductSuffix
     : {ProductOperandContainsFunction(2)}? '*' functionUnaryExpression #functionMinPlusConvolutionSuffix
     | '*' numberUnaryExpression #functionScalarMulSuffix
@@ -653,9 +651,7 @@ functionEnclosedExpression
     | NNLOWCLOSURE '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
-    // floor and ceil return the kind of their argument: these are the curve-argument forms, and the
-    // scalar-argument ones are alternatives of numberExpression. The lookahead predicates that route
-    // an expression to either side scan the argument, see TryGetTypePreservingCallArgumentStart.
+    // floor and ceil return the kind of their argument: these take a curve, and the scalar forms are alternatives of numberExpression.
     | FLOOR '(' functionExpression ')' #functionFloor
     | CEIL '(' functionExpression ')' #functionCeil
     | functionConstructor #functionConstructorExp
@@ -694,7 +690,7 @@ uppPeriodicPart: 'period' '(' sequence ')';
 increment: ',' rationalLiteral periodLenght?;
 periodLenght: ',' rationalLiteral;
 
-// Segments
+// Segments, the elements uaf and upp are built from.
 sequence: element+;
 element: point | segment;
 point: '[' endpoint ']';
@@ -704,6 +700,8 @@ segment
     | segmentLeftClosedRightOpen
     | segmentLeftClosedRightClosed
     ;
+// A segment runs between two endpoints, with the slope between them optional.
+// The brackets say which endpoints it includes: '[' and ']' closed, ']' and '[' open.
 endpoint: '(' numberExpression ',' numberExpression ')';
 segmentLeftOpenRightOpen: ']' endpoint numberExpression? endpoint '[';
 segmentLeftOpenRightClosed: ']' endpoint numberExpression? endpoint ']';
@@ -712,7 +710,7 @@ segmentLeftClosedRightClosed: '[' endpoint numberExpression? endpoint ']';
 
 // Numbers
 // One hierarchy of tiers, sum -> product -> unary -> atom, so that the atoms are spelled once and every construct takes the operand granularity it needs.
-// The mixed scalar/function operators bind their scalar side at the product tier, which is wide enough to carry a fraction (f + 1/2) but stops short of the sum operators the function chain has to keep for itself.
+// A mixed scalar/function operator binds its scalar side at the product tier: f + 1/2 takes the whole fraction, and f - x + y groups as (f - x) + y.
 numberExpression
     : numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberProductExpression #numberSumSubMinMax
     | numberProductExpression #numberSumAtom
@@ -732,16 +730,16 @@ numberEnclosedExpression
     ;
 
 // The product tier, and the scalar operand of a mixed sum operator (f + 1/2): a chain of number atoms joined by the product-level operators.
-// It stops short of +, -, /\ and \/, so it cannot steal the sum-level operators that the function sum chain handles.
-// It is left-recursive, so a chain folds left-to-right (1/2/3 is (1/2)/3).
+// It excludes +, -, /\ and \/: in f - x + y the scalar side is x alone, and the sum folds as (f - x) + y.
+// It is left-recursive, so a chain folds left to right: 1/2/3 groups as (1/2)/3.
 numberProductExpression
     : numberUnaryExpression #numberProductAtom
     | numberProductExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberUnaryExpression #numberProductMulDiv
     ;
 
 // The unary tier.
-// The atom comes first so that a signed literal stays one literal, as it did when numberLiteral was reached directly.
-// -3 is the literal -3, while -x, -(x + y) and -f(3), which no literal can spell, take the sign alternatives.
+// The atom comes first so that a signed literal stays one literal: -3 is the literal -3.
+// -x, -(x + y) and -f(3), which no literal can spell, take the sign alternatives.
 numberUnaryExpression
     : numberEnclosedExpression #numberUnaryAtom
     | PLUS numberUnaryExpression #numberPositive
@@ -796,12 +794,11 @@ assertion
 assertionOperator
     : '='
     | '!='
-    | '<'   // custom addition
+    | '<'
     | '<='
-    | '>'   // custom addition
+    | '>'
     | '>='
     ;
 
-// extra commands
 printExpressionCommand
     : PRINT_EXPRESSION '(' IDENTIFIER ')';

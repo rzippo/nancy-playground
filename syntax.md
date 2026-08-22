@@ -383,6 +383,8 @@ The operators supported are `=`, `!=`, `<=`, and `>=`.
 
 There seems _not_ to be any support for complex logic like `and`, `or` and `not`, or strict inequalities `<` and `>`.
 
+`nancy-playground` accepts the strict inequalities `<` and `>` as well, so its operators are `=`, `!=`, `<`, `<=`, `>` and `>=`.
+
 > Note: some of the above restrictions may not be matched by `nancy-playground`, as detecting "too complex" expressions may be harder than just computing them.
 
 ## New shiny syntax

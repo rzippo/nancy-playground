@@ -1,5 +1,4 @@
-﻿using Antlr4.Runtime;
-using Unipi.Nancy.Playground.MppgParser;
+﻿using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 using Unipi.Nancy.Playground.MppgParser.Visitors;
@@ -31,48 +30,14 @@ public abstract record class Statement
     {
         var parse = MppgParsing.Create(line, ErrorRecovery.FirstError, syntaxVersion, state);
 
-        var context = parse.ParseOrThrow(static parser => parser.statement());
-
-        CheckWholeLineWasParsed(parse.Tokens, parse.Errors);
-        parse.ThrowIfErrors();
+        // the entry rule is anchored at EOF, so input left over on the line is reported by the parser
+        var entry = parse.ParseOrThrow(static parser => parser.statementEntry());
+        var context = entry.statementLine().statement();
 
         var visitor = new StatementVisitor();
         var statement = visitor.Visit(context)
             ?? throw new SyntaxErrorException("Statement could not be parsed.");
 
         return statement with { Warnings = ScalarDivisionGrouping.WarningsFor(context) };
-    }
-
-    /// <summary>
-    /// Rejects a line the statement rule stopped short of.
-    /// Its empty alternative matches without consuming anything, so a line that starts with something no
-    /// statement can start with would otherwise be read as an empty statement rather than reported.
-    /// </summary>
-    private static void CheckWholeLineWasParsed(ITokenStream tokens, IList<SyntaxErrorInfo> errors)
-    {
-        var next = tokens.LT(1);
-        if (next.Type == TokenConstants.EOF
-            || next.Type == Unipi.MppgParser.Grammar.MppgLexer.INLINABLE_COMMENT)
-            return;
-
-        var text = SourceLineExtractor.GetText(next.TokenSource?.InputStream);
-        var lines = text is not null && next.StartIndex >= 0
-            ? SourceLineExtractor.ExtractLines(text, next.StartIndex)
-            : null;
-
-        errors.Add(new SyntaxErrorInfo(
-            Line: next.Line,
-            Column: next.Column,
-            Message: $"Unexpected input '{next.Text}'.",
-            Type: SyntaxErrorInfo.ErrorType.Parser,
-            OffendingText: next.Text,
-            OffendingTokenType: next.Type,
-            RuleName: null,
-            RuleStack: null,
-            Expected: null,
-            SourceLine: lines?.Line,
-            PreviousLine: lines?.Previous,
-            Hint: VersionedKeywords.TryGetUsedAsNameHint(VersionedKeywords.TokensOfLine(tokens, next))
-        ));
     }
 }

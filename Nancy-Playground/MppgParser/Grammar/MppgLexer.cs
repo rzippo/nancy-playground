@@ -72,16 +72,15 @@ public partial class MppgLexer : Lexer {
 
 
 	    // Syntax versioning.
-	    // Keywords are matched here, before any parser rule is reached, so a keyword introduced after 1.0
-	    // has to be gated here for scripts declaring an earlier version to keep using that name as a variable.
+	    // Keywords are matched here, before any parser rule is reached. 
+	    // Keywords are gated since older scripts may use them as variable names.
 	    private int _syntaxVersionMajor = 1;
 	    private int _syntaxVersionMinor = 3;
 	    private bool _versionDirectiveApplied = false;
 
 	    public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
 
-	    /// Sets the version explicitly, for input that does not carry the directive itself,
-	    /// i.e. the single lines parsed in interactive mode.
+	    /// Programmatically sets the syntax version.
 	    public void SetSyntaxVersion(int major, int minor)
 	    {
 	        _syntaxVersionMajor = major;
@@ -89,10 +88,9 @@ public partial class MppgLexer : Lexer {
 	        _versionDirectiveApplied = true;
 	    }
 
-	    /// Applies a '#!syntax version X.Y' directive as it is lexed, so that the keywords of the rest of
-	    /// the input are those of the declared version.
-	    /// Only the first directive of the program applies, and only if nothing but blanks precedes it,
-	    /// matching the preamble rule.
+	    /// Applies a '#!syntax version X.Y' directive as it is lexed.
+	    /// Must be done early so that the keywords of the rest of the input are those of the declared version.
+	    /// Only the first directive of the program applies, and only if nothing but blanks precedes it, matching the preamble rule.
 	    private void TryApplyVersionDirective(string text)
 	    {
 	        if (_versionDirectiveApplied || !IsPrecededOnlyByBlanks())
@@ -106,13 +104,13 @@ public partial class MppgLexer : Lexer {
 	        }
 	    }
 
+	    /// True if nothing but spaces and tabs comes before the token being matched, i.e. it opens the
+	    /// input. A version directive is applied only there, which is where the preamble rule accepts it.
 	    private bool IsPrecededOnlyByBlanks()
 	    {
 	        if (TokenStartCharIndex == 0)
 	            return true;
 
-	        // read by absolute interval: LA is relative to the current position, which during this action
-	        // is the end of the matched token, not its start
 	        var before = ((ICharStream)InputStream)
 	            .GetText(Antlr4.Runtime.Misc.Interval.Of(0, TokenStartCharIndex - 1));
 
