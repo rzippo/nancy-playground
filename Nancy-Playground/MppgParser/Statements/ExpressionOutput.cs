@@ -2,6 +2,9 @@
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The output of a statement that produced a value.
+/// </summary>
 public class ExpressionOutput : StatementOutput
 {
     /// <summary>

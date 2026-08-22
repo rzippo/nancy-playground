@@ -11,21 +11,54 @@ namespace Unipi.Nancy.Playground.MppgParser.Statements;
 /// </summary>
 public record class Assertion : Statement
 {
+    /// <summary>
+    /// The comparison an assertion makes between its two sides.
+    /// </summary>
     public enum AssertionOperator
     {
+        /// <summary>
+        /// The two sides are equal.
+        /// </summary>
         Equal,
+        /// <summary>
+        /// The two sides differ.
+        /// </summary>
         NotEqual,
+        /// <summary>
+        /// The left side is smaller.
+        /// </summary>
         Less,
+        /// <summary>
+        /// The left side is smaller, or the two are equal.
+        /// </summary>
         LessOrEqual,
+        /// <summary>
+        /// The left side is greater.
+        /// </summary>
         Greater,
+        /// <summary>
+        /// The left side is greater, or the two are equal.
+        /// </summary>
         GreaterOrEqual
     }
 
+    /// <summary>
+    /// The side written before the operator.
+    /// </summary>
     public Expression LeftExpression { get; set; }
 
+    /// <summary>
+    /// The side written after the operator.
+    /// </summary>
     public Expression RightExpression { get; set; }
 
+    /// <summary>
+    /// The comparison the two sides are held to.
+    /// </summary>
     public AssertionOperator Operator { get; set; }
+    /// <summary>
+    /// An assertion comparing two expressions.
+    /// </summary>
     public Assertion(Expression leftExpression, Expression rightExpression, AssertionOperator @operator)
     {
         LeftExpression = leftExpression;
@@ -33,6 +66,9 @@ public record class Assertion : Statement
         Operator = @operator;
     }
 
+    /// <summary>
+    /// Evaluates both sides and reports whether the comparison holds.
+    /// </summary>
     public override string Execute(State state)
     {
         LeftExpression.ParseTree(state);
@@ -87,6 +123,9 @@ public record class Assertion : Statement
         return result;
     }
 
+    /// <summary>
+    /// Evaluates both sides and reports whether the comparison holds, for a formatter to render.
+    /// </summary>
     public override StatementOutput ExecuteToFormattable(State state)
     {
         var sw = Stopwatch.StartNew();

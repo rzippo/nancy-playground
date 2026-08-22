@@ -33,6 +33,9 @@ public partial class InteractiveCommand
         }
     }
 
+    /// <summary>
+    /// Prints the long entry of every item <paramref name="args"/> matches, or says that nothing matched.
+    /// </summary>
     public static void PrintSearchLong(IAnsiConsole console, HelpDocument doc, IReadOnlyList<string> args)
     {
         static string NormalizeQuery(string s)

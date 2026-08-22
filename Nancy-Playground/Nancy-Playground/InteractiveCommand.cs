@@ -10,20 +10,35 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// The 'interactive' command, which runs a session one statement at a time.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 {
     private IAnsiConsole Console { get; } = AnsiConsole.Console;
 
+    /// <summary>
+    /// A command writing to the default console.
+    /// </summary>
     public InteractiveCommand() { }
 
+    /// <summary>
+    /// A command writing to <paramref name="console"/>.
+    /// </summary>
     public InteractiveCommand(IAnsiConsole console)
     {
         Console = console;
     }
 
+    /// <summary>
+    /// The options of the 'interactive' command.
+    /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {
+        /// <summary>
+        /// The directory a relative path is resolved against, for the files the session writes.
+        /// </summary>
         [Description("Directory the files exported by the session are saved in, i.e. plots, !export and !convert. Relative paths are resolved against it. Default: the current directory.")]
         [CommandOption("--export-root")]
         public string? ExportRoot { get; init; }
@@ -34,6 +49,9 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// </summary>
     protected virtual TextReader LineInputSource => System.Console.In;
 
+    /// <summary>
+    /// Runs the session until the input ends, returning the exit code of the command.
+    /// </summary>
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)
@@ -236,8 +254,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// <summary>
     /// Exports the current program to a file.
     /// </summary>
-    /// <param name="args"></param>
-    /// <param name="programContext"></param>
+    /// <param name="args">What follows <c>!export</c>, which is the output path alone.</param>
+    /// <param name="programContext">The session whose statements are written out.</param>
     /// <param name="exportRoot">The directory a relative path is resolved against.</param>
     private void ExportProgram(string[] args, ProgramContext programContext, ExportRoot exportRoot)
     {
@@ -264,8 +282,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// <summary>
     /// Converts the current MPPG program to Nancy code and writes it to a file.
     /// </summary>
-    /// <param name="args"></param>
-    /// <param name="programContext"></param>
+    /// <param name="args">What follows <c>!convert</c>, which is the output path alone.</param>
+    /// <param name="programContext">The session whose statements are written out.</param>
     /// <param name="exportRoot">The directory a relative path is resolved against.</param>
     private void ConvertProgram(string[] args, ProgramContext programContext, ExportRoot exportRoot)
     {

@@ -2,6 +2,9 @@
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The outcome of an assertion, i.e. whether the comparison held.
+/// </summary>
 public class AssertionOutput : StatementOutput
 {
     /// <summary>

@@ -70,5 +70,8 @@ public sealed record ExportRoot
     public string? Validate() =>
         Directory.Exists(Path) ? null : $"{Path}: directory not found.";
 
+    /// <summary>
+    /// The directory as a path.
+    /// </summary>
     public override string ToString() => Path;
 }

@@ -6,26 +6,44 @@ using Spectre.Console.Cli;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// The entry point of the CLI, and what it reports about the build it comes from.
+/// </summary>
 public class Program
 {
+    /// <summary>
+    /// The version of the build.
+    /// </summary>
     public static string Version => Assembly
         .GetExecutingAssembly()
         .GetCustomAttributes<AssemblyMetadataAttribute>()
         .FirstOrDefault(a => a.Key == "PackageVersion")?.Value
         ?? "NA";
 
+    /// <summary>
+    /// The commit the build was made from.
+    /// </summary>
     public static string GitCommit => Assembly
             .GetExecutingAssembly()
             .GetCustomAttributes<AssemblyMetadataAttribute>()
             .FirstOrDefault(a => a.Key == "GitCommit")?.Value
         ?? "NA";
 
+    /// <summary>
+    /// The commit the build was made from, shortened for display.
+    /// </summary>
     public static string GitCommitShort => 
         GitCommit.Length >= 7 ? GitCommit[..7] : GitCommit;
 
+    /// <summary>
+    /// The one line naming the tool and its version.
+    /// </summary>
     public static string CliVersionLine =>
         $"[green]This is [blue]nancy-playground[/], version {Version} ({GitCommitShort}).[/]";
 
+    /// <summary>
+    /// The lines shown when a session starts.
+    /// </summary>
     public static List<string> CliWelcomeMessage =>
     [
         CliVersionLine,
@@ -33,6 +51,9 @@ public class Program
         "[green]Academic attribution: if useful, please cite [yellow]https://doi.org/10.4230/LIPIcs.ECRTS.2026.5[/][/]"
     ];
 
+    /// <summary>
+    /// Runs the command <paramref name="args"/> asks for, returning its exit code.
+    /// </summary>
     public static int Main(string[] args)
     {
         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -54,6 +75,9 @@ public class Program
         return app.Run(args);
     }
 
+    /// <summary>
+    /// Builds the command line, i.e. the commands and the options each accepts.
+    /// </summary>
     public static CommandApp<InteractiveCommand> BuildNancyPlaygroundApp()
     {
         var app = new CommandApp<InteractiveCommand>();

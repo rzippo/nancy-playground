@@ -2,6 +2,9 @@
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The options of a plot command, i.e. what to draw it over and where to write it.
+/// </summary>
 public record PlotSettings
 {
     /// <summary>

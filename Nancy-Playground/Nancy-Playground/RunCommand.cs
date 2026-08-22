@@ -24,35 +24,59 @@ public enum PlotRootMode
     Custom,
 }
 
+/// <summary>
+/// The 'run' command, which runs an MPPG program from start to end.
+/// </summary>
 public class RunCommand : Command<RunCommand.Settings>
 {
     private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
 
+    /// <summary>
+    /// The options of the 'run' command.
+    /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {
+        /// <summary>
+        /// The program to run.
+        /// </summary>
         [Description("Path to the .mppg file to run")]
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
 
+        /// <summary>
+        /// True to keep the run repeatable, i.e. to write the same output every time.
+        /// </summary>
         [Description("If enabled, makes the output deterministic, removing preamble and time measurements. Useful to implement tests.")]
         [CommandOption("--deterministic")]
         public bool Deterministic { get; init; } = false;
 
+        /// <summary>
+        /// Where the plots of the program are written, chosen among the modes rather than as a path.
+        /// </summary>
         [Description("Where to save plot output files. Options: ScriptDirectory (default), CurrentDirectory, or Custom. If --plots-root is specified, this defaults to Custom and must not be anything else.")]
         [CommandOption("--plots-root-mode")]
         public PlotRootMode? PlotsRootMode { get; init; }
 
+        /// <summary>
+        /// The directory the plots are written to, where the mode calls for one.
+        /// </summary>
         [Description("Explicit directory for saving plot files. If specified, --plots-root-mode is assumed to be Custom.")]
         [CommandOption("--plots-root")]
         public string? PlotsRoot { get; init; }
 
     }
 
+    /// <summary>
+    /// A command writing to <paramref name="console"/>.
+    /// </summary>
     public RunCommand(IAnsiConsole console)
     {
         Console = console;
     }
 
+    /// <summary>
+    /// Runs the program and writes its output, returning the exit code of the command.
+    /// </summary>
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)

@@ -3,6 +3,9 @@ using Unipi.Nancy.Playground.MppgParser.Exceptions;
 
 namespace Unipi.Nancy.Playground.MppgParser;
 
+/// <summary>
+/// Adds the hint about a versioned keyword to an exception raised parsing one.
+/// </summary>
 public static class VersionedKeywordExceptionExtensions
 {
     /// <summary>

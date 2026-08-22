@@ -6,6 +6,9 @@ using Unipi.Nancy.Playground.MppgParser.Visitors;
 
 namespace Unipi.Nancy.Playground.MppgParser;
 
+/// <summary>
+/// An MPPG program, i.e. its statements, the errors found parsing them, and the session they run against.
+/// </summary>
 public record class Program
 {
     /// <summary>
@@ -44,6 +47,9 @@ public record class Program
     public bool IsEndOfProgram 
         => ProgramCounter >= Statements.Count;
 
+    /// <summary>
+    /// A program made of the given statements.
+    /// </summary>
     public Program(List<Statement> statements)
     {
         if (statements.Any(static s => s is null))
@@ -59,10 +65,9 @@ public record class Program
     /// <summary>
     /// Parses the MPPG program from its parse tree and returns the corresponding Program object.
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="syntaxErrors"></param>
-    /// <param name="syntaxVersion"></param>
-    /// <returns></returns>
+    /// <param name="context">The parse tree of the program.</param>
+    /// <param name="syntaxErrors">The errors collected while parsing, which the program carries to be reported.</param>
+    /// <param name="syntaxVersion">The version the program was parsed with, or the default for the latest.</param>
     public static Program FromTree(
         Unipi.MppgParser.Grammar.MppgParser.ProgramContext context,
         IReadOnlyList<SyntaxErrorInfo>? syntaxErrors = null,
@@ -83,8 +88,6 @@ public record class Program
     /// <summary>
     /// Parses MPPG program text and returns the corresponding Program object.
     /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
     public static Program FromText(string text)
     {
         var parse = MppgParsing.Create(text, ErrorRecovery.CollectAll);
@@ -155,7 +158,6 @@ public record class Program
     /// <summary>
     /// Executes the entire program and returns its string output.
     /// </summary>
-    /// <returns></returns>
     public IEnumerable<string> ExecuteToStringOutput()
     {
         while (ProgramCounter < Statements.Count)
@@ -169,7 +171,6 @@ public record class Program
     /// <summary>
     /// Executes the next statement in the program and returns its string output.
     /// </summary>
-    /// <returns></returns>
     public IEnumerable<string> ExecuteNextStatementToStringOutput()
     {
         if(IsEndOfProgram)
@@ -195,9 +196,9 @@ public record class Program
     /// <summary>
     /// Executes the next statement in the program.
     /// </summary>
-    /// <param name="formatter"></param>
-    /// <param name="immediateComputeValue"></param>
-    /// <returns></returns>
+    /// <param name="formatter">Where to write what the statement produced.</param>
+    /// <param name="immediateComputeValue">True to compute the value of the statement as it runs, false to build the expression and leave it to be evaluated when required.</param>
+    /// <returns>The output of the statement, or null at the end of the program.</returns>
     public StatementOutput? ExecuteNextStatement(
         IStatementFormatter formatter,
         bool immediateComputeValue
@@ -219,9 +220,9 @@ public record class Program
     /// <summary>
     /// Converts the MPPG program to Nancy code.
     /// </summary>
-    /// <param name="useNancyExpressions"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <returns>The lines of the generated program.</returns>
+    /// <exception cref="InvalidOperationException">The program was built from a parse tree, so it has no source text to convert.</exception>
     public List<string> ToNancyCode(bool useNancyExpressions = false)
     {
         if (Text.IsNullOrWhiteSpace())
@@ -233,9 +234,9 @@ public record class Program
     /// <summary>
     /// Converts MPPG program text to Nancy code.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="useNancyExpressions"></param>
-    /// <returns></returns>
+    /// <param name="text">The program to convert.</param>
+    /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <returns>The lines of the generated program.</returns>
     /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
     public static List<string> ToNancyCode(
         string text,

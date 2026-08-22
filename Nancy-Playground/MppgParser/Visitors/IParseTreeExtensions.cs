@@ -2,8 +2,14 @@
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
+/// <summary>
+/// Reads the text back out of a parse tree.
+/// </summary>
 public static class IParseTreeExtensions
 {
+    /// <summary>
+    /// The text of each child of <paramref name="tree"/>, in order.
+    /// </summary>
     public static List<string> GetChildText(this IParseTree tree)
     {
         if (tree.ChildCount == 0)
@@ -22,6 +28,9 @@ public static class IParseTreeExtensions
         }
     }
 
+    /// <summary>
+    /// The text of the children of <paramref name="tree"/>, joined by <paramref name="separator"/>.
+    /// </summary>
     public static string GetJoinedText(this IParseTree tree, string separator = " ")
     {
         return string.Join(separator, GetChildText(tree));

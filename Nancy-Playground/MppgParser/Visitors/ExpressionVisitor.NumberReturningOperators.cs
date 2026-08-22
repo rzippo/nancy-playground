@@ -4,6 +4,9 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
+    /// <summary>
+    /// Builds the expression of a curve sampled at a point, as in f(3).
+    /// </summary>
     public override IExpression VisitFunctionValueAt(Unipi.MppgParser.Grammar.MppgParser.FunctionValueAtContext context)
     {
         if (context.ChildCount != 4)
@@ -26,6 +29,9 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of the left limit of a curve at a point.
+    /// </summary>
     public override IExpression VisitFunctionLeftLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftLimitAtContext context)
     {
         // if (context.ChildCount != 5)
@@ -48,6 +54,9 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of the right limit of a curve at a point.
+    /// </summary>
     public override IExpression VisitFunctionRightLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightLimitAtContext context)
     {
         // if (context.ChildCount != 5)
@@ -70,6 +79,9 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of 'hDev', the horizontal deviation between two curves.
+    /// </summary>
     public override IExpression VisitFunctionHorizontalDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context)
     {
@@ -90,6 +102,9 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of 'vDev', the vertical deviation between two curves.
+    /// </summary>
     public override IExpression VisitFunctionVerticalDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context)
     {
@@ -110,6 +125,9 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of 'zDev', the z-deviation between two curves.
+    /// </summary>
     public override IExpression VisitFunctionZDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context)
     {

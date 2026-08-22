@@ -18,14 +18,23 @@ namespace Unipi.Nancy.Playground.Cli;
 /// </remarks>
 public class MppgClassicStatementFormatter : IStatementFormatter
 {
+    /// <summary>
+    /// Where the output is written.
+    /// </summary>
     public required IAnsiConsole Console { get; init; }
 
+    /// <summary>
+    /// Writes nothing, this style announcing no statement before it runs.
+    /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {
         if (statement is not Comment)
             Console.WriteLine(statement.Text);
     }
 
+    /// <summary>
+    /// Writes what the statement produced.
+    /// </summary>
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
         foreach (var warning in statement.Warnings)
@@ -38,6 +47,9 @@ public class MppgClassicStatementFormatter : IStatementFormatter
             Console.WriteLine($">> {output.OutputText}");
     }
 
+    /// <summary>
+    /// Writes the error the statement failed with.
+    /// </summary>
     public void FormatError(Statement statement, ErrorOutput error)
     {
         if (error.Exception is SyntaxErrorException { Error: { } syntaxError })
@@ -51,6 +63,9 @@ public class MppgClassicStatementFormatter : IStatementFormatter
         }
     }
 
+    /// <summary>
+    /// Writes that the program has ended.
+    /// </summary>
     public void FormatEndOfProgram()
     {
         Console.WriteLine(">> end of program");

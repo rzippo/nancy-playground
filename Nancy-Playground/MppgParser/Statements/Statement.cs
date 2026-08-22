@@ -5,10 +5,19 @@ using Unipi.Nancy.Playground.MppgParser.Visitors;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// One line of a program, which is a command, an assignment, or a line with nothing to run.
+/// </summary>
 public abstract record class Statement
 {
+    /// <summary>
+    /// The line the statement was parsed from.
+    /// </summary>
     public string Text { get; init; } = string.Empty;
 
+    /// <summary>
+    /// The comment written at the end of the line, if any.
+    /// </summary>
     public string InlineComment { get; init; } = string.Empty;
 
     /// <summary>
@@ -17,15 +26,27 @@ public abstract record class Statement
     /// </summary>
     public IReadOnlyList<string> Warnings { get; init; } = [];
 
+    /// <summary>
+    /// Runs the statement against <paramref name="state"/> and returns what it produced, as text.
+    /// </summary>
     public abstract string Execute(State state);
 
+    /// <summary>
+    /// Runs the statement against <paramref name="state"/> and returns what it produced, for a formatter to render.
+    /// </summary>
     public abstract StatementOutput ExecuteToFormattable(State state);
 
+    /// <summary>
+    /// Parses one line, on its own, against the latest syntax version.
+    /// </summary>
     public static Statement FromLine(string line, State? state = null)
     {
         return FromLine(line, state, SyntaxVersion.Latest);
     }
 
+    /// <summary>
+    /// Parses one line, on its own, against <paramref name="syntaxVersion"/>.
+    /// </summary>
     public static Statement FromLine(string line, State? state, SyntaxVersion syntaxVersion)
     {
         var parse = MppgParsing.Create(line, ErrorRecovery.FirstError, syntaxVersion, state);

@@ -13,11 +13,17 @@ public class PointVisitor : MppgBaseVisitor<Point>
 {
     private readonly State _state;
 
+    /// <summary>
+    /// A visitor resolving the coordinates against <paramref name="state"/>, or against nothing where it is null.
+    /// </summary>
     public PointVisitor(State? state = null)
     {
         _state = state ?? new State();
     }
 
+    /// <summary>
+    /// Reads an endpoint of a segment, i.e. the pair of coordinates in brackets.
+    /// </summary>
     public override Point VisitEndpoint(Unipi.MppgParser.Grammar.MppgParser.EndpointContext context)
     {
         if (context.ChildCount != 5)
@@ -32,6 +38,9 @@ public class PointVisitor : MppgBaseVisitor<Point>
         return new Point(time, value);
     }
 
+    /// <summary>
+    /// Reads a point of a sequence.
+    /// </summary>
     public override Point VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context)
     {
         if (context.ChildCount != 3)

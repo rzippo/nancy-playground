@@ -12,15 +12,30 @@ namespace Unipi.Nancy.Playground.Cli;
 /// </summary>
 public class OutputOnlyFormatter : IStatementFormatter
 {
+    /// <summary>
+    /// What draws a plot, or null where none is drawn.
+    /// </summary>
     public IPlotFormatter? PlotFormatter { get; init; }
+    /// <summary>
+    /// What writes a TikZ plot, or null where none is written.
+    /// </summary>
     public TikzPlotFormatter? TikzPlotFormatter { get; init; }
+    /// <summary>
+    /// Where the output is written.
+    /// </summary>
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
+    /// <summary>
+    /// Writes nothing, this style announcing no statement before it runs.
+    /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {
         return;
     }
 
+    /// <summary>
+    /// Writes what the statement produced, and nothing where it produced no value.
+    /// </summary>
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
         // A diagnostic is about correctness, so it is printed even in the mode that otherwise prints only what the script explicitly asked for.
@@ -68,11 +83,17 @@ public class OutputOnlyFormatter : IStatementFormatter
         }
     }
 
+    /// <summary>
+    /// Writes the error the statement failed with.
+    /// </summary>
     public void FormatError(Statement statement, ErrorOutput error)
     {
         return;
     }
 
+    /// <summary>
+    /// Writes nothing, this style announcing no end of program.
+    /// </summary>
     public void FormatEndOfProgram()
     {
         return;

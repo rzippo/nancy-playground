@@ -2,8 +2,14 @@ using System.Text;
 
 namespace Unipi.Nancy.Playground.MppgParser.Utility;
 
+/// <summary>
+/// Small string helpers used while parsing.
+/// </summary>
 public static class StringExtensions
 {
+    /// <summary>
+    /// The string without the quotes around it, where it has them.
+    /// </summary>
     public static string TrimQuotes(this string str)
     {
         if(str.StartsWith('"'))

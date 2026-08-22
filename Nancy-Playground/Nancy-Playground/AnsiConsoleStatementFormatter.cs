@@ -9,8 +9,14 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// Writes what a statement produced with the colours and the layout of the interactive session.
+/// </summary>
 public class AnsiConsoleStatementFormatter : IStatementFormatter
 {
+    /// <summary>
+    /// What draws a plot, or null where the session draws none.
+    /// </summary>
     public IPlotFormatter? PlotFormatter { get; init; }
 
     /// <summary>
@@ -42,6 +48,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     /// </summary>
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
+    /// <summary>
+    /// Echoes the statement before it runs, where the settings ask for it.
+    /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {
         switch (statement)
@@ -84,6 +93,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
         }
     }
 
+    /// <summary>
+    /// Writes what the statement produced.
+    /// </summary>
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
         foreach (var warning in statement.Warnings)
@@ -199,6 +211,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             return $"";
     }
 
+    /// <summary>
+    /// Writes the error the statement failed with, with the source line and a caret under it.
+    /// </summary>
     public void FormatError(Statement statement, ErrorOutput error)
     {
         // On syntax errors, echo the input if it hasn't been echoed yet
@@ -238,6 +253,9 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
 
     }
 
+    /// <summary>
+    /// Writes that the program has ended.
+    /// </summary>
     public void FormatEndOfProgram()
     {
         Console.MarkupLineInterpolated($"[yellow]End of Program.[/]");

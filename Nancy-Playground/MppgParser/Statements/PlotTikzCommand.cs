@@ -9,6 +9,9 @@ namespace Unipi.Nancy.Playground.MppgParser.Statements;
 /// </remarks>
 public record class PlotTikzCommand : PlotCommand
 {
+    /// <summary>
+    /// Computes the functions and returns the plot to write as TikZ code.
+    /// </summary>
     public override string Execute(State state)
     {
         return "TikZ plotting is not implemented in this context.";

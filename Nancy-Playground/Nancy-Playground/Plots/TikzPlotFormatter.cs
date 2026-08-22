@@ -13,14 +13,26 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 /// </summary>
 public class TikzPlotFormatter
 {
+    /// <summary>
+    /// The directory the files are written to.
+    /// </summary>
     public ExportRoot PlotsExportRoot { get; set; }
+    /// <summary>
+    /// Where the code, or the path of the file it was written to, is printed.
+    /// </summary>
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
 
+    /// <summary>
+    /// A formatter writing its files to <paramref name="plotsRoot"/>.
+    /// </summary>
     public TikzPlotFormatter(ExportRoot plotsRoot)
     {
         PlotsExportRoot = plotsRoot;
     }
 
+    /// <summary>
+    /// Writes the curves as TikZ code, to the console or to the file the command asked for.
+    /// </summary>
     public void FormatTikzPlot(PlotOutput plotOutput)
     {
         if (plotOutput.FunctionsToPlot.Count == 0)

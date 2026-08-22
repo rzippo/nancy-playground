@@ -5,11 +5,17 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
+/// <summary>
+/// Builds a program from its parse tree, i.e. the statements it is made of.
+/// </summary>
 public class ProgramVisitor : MppgBaseVisitor<Program>
 {
      private readonly IReadOnlyList<SyntaxErrorInfo> _syntaxErrors;
      private readonly SyntaxVersion _syntaxVersion;
 
+     /// <summary>
+     /// A visitor carrying <paramref name="syntaxErrors"/> onto the program it builds, and reading it with <paramref name="syntaxVersion"/>.
+     /// </summary>
      public ProgramVisitor(
           IReadOnlyList<SyntaxErrorInfo>? syntaxErrors = null,
           SyntaxVersion syntaxVersion = default)
@@ -18,6 +24,9 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           _syntaxVersion = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
      }
 
+     /// <summary>
+     /// Builds the program, statement by statement.
+     /// </summary>
      public override Program VisitProgram(Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
      {
           List<Statement> statements = [];
@@ -64,6 +73,9 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           return program;
      }
 
+     /// <summary>
+     /// Reads the preamble, which is where a version directive is allowed to stand.
+     /// </summary>
      public override Program VisitPreamble(Unipi.MppgParser.Grammar.MppgParser.PreambleContext context)
      {
           // The preamble is only visited via VisitProgram above — the parser action
@@ -71,11 +83,17 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           return new Program([]);
      }
 
+     /// <summary>
+     /// Reads one line of the preamble.
+     /// </summary>
      public override Program VisitPreambleStatement(Unipi.MppgParser.Grammar.MppgParser.PreambleStatementContext context)
      {
           return new Program([]);
      }
 
+     /// <summary>
+     /// Reads the version directive of the preamble.
+     /// </summary>
      public override Program VisitVersionDirective(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext context)
      {
           return new Program([]);

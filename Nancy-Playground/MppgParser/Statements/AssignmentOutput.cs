@@ -1,5 +1,8 @@
 ﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The output of an assignment, i.e. the value the name now holds.
+/// </summary>
 public class AssignmentOutput : ExpressionOutput
 {
     /// <summary>

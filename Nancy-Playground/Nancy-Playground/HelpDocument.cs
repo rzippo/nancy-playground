@@ -2,9 +2,15 @@
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// The manual of the syntax, as the 'manual' command and the interactive help print it.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public static class NancyPlaygroundDocs
 {
+    /// <summary>
+    /// The manual itself, i.e. every section and the items it documents.
+    /// </summary>
     public static HelpDocument HelpDocument = new()
     {
         Preamble = """
@@ -855,29 +861,74 @@ Useful to inspect the original expression used to define a function variable, in
     };
 }
 
+/// <summary>
+/// A manual, made of the sections it documents.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public class HelpDocument
 {
+    /// <summary>
+    /// The text shown before the sections.
+    /// </summary>
     public string Preamble { get; init; } = string.Empty;
+    /// <summary>
+    /// The sections, in the order they are shown.
+    /// </summary>
     public required List<HelpSection> Sections { get; init; }
 }
 
+/// <summary>
+/// One section of the manual, i.e. a group of related items.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public record class HelpSection
 {
+    /// <summary>
+    /// The name of the section.
+    /// </summary>
     public required string Name { get; init; }
+    /// <summary>
+    /// What the section covers.
+    /// </summary>
     public string Description { get; init; } = string.Empty;
+    /// <summary>
+    /// The items the section documents.
+    /// </summary>
     public required List<HelpItem> Items { get; init; }
+    /// <summary>
+    /// The words a search matches the section by, beyond its name.
+    /// </summary>
     public List<string> Tags { get; init; } = [];
 }
 
+/// <summary>
+/// One item of the manual, i.e. one operator, constructor or command.
+/// </summary>
 [ExcludeFromCodeCoverage]
 public record class HelpItem
 {
+    /// <summary>
+    /// The name of the item.
+    /// </summary>
     public required string Name { get; init; }
+    /// <summary>
+    /// The ways it can be written.
+    /// </summary>
     public required List<string> Formats { get; init; }
+    /// <summary>
+    /// What it does, in one line.
+    /// </summary>
     public required string Description { get; init; }
+    /// <summary>
+    /// What it does at length, shown when the item alone is asked for.
+    /// </summary>
     public string LongDescription { get; init; } = string.Empty;
+    /// <summary>
+    /// Examples of it in use.
+    /// </summary>
     public string Examples { get; init; } = string.Empty;
+    /// <summary>
+    /// The words a search matches the item by, beyond its name.
+    /// </summary>
     public List<string> Tags { get; init; } = [];
 }

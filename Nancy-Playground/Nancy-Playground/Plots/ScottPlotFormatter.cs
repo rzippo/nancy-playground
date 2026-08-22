@@ -16,15 +16,30 @@ namespace Unipi.Nancy.Playground.Cli.Plots;
 /// </summary>
 public class ScottPlotFormatter : IPlotFormatter
 {
+    /// <summary>
+    /// The directory the images are written to.
+    /// </summary>
     public ExportRoot PlotsExportRoot { get; set; }
+    /// <summary>
+    /// Where the path of each image is printed.
+    /// </summary>
     public IAnsiConsole Console { get; init; } = AnsiConsole.Console;
+    /// <summary>
+    /// True to open each image in a window as it is written.
+    /// </summary>
     public bool AutoOpenPlots { get; init; } = true;
 
+    /// <summary>
+    /// A formatter writing its images to <paramref name="plotsRoot"/>.
+    /// </summary>
     public ScottPlotFormatter(ExportRoot plotsRoot)
     {
         PlotsExportRoot = plotsRoot;
     }
 
+    /// <summary>
+    /// Draws the curves as an image, and opens it where the settings ask.
+    /// </summary>
     public void FormatPlot(PlotOutput plotOutput)
     {
         if (plotOutput.FunctionsToPlot.Count == 0)

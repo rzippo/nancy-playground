@@ -4,8 +4,14 @@ using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
+/// <summary>
+/// Reads a number literal as the rational it spells.
+/// </summary>
 public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
 {
+    /// <summary>
+    /// Reads a rational literal, i.e. one written as a fraction.
+    /// </summary>
     public override Rational VisitRationalLiteral(Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext context)
     {
         var literals = context.numberLiteral();
@@ -20,6 +26,9 @@ public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
         return numerator / denominator;
     }
 
+    /// <summary>
+    /// Reads a number literal, whichever of the forms it is written in.
+    /// </summary>
     public override Rational VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var numberText = context.GetText();

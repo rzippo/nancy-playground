@@ -10,16 +10,28 @@ namespace Unipi.Nancy.Playground.MppgParser.Statements;
 /// </summary>
 public record class ExpressionCommand : Statement
 {
+    /// <summary>
+    /// The expression to print.
+    /// </summary>
     public Expression Expression { get; set; }
 
+    /// <summary>
+    /// A command printing the value of <paramref name="expression"/>.
+    /// </summary>
     public ExpressionCommand(Expression expression)
     {
         Expression = expression;
     }
 
+    /// <summary>
+    /// Computes the expression and returns its value.
+    /// </summary>
     public override string Execute(State state)
         => ExecuteToFormattable(state).OutputText;
 
+    /// <summary>
+    /// Computes the expression and returns its value, for a formatter to render.
+    /// </summary>
     public override StatementOutput ExecuteToFormattable(State state)
     {
         var sw = Stopwatch.StartNew();

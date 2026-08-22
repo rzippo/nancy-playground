@@ -1,11 +1,29 @@
 namespace Unipi.Nancy.Playground.MppgParser;
 
+/// <summary>
+/// A version of the MPPG syntax, which decides the keywords a program is read with.
+/// </summary>
 public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<SyntaxVersion>
 {
+    /// <summary>
+    /// The syntax as the original console defines it.
+    /// </summary>
     public static readonly SyntaxVersion V1_0 = new(1, 0);
+    /// <summary>
+    /// Adds the operators of version 1.1.
+    /// </summary>
     public static readonly SyntaxVersion V1_1 = new(1, 1);
+    /// <summary>
+    /// Adds the operators of version 1.2.
+    /// </summary>
     public static readonly SyntaxVersion V1_2 = new(1, 2);
+    /// <summary>
+    /// Adds the operators of version 1.3.
+    /// </summary>
     public static readonly SyntaxVersion V1_3 = new(1, 3);
+    /// <summary>
+    /// The most recent version, which a program is read with unless it declares another.
+    /// </summary>
     public static readonly SyntaxVersion Latest = V1_3;
 
     /// Every version of the syntax, in order.
@@ -24,8 +42,14 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
         return previous;
     }
 
+    /// <summary>
+    /// The version made of the given parts.
+    /// </summary>
     public static SyntaxVersion FromParts(int major, int minor) => new(major, minor);
 
+    /// <summary>
+    /// Reads the version a '#!syntax version X.Y' line declares, returning false where the line does not declare one.
+    /// </summary>
     public static bool TryParseShebang(string shebang, out SyntaxVersion version)
     {
         version = default;
@@ -46,15 +70,33 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
         return true;
     }
 
+    /// <summary>
+    /// Orders by major version first, then by minor.
+    /// </summary>
     public int CompareTo(SyntaxVersion other)
         => Major != other.Major
             ? Major.CompareTo(other.Major)
             : Minor.CompareTo(other.Minor);
 
+    /// <summary>
+    /// True where <paramref name="a"/> is the same version as <paramref name="b"/> or a later one.
+    /// </summary>
     public static bool operator >=(SyntaxVersion a, SyntaxVersion b) => a.CompareTo(b) >= 0;
+    /// <summary>
+    /// True where <paramref name="a"/> is the same version as <paramref name="b"/> or an earlier one.
+    /// </summary>
     public static bool operator <=(SyntaxVersion a, SyntaxVersion b) => a.CompareTo(b) <= 0;
+    /// <summary>
+    /// True where <paramref name="a"/> is a later version than <paramref name="b"/>.
+    /// </summary>
     public static bool operator >(SyntaxVersion a, SyntaxVersion b) => a.CompareTo(b) > 0;
+    /// <summary>
+    /// True where <paramref name="a"/> is an earlier version than <paramref name="b"/>.
+    /// </summary>
     public static bool operator <(SyntaxVersion a, SyntaxVersion b) => a.CompareTo(b) < 0;
 
+    /// <summary>
+    /// The version as it is written in a directive, i.e. 'major.minor'.
+    /// </summary>
     public override string ToString() => $"{Major}.{Minor}";
 }

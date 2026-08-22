@@ -1,5 +1,8 @@
 ﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// What a statement produced, which a formatter renders in its own style.
+/// </summary>
 public class StatementOutput
 {
     /// <summary>

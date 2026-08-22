@@ -23,13 +23,22 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     /// </summary>
     public static string Reformat(IParseTree tree) => tree.Accept(new MppgReformatVisitor()) ?? string.Empty;
 
+    /// <summary>
+    /// Writes a token back as it was written.
+    /// </summary>
     public override string? VisitTerminal(ITerminalNode node) => node.GetText();
 
+    /// <summary>
+    /// Joins what the children wrote, which is what a rule with no override of its own produces.
+    /// </summary>
     protected override string? AggregateResult(string? aggregate, string? nextResult) =>
         string.IsNullOrEmpty(aggregate) ? nextResult : $"{aggregate} {nextResult}";
 
     private string Render(IParseTree tree) => tree.Accept(this) ?? string.Empty;
 
+    /// <summary>
+    /// Writes a sum, a subtraction, a minimum or a maximum between numbers.
+    /// </summary>
     public override string? VisitNumberSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.NumberSumSubMinMaxContext context)
     {
         var left = context.numberExpression();
@@ -38,6 +47,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{RenderOperand(left, IsCompoundNumberExpression(left))} {context.op.Text} {RenderOperand(right, IsCompoundNumberProduct(right))}";
     }
 
+    /// <summary>
+    /// Writes a multiplication or a division between numbers.
+    /// </summary>
     public override string? VisitNumberProductMulDiv(Unipi.MppgParser.Grammar.MppgParser.NumberProductMulDivContext context)
     {
         var left = context.numberProductExpression();
@@ -51,58 +63,103 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     }
 
     // A signed literal is one token value, so its sign is tight: -3, +2, -inf.
+    /// <summary>
+    /// Writes a number literal.
+    /// </summary>
     public override string? VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context) =>
         context.ChildCount == 2
             ? $"{context.GetChild(0).GetText()}{context.GetChild(1).GetText()}"
             : context.GetChild(0).GetText();
 
     // Unary sign binds tightly to whatever it negates: -x, -(x + y), -f.
+    /// <summary>
+    /// Writes a number with its sign, where the sign is a plus.
+    /// </summary>
     public override string? VisitNumberPositive(Unipi.MppgParser.Grammar.MppgParser.NumberPositiveContext context) =>
         $"+{Render(context.numberUnaryExpression())}";
 
+    /// <summary>
+    /// Writes a number with its sign, where the sign is a minus.
+    /// </summary>
     public override string? VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context) =>
         $"-{Render(context.numberUnaryExpression())}";
 
+    /// <summary>
+    /// Writes a curve with its sign, where the sign is a plus.
+    /// </summary>
     public override string? VisitFunctionPositive(Unipi.MppgParser.Grammar.MppgParser.FunctionPositiveContext context) =>
         $"+{Render(context.functionUnaryExpression())}";
 
+    /// <summary>
+    /// Writes a curve with its sign, where the sign is a minus.
+    /// </summary>
     public override string? VisitFunctionNegative(Unipi.MppgParser.Grammar.MppgParser.FunctionNegativeContext context) =>
         $"-{Render(context.functionUnaryExpression())}";
 
     // A rational literal is one value, so its division is tight: 1/2, -3/2.
+    /// <summary>
+    /// Writes a rational literal, i.e. one written as a fraction.
+    /// </summary>
     public override string? VisitRationalLiteral(Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext context) =>
         context.ChildCount == 3
             ? $"{Render(context.GetChild(0))}/{Render(context.GetChild(2))}"
             : Render(context.GetChild(0));
 
     // An assertion is call-shaped around a comparison: assert(f * g = g * f).
+    /// <summary>
+    /// Writes an 'assert' command.
+    /// </summary>
     public override string? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context) =>
         $"assert({Render(context.expression(0))} {context.assertionOperator().GetText()} {Render(context.expression(1))})";
 
     // The commands are call-shaped too: printExpression(f), plot(f, out="p.png").
+    /// <summary>
+    /// Writes a 'printExpression' command.
+    /// </summary>
     public override string? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context) =>
         RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'plot' command.
+    /// </summary>
     public override string? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context) =>
         RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'plotTikz' command.
+    /// </summary>
     public override string? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
         RenderCall(context);
 
     // A plot option is a name bound to a value, so it is tight: out="p.png", xlim=[0, 10].
+    /// <summary>
+    /// Writes one option of a plot command.
+    /// </summary>
     public override string? VisitPlotOption(Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext context) =>
         $"{context.GetChild(0).GetText()}={Render(context.GetChild(2))}";
 
+    /// <summary>
+    /// Writes the interval a plot is drawn over.
+    /// </summary>
     public override string? VisitInterval(Unipi.MppgParser.Grammar.MppgParser.IntervalContext context) =>
         $"[{Render(context.rationalLiteral(0))}, {Render(context.rationalLiteral(1))}]";
 
     // Grouping brackets are tight like call parentheses: (x + y), not ( x + y ).
+    /// <summary>
+    /// Writes a bracketed function expression.
+    /// </summary>
     public override string? VisitFunctionBrackets(Unipi.MppgParser.Grammar.MppgParser.FunctionBracketsContext context) =>
         $"({Render(context.functionExpression())})";
 
+    /// <summary>
+    /// Writes a bracketed number expression.
+    /// </summary>
     public override string? VisitEncNumberBrackets(Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context) =>
         $"({Render(context.numberExpression())})";
 
+    /// <summary>
+    /// Writes a chain of sum-level operations, with the grouping made explicit.
+    /// </summary>
     public override string? VisitFunctionSumChain(Unipi.MppgParser.Grammar.MppgParser.FunctionSumChainContext context)
     {
         var start = context.functionSumStart();
@@ -125,6 +182,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return result;
     }
 
+    /// <summary>
+    /// Writes a sum-level operation with the scalar written first, as in 1 + f.
+    /// </summary>
     public override string? VisitFunctionShiftMinMaxRev(Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
         var left = context.numberProductExpression();
@@ -133,6 +193,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{RenderOperand(left, IsCompoundNumberProduct(left))} {context.op.Text} {RenderOperand(right, IsCompoundFunctionProduct(right))}";
     }
 
+    /// <summary>
+    /// Writes a chain of product-level operations, with the grouping made explicit.
+    /// </summary>
     public override string? VisitFunctionProductChain(Unipi.MppgParser.Grammar.MppgParser.FunctionProductChainContext context)
     {
         var start = context.functionProductStart();
@@ -154,6 +217,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return result;
     }
 
+    /// <summary>
+    /// Writes a scalar multiplication with the scalar first, as in 2 * f.
+    /// </summary>
     public override string? VisitFunctionScalarMulRev(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
     {
         var left = context.numberProductExpression();
@@ -161,6 +227,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{RenderOperand(left, IsCompoundNumberProduct(left))} * {Render(context.functionUnaryExpression())}";
     }
 
+    /// <summary>
+    /// Writes a composition with the scalar written first.
+    /// </summary>
     public override string? VisitFunctionScalarCompositionRev(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)
     {
         var left = context.numberProductExpression();
@@ -168,66 +237,159 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{RenderOperand(left, IsCompoundNumberProduct(left))} comp {Render(context.functionUnaryExpression())}";
     }
 
+    /// <summary>
+    /// Writes a 'ratency' call.
+    /// </summary>
     public override string? VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'bucket' call.
+    /// </summary>
     public override string? VisitTokenBucket(Unipi.MppgParser.Grammar.MppgParser.TokenBucketContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes an 'affine' call.
+    /// </summary>
     public override string? VisitAffineFunction(Unipi.MppgParser.Grammar.MppgParser.AffineFunctionContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'step' call.
+    /// </summary>
     public override string? VisitStepFunction(Unipi.MppgParser.Grammar.MppgParser.StepFunctionContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'stair' call.
+    /// </summary>
     public override string? VisitStairFunction(Unipi.MppgParser.Grammar.MppgParser.StairFunctionContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'delay' call.
+    /// </summary>
     public override string? VisitDelayFunction(Unipi.MppgParser.Grammar.MppgParser.DelayFunctionContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'star' call, which is also spelled 'subaddclosure'.
+    /// </summary>
     public override string? VisitFunctionSubadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'superaddclosure' call.
+    /// </summary>
     public override string? VisitFunctionSuperadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSuperadditiveClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'hShift' call.
+    /// </summary>
     public override string? VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'vShift' call.
+    /// </summary>
     public override string? VisitFunctionVShift(Unipi.MppgParser.Grammar.MppgParser.FunctionVShiftContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes an 'inv' call, which is also spelled 'low_inv'.
+    /// </summary>
     public override string? VisitFunctionLowerPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionLowerPseudoInverseContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes an 'up_inv' call.
+    /// </summary>
     public override string? VisitFunctionUpperPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionUpperPseudoInverseContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes an 'upclosure' call.
+    /// </summary>
     public override string? VisitFunctionUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'nnupclosure' call.
+    /// </summary>
     public override string? VisitFunctionNonNegativeUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'lowclosure' call.
+    /// </summary>
     public override string? VisitFunctionLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonDecreasingClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'nnlowclosure' call.
+    /// </summary>
     public override string? VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'left-ext' call.
+    /// </summary>
     public override string? VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'right-ext' call.
+    /// </summary>
     public override string? VisitFunctionRightExt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightExtContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'floor' call applied to a curve.
+    /// </summary>
     public override string? VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'ceil' call applied to a curve.
+    /// </summary>
     public override string? VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a sampling, as in f(3).
+    /// </summary>
     public override string? VisitFunctionValueAt(Unipi.MppgParser.Grammar.MppgParser.FunctionValueAtContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'hDev' call.
+    /// </summary>
     public override string? VisitFunctionHorizontalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'vDev' call.
+    /// </summary>
     public override string? VisitFunctionVerticalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'zDev' call.
+    /// </summary>
     public override string? VisitFunctionZDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'floor' call applied to a number.
+    /// </summary>
     public override string? VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'ceil' call applied to a number.
+    /// </summary>
     public override string? VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes an 'abs' call.
+    /// </summary>
     public override string? VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'pow' call.
+    /// </summary>
     public override string? VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'gcd' call.
+    /// </summary>
     public override string? VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a 'lcm' call.
+    /// </summary>
     public override string? VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) => RenderCall(context);
 
+    /// <summary>
+    /// Writes a left limit.
+    /// </summary>
     public override string? VisitFunctionLeftLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftLimitAtContext context)
     {
         var name = context.functionName().GetText();
@@ -237,6 +399,9 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{name}({arg}{tilde}-)";
     }
 
+    /// <summary>
+    /// Writes a right limit.
+    /// </summary>
     public override string? VisitFunctionRightLimitAt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightLimitAtContext context)
     {
         var name = context.functionName().GetText();
@@ -246,30 +411,54 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         return $"{name}({arg}{tilde}+)";
     }
 
+    /// <summary>
+    /// Writes a 'uaf' call, i.e. the sequence it is given.
+    /// </summary>
     public override string? VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context) =>
         $"uaf({Render(context.sequence())})";
 
     // An endpoint is a pair, so it follows the comma of an argument list: (0, -3).
+    /// <summary>
+    /// Writes an endpoint of a segment.
+    /// </summary>
     public override string? VisitEndpoint(Unipi.MppgParser.Grammar.MppgParser.EndpointContext context) =>
         $"({Render(context.numberExpression(0))}, {Render(context.numberExpression(1))})";
 
     // Brackets are tight against the endpoints, and the slope between them is spaced as an operator:
     // [(0, -3)], [(0, -3) 1 (1, -2)[, ](0, -3) (1, -2)].
+    /// <summary>
+    /// Writes a point of a sequence.
+    /// </summary>
     public override string? VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context) =>
         $"[{Render(context.endpoint())}]";
 
+    /// <summary>
+    /// Writes a segment including neither endpoint.
+    /// </summary>
     public override string? VisitSegmentLeftOpenRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context) =>
         RenderSegment("]", context, "[");
 
+    /// <summary>
+    /// Writes a segment including its right endpoint alone.
+    /// </summary>
     public override string? VisitSegmentLeftOpenRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context) =>
         RenderSegment("]", context, "]");
 
+    /// <summary>
+    /// Writes a segment including its left endpoint alone.
+    /// </summary>
     public override string? VisitSegmentLeftClosedRightOpen(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context) =>
         RenderSegment("[", context, "[");
 
+    /// <summary>
+    /// Writes a segment including both its endpoints.
+    /// </summary>
     public override string? VisitSegmentLeftClosedRightClosed(Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context) =>
         RenderSegment("[", context, "]");
 
+    /// <summary>
+    /// Writes a 'upp' call, i.e. the transient and periodic parts it is given.
+    /// </summary>
     public override string? VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {
         var parts = new List<string>();

@@ -17,6 +17,9 @@ public class PipedLineReader : ILineReader
         _input = input;
     }
 
+    /// <summary>
+    /// The next line of the input, or null where it has ended.
+    /// </summary>
     public string? ReadLine()
         => _input.ReadLine();
 

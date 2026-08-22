@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace Unipi.Nancy.Playground.Cli.Utility;
 
+/// <summary>
+/// Writes an interpolated string with the invariant culture, so that a number reads the same wherever it runs.
+/// </summary>
 public static class FormattableStringExtensions
 {
     /// <summary>

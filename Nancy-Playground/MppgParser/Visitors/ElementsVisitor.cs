@@ -15,12 +15,19 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     private readonly State _state;
     private readonly bool _normalizeInfiniteRightEndpoint;
 
+    /// <summary>
+    /// A visitor resolving coordinates against <paramref name="state"/>.
+    /// <paramref name="normalizeInfiniteRightEndpoint"/> closes a segment that runs to infinity, which Nancy needs to build the curve.
+    /// </summary>
     public ElementsVisitor(State? state = null, bool normalizeInfiniteRightEndpoint = false)
     {
         _state = state ?? new State();
         _normalizeInfiniteRightEndpoint = normalizeInfiniteRightEndpoint;
     }
 
+    /// <summary>
+    /// Reads a sequence, i.e. the elements it is written as.
+    /// </summary>
     public override IEnumerable<Element> VisitSequence(Unipi.MppgParser.Grammar.MppgParser.SequenceContext context)
     {
         var elements = Enumerable.Empty<Element>();
@@ -33,6 +40,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
+    /// <summary>
+    /// Reads one element, which is a point or a segment.
+    /// </summary>
     public override IEnumerable<Element> VisitElement(Unipi.MppgParser.Grammar.MppgParser.ElementContext context)
     {
         if (context.ChildCount != 1)
@@ -43,6 +53,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
+    /// <summary>
+    /// Reads a point of the sequence.
+    /// </summary>
     public override IEnumerable<Element> VisitPoint(Unipi.MppgParser.Grammar.MppgParser.PointContext context)
     {
         var pointVisitor = new PointVisitor(_state);
@@ -51,6 +64,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         yield return point;
     }
 
+    /// <summary>
+    /// Reads a segment, whichever way its ends are bracketed.
+    /// </summary>
     public override IEnumerable<Element> VisitSegment(Unipi.MppgParser.Grammar.MppgParser.SegmentContext context)
     {
         if (context.ChildCount != 1)
@@ -61,6 +77,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         return elements;
     }
 
+    /// <summary>
+    /// Reads a segment including both its endpoints, written '[' … ']'.
+    /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
     {
@@ -76,6 +95,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         }
     }
 
+    /// <summary>
+    /// Reads a segment including its left endpoint alone, written '[' … '['.
+    /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
     {
@@ -87,6 +109,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
             yield return new Segment(leftPoint.Time, effectiveRightPoint.Time, leftPoint.Value, slope);
     }
 
+    /// <summary>
+    /// Reads a segment including its right endpoint alone, written ']' … ']'.
+    /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
     {
@@ -101,6 +126,9 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
         }
     }
 
+    /// <summary>
+    /// Reads a segment including neither endpoint, written ']' … '['.
+    /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)
     {

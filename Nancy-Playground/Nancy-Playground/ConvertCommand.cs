@@ -7,38 +7,65 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.Cli;
 
+/// <summary>
+/// The 'convert' command, which writes an MPPG program as the C# program that runs it with Nancy.
+/// </summary>
 public class ConvertCommand : Command<ConvertCommand.Settings>
 {
     private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
     
+    /// <summary>
+    /// The options of the 'convert' command.
+    /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {
+        /// <summary>
+        /// The program to convert.
+        /// </summary>
         [Description("Path to the .mppg file to convert to a Nancy program.")]
         [CommandArgument(0, "<file>")]
         public string MppgFile { get; init; } = string.Empty;
 
+        /// <summary>
+        /// Where to write the generated program.
+        /// </summary>
         [Description("Path of the generated program. Defaults to the source path with .cs appended.")]
         [CommandOption("--output-file")]
         public string NancyCsFile { get; init; } = string.Empty;
 
+        /// <summary>
+        /// True to write the whole path of the source into the generated program, rather than its name alone.
+        /// </summary>
         [Description("If true, the header of the generated program records the full path of the source, rather than its name alone. The name alone keeps the generated program shareable, as it does not disclose the local directory layout.")]
         [CommandOption("--full-source-path")]
         public bool FullSourcePath { get; init; } = false;
 
+        /// <summary>
+        /// True to generate code that builds expressions with Unipi.Nancy.Expressions, rather than the Nancy API.
+        /// </summary>
         [Description("If true, the Nancy program will use Nancy.Expressions syntax.")]
         [CommandOption("--use-expressions")]
         public bool UseNancyExpressions { get; init; } = false;
 
+        /// <summary>
+        /// True to overwrite the output file where it exists.
+        /// </summary>
         [Description("If true, the Nancy program will be overwritten if already exists.")]
         [CommandOption("--overwrite")]
         public bool Overwrite { get; init; } = false;
     }
 
+    /// <summary>
+    /// A command writing to <paramref name="console"/>.
+    /// </summary>
     public ConvertCommand(IAnsiConsole console)
     {
         Console = console;
     }
 
+    /// <summary>
+    /// Converts the program and writes it out, returning the exit code of the command.
+    /// </summary>
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         if (settings.Version)

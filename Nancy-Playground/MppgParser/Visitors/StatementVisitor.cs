@@ -5,17 +5,26 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
+/// <summary>
+/// Builds one statement from its parse tree, whichever kind of line it is.
+/// </summary>
 public class StatementVisitor : MppgBaseVisitor<Statement?>
 {
     private readonly SyntaxErrorInfo? _syntaxError;
     private readonly SyntaxVersion _syntaxVersion;
 
+    /// <summary>
+    /// A visitor carrying <paramref name="syntaxError"/> onto the statement it builds, and reading it with <paramref name="syntaxVersion"/>.
+    /// </summary>
     public StatementVisitor(SyntaxErrorInfo? syntaxError = null, SyntaxVersion syntaxVersion = default)
     {
         _syntaxError = syntaxError;
         _syntaxVersion = syntaxVersion == default ? SyntaxVersion.Latest : syntaxVersion;
     }
 
+    /// <summary>
+    /// Builds the statement of a line, together with the comment written at its end.
+    /// </summary>
     public override Statement? VisitStatementLine([NotNull] Unipi.MppgParser.Grammar.MppgParser.StatementLineContext context)
     {
         if (_syntaxError is not null)
@@ -55,12 +64,18 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             return statement;
     }
 
+    /// <summary>
+    /// Builds the statement of a line that is only a comment.
+    /// </summary>
     public override Statement? VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)
     {
         var text = context.GetJoinedText();
         return new Comment { Text = text };
     }
 
+    /// <summary>
+    /// Builds the statement of a '#!syntax version' directive.
+    /// </summary>
     public override Statement? VisitVersionDirective(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext context)
     {
         var text = context.GetJoinedText();
@@ -68,17 +83,26 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new VersionDirectiveStatement(version) { Text = text, Error = error };
     }
 
+    /// <summary>
+    /// Builds the statement of a '#!' directive that is not the version one.
+    /// </summary>
     public override Statement? VisitDirective(Unipi.MppgParser.Grammar.MppgParser.DirectiveContext context)
     {
         var text = context.GetJoinedText();
         return new DirectiveStatement { Text = text };
     }
 
+    /// <summary>
+    /// Builds the statement of an empty line.
+    /// </summary>
     public override Statement? VisitEmpty(Unipi.MppgParser.Grammar.MppgParser.EmptyContext context)
     {
         return new EmptyStatement();
     }
 
+    /// <summary>
+    /// Builds the statement of a 'plot' command, with the functions and the options it was given.
+    /// </summary>
     public override Statement? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
         var (variableNames, settings) = ParsePlotArgs(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(), PlotOutputKind.Image);
@@ -91,6 +115,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         };
     }
 
+    /// <summary>
+    /// Builds the statement of a 'plotTikz' command, with the functions and the options it was given.
+    /// </summary>
     public override Statement? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context)
     {
         var (variableNames, settings) = ParsePlotArgs(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(), PlotOutputKind.Tikz);
@@ -271,6 +298,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return (variableNames, settings);
     }
 
+    /// <summary>
+    /// Builds the statement of a line that is an expression, which prints the value it computes.
+    /// </summary>
     public override Statement? VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context)
     {
         var expression = new Expression(context);
@@ -278,6 +308,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new ExpressionCommand(expression) { Text = text };
     }
 
+    /// <summary>
+    /// Builds the statement of an assignment.
+    /// </summary>
     public override Statement? VisitAssignment(Unipi.MppgParser.Grammar.MppgParser.AssignmentContext context)
     {
         if (context.ChildCount != 3)
@@ -291,6 +324,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new Assignment(name, expression) { Text = text };
     }
 
+    /// <summary>
+    /// Builds the statement of a 'printExpression' command.
+    /// </summary>
     public override Statement? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context)
     {
         if (context.ChildCount != 4)
@@ -302,6 +338,9 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
         return new PrintExpressionCommand(name) { Text = text };
     }
 
+    /// <summary>
+    /// Builds the statement of an 'assert' command.
+    /// </summary>
     public override Statement? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {
         var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);

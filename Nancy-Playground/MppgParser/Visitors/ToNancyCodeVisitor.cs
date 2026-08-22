@@ -583,7 +583,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     /// <param name="operationType">The sum-level operation.</param>
     /// <param name="right">Code for a Rational expression.</param>
     /// <returns>Code for the operation.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="InvalidOperationException"><paramref name="operationType"/> is not a sum-level operation.</exception>
     private static string ApplyFunctionNumberSumCode(string left, int operationType, string right) =>
         operationType switch
         {
@@ -601,7 +601,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
     /// <param name="operationType">The sum-level operation.</param>
     /// <param name="right">Code for a Curve expression.</param>
     /// <returns>Code for the operation.</returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="InvalidOperationException"><paramref name="operationType"/> is not a sum-level operation.</exception>
     private static string ApplyNumberFunctionSumCode(string left, int operationType, string right) =>
         operationType switch
         {

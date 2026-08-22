@@ -4,6 +4,9 @@ using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Utility;
 
+/// <summary>
+/// Writes rationals as the generated C# code spells them.
+/// </summary>
 public static class RationalExtensions
 {
     // todo: consider including these into Unipi.Nancy.Numerics
@@ -36,6 +39,9 @@ public static class RationalExtensions
         return sb.ToString();
     }
 
+    /// <summary>
+    /// Replaces the infinities of a generated expression with the named constants of Nancy.
+    /// </summary>
     public static string UseNamedInfinityConstants(this string code) =>
         Regex.Replace(
             Regex.Replace(code, @"new Rational\(\s*1\s*,\s*0\s*\)", "Rational.PlusInfinity"),

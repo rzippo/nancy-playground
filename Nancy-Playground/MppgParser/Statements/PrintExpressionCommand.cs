@@ -3,15 +3,27 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The 'printExpression' command, which shows how a variable was written rather than what it computes.
+/// </summary>
 public record class PrintExpressionCommand : Statement
 {
+    /// <summary>
+    /// The variable to show.
+    /// </summary>
     public string VariableName { get; set; }
 
+    /// <summary>
+    /// A command showing the expression assigned to <paramref name="variableName"/>.
+    /// </summary>
     public PrintExpressionCommand(string variableName)
     {
         VariableName = variableName;
     }
 
+    /// <summary>
+    /// Returns the expression the variable holds, as the syntax writes it.
+    /// </summary>
     public override string Execute(State state)
     {
         var (exists, type) = state.GetVariableType(VariableName);
@@ -34,6 +46,9 @@ public record class PrintExpressionCommand : Statement
         }
     }
 
+    /// <summary>
+    /// Returns the expression the variable holds, for a formatter to render.
+    /// </summary>
     public override StatementOutput ExecuteToFormattable(State state)
     {
         var (exists, type) = state.GetVariableType(VariableName);

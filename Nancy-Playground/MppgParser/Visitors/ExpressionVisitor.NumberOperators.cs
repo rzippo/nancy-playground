@@ -5,10 +5,16 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
 public partial class ExpressionVisitor
 {
+    /// <summary>
+    /// Builds the expression of a product with no operator, i.e. the operand alone.
+    /// </summary>
     public override IExpression VisitNumberProductAtom(
         Unipi.MppgParser.Grammar.MppgParser.NumberProductAtomContext context) =>
         context.numberUnaryExpression().Accept(this);
 
+    /// <summary>
+    /// Builds a multiplication or a division between numbers.
+    /// </summary>
     public override IExpression VisitNumberProductMulDiv(
         Unipi.MppgParser.Grammar.MppgParser.NumberProductMulDivContext context)
     {
@@ -31,6 +37,9 @@ public partial class ExpressionVisitor
             _ => throw new InvalidOperationException($"Unexpected operation type: {operationType}")
         };
 
+    /// <summary>
+    /// Builds a sum, a subtraction, a minimum or a maximum between numbers.
+    /// </summary>
     public override IExpression VisitNumberSumSubMinMax(Unipi.MppgParser.Grammar.MppgParser.NumberSumSubMinMaxContext context)
     {
         if (context.ChildCount != 3)
@@ -79,9 +88,15 @@ public partial class ExpressionVisitor
         }
     }
 
+    /// <summary>
+    /// Builds the expression of 'floor' applied to a number.
+    /// </summary>
     public override IExpression VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
         Floor(context.numberExpression().Accept(this), context);
 
+    /// <summary>
+    /// Builds the expression of 'ceil' applied to a number.
+    /// </summary>
     public override IExpression VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
         Ceil(context.numberExpression().Accept(this), context);
 
@@ -95,17 +110,29 @@ public partial class ExpressionVisitor
             ? Expressions.Expressions.Ceil(rE)
             : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
 
+    /// <summary>
+    /// Builds the expression of 'abs', the absolute value of a number.
+    /// </summary>
     public override IExpression VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
         Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
 
+    /// <summary>
+    /// Builds the expression of 'pow', a number raised to a power.
+    /// </summary>
     public override IExpression VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         Pow(context.numberExpression(), context);
 
+    /// <summary>
+    /// Builds the expression of 'gcd', the greatest common divisor of two numbers.
+    /// </summary>
     public override IExpression VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
         Expressions.Expressions.GreatestCommonDivisor(
             Operand(context.numberExpression(0), context),
             Operand(context.numberExpression(1), context));
 
+    /// <summary>
+    /// Builds the expression of 'lcm', the least common multiple of two numbers.
+    /// </summary>
     public override IExpression VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
         Expressions.Expressions.LeastCommonMultiple(
             Operand(context.numberExpression(0), context),
@@ -138,6 +165,9 @@ public partial class ExpressionVisitor
         operand.Accept(this) as RationalExpression
         ?? throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
 
+    /// <summary>
+    /// Builds the negation of a number, as in -x.
+    /// </summary>
     public override IExpression VisitNumberNegative(Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
     {
         var ie = base.VisitNumberNegative(context);

@@ -2,16 +2,31 @@
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
+/// <summary>
+/// The 'plot' command, which draws the given functions.
+/// </summary>
 public record class PlotCommand : Statement
 {
+    /// <summary>
+    /// The functions to draw.
+    /// </summary>
     public List<Expression> FunctionsToPlot { get; init; } = [];
+    /// <summary>
+    /// The options given to the command, e.g. the range and the output file.
+    /// </summary>
     public PlotSettings Settings { get; init; } = new();
     
+    /// <summary>
+    /// Computes the functions and returns the plot to draw.
+    /// </summary>
     public override string Execute(State state)
     {
         return "Plotting is not implemented in this context.";
     }
 
+    /// <summary>
+    /// Computes the functions and returns the plot to draw, for a formatter to render.
+    /// </summary>
     public override StatementOutput ExecuteToFormattable(State state)
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();

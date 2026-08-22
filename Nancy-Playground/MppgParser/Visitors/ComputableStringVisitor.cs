@@ -4,8 +4,14 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 
+/// <summary>
+/// Builds the string a plot option was given, which is literal text and the expressions written into it.
+/// </summary>
 public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
 {
+    /// <summary>
+    /// Builds a string, i.e. the pieces it is concatenated from.
+    /// </summary>
     public override ComputableString VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
     {
         var cs = new ComputableString();
@@ -20,6 +26,9 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
+    /// <summary>
+    /// Appends a piece of literal text.
+    /// </summary>
     public override ComputableString VisitStringLiteral(Unipi.MppgParser.Grammar.MppgParser.StringLiteralContext context)
     {
         var cs = new ComputableString();
@@ -28,6 +37,9 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
+    /// <summary>
+    /// Appends a variable, to be evaluated when the string is computed.
+    /// </summary>
     public override ComputableString VisitStringVariable(Unipi.MppgParser.Grammar.MppgParser.StringVariableContext context)
     {
         var cs = new ComputableString();
@@ -37,6 +49,9 @@ public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
         return cs;
     }
 
+    /// <summary>
+    /// Appends a number literal.
+    /// </summary>
     public override ComputableString VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)
     {
         var cs = new ComputableString();

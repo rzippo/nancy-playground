@@ -12,12 +12,18 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
 {
     private static TextWriter Writer => Console.Out;
 
+    /// <summary>
+    /// Writes nothing, this style announcing no statement before it runs.
+    /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {
         if(statement is not Comment)
             Writer.WriteLine(statement.Text);
     }
 
+    /// <summary>
+    /// Writes what the statement produced.
+    /// </summary>
     public void FormatStatementOutput(Statement statement, StatementOutput output)
     {
         foreach (var warning in statement.Warnings)
@@ -30,11 +36,17 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
             Writer.WriteLine($">> {output.OutputText}");
     }
 
+    /// <summary>
+    /// Writes the error the statement failed with.
+    /// </summary>
     public void FormatError(Statement statement, ErrorOutput error)
     {
         Writer.WriteLine($"Error: {error.Exception.Message}");
     }
 
+    /// <summary>
+    /// Writes that the program has ended.
+    /// </summary>
     public void FormatEndOfProgram()
     {
         Writer.WriteLine(">> end of program");

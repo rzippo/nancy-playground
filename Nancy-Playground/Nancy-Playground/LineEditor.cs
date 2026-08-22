@@ -33,11 +33,17 @@ public class LineEditor : ILineReader
     /// </summary>
     private readonly List<string> _sessionKeywords = [];
 
+    /// <summary>
+    /// An editor with no keyword to complete, writing to <paramref name="console"/> or to the default one.
+    /// </summary>
     public LineEditor(IAnsiConsole? console = null)
     {
         _console = console ?? AnsiConsole.Console;
     }
 
+    /// <summary>
+    /// An editor completing <paramref name="keywords"/>, and <paramref name="contextualKeywords"/> where the line enables them.
+    /// </summary>
     public LineEditor(
         IEnumerable<string> keywords,
         IEnumerable<ContextualKeywords>? contextualKeywords = null,
@@ -61,7 +67,6 @@ public class LineEditor : ILineReader
     /// <summary>
     /// Replace the current contextual keyword list with the given sequence.
     /// </summary>
-    /// <param name="contextualKeywords"></param>
     public void SetContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
         _contextualKeywords.Clear();
@@ -80,7 +85,6 @@ public class LineEditor : ILineReader
     /// <summary>
     /// Add contextual keywords to the autocomplete list.
     /// </summary>
-    /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(ContextualKeywords contextualKeywords)
     {
         _contextualKeywords.Add(contextualKeywords);
@@ -101,7 +105,6 @@ public class LineEditor : ILineReader
     /// <summary>
     /// Add multiple contextual keywords to the autocomplete list.
     /// </summary>
-    /// <param name="contextualKeywords"></param>
     public void AddContextualKeywords(IEnumerable<ContextualKeywords> contextualKeywords)
     {
         foreach (var ck in contextualKeywords)
@@ -545,8 +548,17 @@ public class LineEditor : ILineReader
     }
 }
 
+/// <summary>
+/// Keywords that are completed only after one of the words that enable them, e.g. the options of a plot command.
+/// </summary>
 public record ContextualKeywords
 {
+    /// <summary>
+    /// The words that enable the completion.
+    /// </summary>
     public List<string> Enablers { get; init; } = [];
+    /// <summary>
+    /// The words completed once it is enabled.
+    /// </summary>
     public List<string> Keywords { get; init; } = [];
 }

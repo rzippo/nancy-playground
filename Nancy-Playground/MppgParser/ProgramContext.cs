@@ -3,12 +3,24 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 namespace Unipi.Nancy.Playground.MppgParser;
 
+/// <summary>
+/// A session, i.e. the variables declared so far and the statements that declared them.
+/// </summary>
 public class ProgramContext
 {
+    /// <summary>
+    /// The variables declared so far.
+    /// </summary>
     public State State { get; init; } =  new ();
 
+    /// <summary>
+    /// The statements run so far, in order, which is what writing the session back to a file uses.
+    /// </summary>
     public List<Statement> StatementHistory { get; init; } =  new ();
 
+    /// <summary>
+    /// The version the session reads its statements with.
+    /// </summary>
     public SyntaxVersion SyntaxVersion { get; set; } = SyntaxVersion.Latest;
 
     /// <summary>
@@ -39,6 +51,10 @@ public class ProgramContext
             : statementLines;
     }
 
+    /// <summary>
+    /// Runs <paramref name="statement"/> against the session and hands what it produced to <paramref name="formatter"/>.
+    /// <paramref name="immediateComputeValue"/> computes the value there and then, rather than leaving it to be evaluated when required.
+    /// </summary>
     public StatementOutput? ExecuteStatement(
         Statement statement,
         IStatementFormatter formatter,
