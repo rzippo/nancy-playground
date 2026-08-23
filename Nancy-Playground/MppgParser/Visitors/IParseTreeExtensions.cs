@@ -1,4 +1,4 @@
-﻿using Antlr4.Runtime.Tree;
+using Antlr4.Runtime.Tree;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 

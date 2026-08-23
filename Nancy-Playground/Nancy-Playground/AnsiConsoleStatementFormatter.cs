@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+using Spectre.Console;
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.Playground.Cli.Plots;
 using Unipi.Nancy.Playground.Cli.Utility;

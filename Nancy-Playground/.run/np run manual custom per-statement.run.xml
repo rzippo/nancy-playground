@@ -1,4 +1,4 @@
-﻿<component name="ProjectRunConfigurationManager">
+<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="np run manual custom per-statement" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Nancy-Playground/bin/Debug/net9.0/nancy-playground" />
     <option name="PROGRAM_PARAMETERS" value="run ../../Examples/RTaW-MinplusConsole-UserManual.mppg --run-mode PerStatement --on-error Stop --output-mode NancyNew" />

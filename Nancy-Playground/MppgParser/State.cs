@@ -1,4 +1,4 @@
-﻿using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Expressions;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 
 namespace Unipi.Nancy.Playground.MppgParser;

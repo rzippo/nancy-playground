@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Numerics;
 

@@ -1,4 +1,4 @@
-﻿using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Expressions;
 using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 using Unipi.Nancy.Playground.MppgParser;

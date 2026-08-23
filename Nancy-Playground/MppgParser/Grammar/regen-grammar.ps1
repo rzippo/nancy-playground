@@ -1,4 +1,4 @@
-﻿#!/usr/bin/pwsh
+#!/usr/bin/pwsh
 
 # This script regenerates the ANTLR4 parser code from the grammar file Mppg.g4
 # It first checks if a compatible version of ANTLR4 is installed globally,

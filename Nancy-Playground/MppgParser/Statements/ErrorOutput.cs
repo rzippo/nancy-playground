@@ -1,4 +1,4 @@
-﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// The output of a statement that failed, i.e. the error to report.

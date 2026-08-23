@@ -1,4 +1,4 @@
-﻿#if USE_XPLOT
+#if USE_XPLOT
 using System.Diagnostics;
 using Spectre.Console;
 using Unipi.Nancy.MinPlusAlgebra;

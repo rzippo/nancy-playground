@@ -1,4 +1,4 @@
-﻿using Unipi.MppgParser.Grammar;
+using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Expressions;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Statements;

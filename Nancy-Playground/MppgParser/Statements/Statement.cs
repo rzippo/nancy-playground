@@ -1,4 +1,4 @@
-﻿using Unipi.Nancy.Playground.MppgParser;
+using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 using Unipi.Nancy.Playground.MppgParser.Visitors;

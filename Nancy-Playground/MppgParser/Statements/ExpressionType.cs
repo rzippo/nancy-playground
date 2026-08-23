@@ -1,4 +1,4 @@
-﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// The kind an expression resolves to.

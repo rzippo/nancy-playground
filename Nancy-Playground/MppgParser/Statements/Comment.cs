@@ -1,4 +1,4 @@
-﻿namespace Unipi.Nancy.Playground.MppgParser.Statements;
+namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
 /// A line that is only a comment, which the program keeps so that it can be written back.

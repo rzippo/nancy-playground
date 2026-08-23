@@ -1,4 +1,4 @@
-﻿<component name="ProjectRunConfigurationManager">
+<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="np run hal custom expr" type="DotNetProject" factoryName=".NET Project">
     <option name="EXE_PATH" value="$PROJECT_DIR$/Nancy-Playground/bin/Debug/net9.0/nancy-playground.exe" />
     <option name="PROGRAM_PARAMETERS" value="run ../../Examples/hal-04513292v1.mppg --run-mode ExpressionDriven --on-error Stop --output-mode NancyNew" />

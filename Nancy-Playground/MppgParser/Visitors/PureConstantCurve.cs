@@ -1,4 +1,4 @@
-﻿using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.MinPlusAlgebra;
 using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Visitors;

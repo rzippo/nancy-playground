@@ -1,4 +1,4 @@
-﻿namespace Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
+namespace Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 
 /// <summary>
 /// Writes what a statement produces, in the style and to the destination of the implementation.
