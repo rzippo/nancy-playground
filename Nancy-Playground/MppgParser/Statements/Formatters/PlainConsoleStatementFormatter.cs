@@ -13,7 +13,7 @@ public class PlainConsoleStatementFormatter: IStatementFormatter
     private static TextWriter Writer => Console.Out;
 
     /// <summary>
-    /// Writes nothing, this style announcing no statement before it runs.
+    /// Echoes the statement before it runs, unless it is a comment.
     /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {

@@ -24,7 +24,7 @@ public class MppgClassicStatementFormatter : IStatementFormatter
     public required IAnsiConsole Console { get; init; }
 
     /// <summary>
-    /// Writes nothing, this style announcing no statement before it runs.
+    /// Echoes the statement before it runs, unless it is a comment.
     /// </summary>
     public void FormatStatementPreamble(Statement statement)
     {

@@ -44,7 +44,7 @@ public class RunCommand : Command<RunCommand.Settings>
         public string MppgFile { get; init; } = string.Empty;
 
         /// <summary>
-        /// True to keep the run repeatable, i.e. to write the same output every time.
+        /// True to make the output repeatable, which leaves out the preamble and the timings.
         /// </summary>
         [Description("If enabled, makes the output deterministic, removing preamble and time measurements. Useful to implement tests.")]
         [CommandOption("--deterministic")]

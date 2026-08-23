@@ -8,7 +8,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public static class IParseTreeExtensions
 {
     /// <summary>
-    /// The text of each child of <paramref name="tree"/>, in order.
+    /// The text of each leaf under <paramref name="tree"/>, in order, so a rule contributes its tokens one by one.
     /// </summary>
     public static List<string> GetChildText(this IParseTree tree)
     {
@@ -29,7 +29,7 @@ public static class IParseTreeExtensions
     }
 
     /// <summary>
-    /// The text of the children of <paramref name="tree"/>, joined by <paramref name="separator"/>.
+    /// The text of the leaves under <paramref name="tree"/>, joined by <paramref name="separator"/>.
     /// </summary>
     public static string GetJoinedText(this IParseTree tree, string separator = " ")
     {
