@@ -72,7 +72,7 @@ public partial class MppgParser : Parser {
 		RULE_functionValueAt = 55, RULE_functionLeftLimitAt = 56, RULE_functionRightLimitAt = 57, 
 		RULE_functionHorizontalDeviation = 58, RULE_functionVerticalDeviation = 59, 
 		RULE_functionZDeviation = 60, RULE_plotCommand = 61, RULE_plotTikzCommand = 62, 
-		RULE_plotArg = 63, RULE_functionName = 64, RULE_plotOption = 65, RULE_string = 66, 
+		RULE_plotArg = 63, RULE_functionName = 64, RULE_plotOption = 65, RULE_stringExpression = 66, 
 		RULE_stringLiteral = 67, RULE_stringVariable = 68, RULE_interval = 69, 
 		RULE_assertion = 70, RULE_assertionOperator = 71, RULE_printExpressionCommand = 72;
 	public static readonly string[] ruleNames = {
@@ -92,8 +92,8 @@ public partial class MppgParser : Parser {
 		"numberLiteral", "rationalLiteral", "numberReturningfunctionOperation", 
 		"functionValueAt", "functionLeftLimitAt", "functionRightLimitAt", "functionHorizontalDeviation", 
 		"functionVerticalDeviation", "functionZDeviation", "plotCommand", "plotTikzCommand", 
-		"plotArg", "functionName", "plotOption", "string", "stringLiteral", "stringVariable", 
-		"interval", "assertion", "assertionOperator", "printExpressionCommand"
+		"plotArg", "functionName", "plotOption", "stringExpression", "stringLiteral", 
+		"stringVariable", "interval", "assertion", "assertionOperator", "printExpressionCommand"
 	};
 
 	private static readonly string[] _LiteralNames = {
@@ -5589,8 +5589,8 @@ public partial class MppgParser : Parser {
 
 	public partial class PlotOptionContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(MppgParser.IDENTIFIER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public StringContext @string() {
-			return GetRuleContext<StringContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public StringExpressionContext stringExpression() {
+			return GetRuleContext<StringExpressionContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public IntervalContext interval() {
 			return GetRuleContext<IntervalContext>(0);
@@ -5627,7 +5627,7 @@ public partial class MppgParser : Parser {
 				State = 717;
 				Match(T__42);
 				State = 718;
-				@string(0);
+				stringExpression(0);
 				}
 				break;
 			case 2:
@@ -5676,7 +5676,7 @@ public partial class MppgParser : Parser {
 		return _localctx;
 	}
 
-	public partial class StringContext : ParserRuleContext {
+	public partial class StringExpressionContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public StringLiteralContext stringLiteral() {
 			return GetRuleContext<StringLiteralContext>(0);
 		}
@@ -5686,38 +5686,38 @@ public partial class MppgParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public NumberLiteralContext numberLiteral() {
 			return GetRuleContext<NumberLiteralContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public StringContext[] @string() {
-			return GetRuleContexts<StringContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public StringExpressionContext[] stringExpression() {
+			return GetRuleContexts<StringExpressionContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public StringContext @string(int i) {
-			return GetRuleContext<StringContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public StringExpressionContext stringExpression(int i) {
+			return GetRuleContext<StringExpressionContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(MppgParser.PLUS, 0); }
-		public StringContext(ParserRuleContext parent, int invokingState)
+		public StringExpressionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_string; } }
+		public override int RuleIndex { get { return RULE_stringExpression; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IMppgVisitor<TResult> typedVisitor = visitor as IMppgVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitString(this);
+			if (typedVisitor != null) return typedVisitor.VisitStringExpression(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public StringContext @string() {
-		return @string(0);
+	public StringExpressionContext stringExpression() {
+		return stringExpression(0);
 	}
 
-	private StringContext @string(int _p) {
+	private StringExpressionContext stringExpression(int _p) {
 		ParserRuleContext _parentctx = Context;
 		int _parentState = State;
-		StringContext _localctx = new StringContext(Context, _parentState);
-		StringContext _prevctx = _localctx;
+		StringExpressionContext _localctx = new StringExpressionContext(Context, _parentState);
+		StringExpressionContext _prevctx = _localctx;
 		int _startState = 132;
-		EnterRecursionRule(_localctx, 132, RULE_string, _p);
+		EnterRecursionRule(_localctx, 132, RULE_stringExpression, _p);
 		try {
 			int _alt;
 			EnterOuterAlt(_localctx, 1);
@@ -5755,14 +5755,14 @@ public partial class MppgParser : Parser {
 					_prevctx = _localctx;
 					{
 					{
-					_localctx = new StringContext(_parentctx, _parentState);
-					PushNewRecursionContext(_localctx, _startState, RULE_string);
+					_localctx = new StringExpressionContext(_parentctx, _parentState);
+					PushNewRecursionContext(_localctx, _startState, RULE_stringExpression);
 					State = 735;
 					if (!(Precpred(Context, 4))) throw new FailedPredicateException(this, "Precpred(Context, 4)");
 					State = 736;
 					Match(PLUS);
 					State = 737;
-					@string(5);
+					stringExpression(5);
 					}
 					} 
 				}
@@ -6068,7 +6068,7 @@ public partial class MppgParser : Parser {
 		case 57: return functionRightLimitAt_sempred((FunctionRightLimitAtContext)_localctx, predIndex);
 		case 64: return functionName_sempred((FunctionNameContext)_localctx, predIndex);
 		case 65: return plotOption_sempred((PlotOptionContext)_localctx, predIndex);
-		case 66: return string_sempred((StringContext)_localctx, predIndex);
+		case 66: return stringExpression_sempred((StringExpressionContext)_localctx, predIndex);
 		case 68: return stringVariable_sempred((StringVariableContext)_localctx, predIndex);
 		}
 		return true;
@@ -6166,7 +6166,7 @@ public partial class MppgParser : Parser {
 		}
 		return true;
 	}
-	private bool string_sempred(StringContext _localctx, int predIndex) {
+	private bool stringExpression_sempred(StringExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
 		case 23: return Precpred(Context, 4);
 		}

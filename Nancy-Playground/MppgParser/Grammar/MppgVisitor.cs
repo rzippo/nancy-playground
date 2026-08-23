@@ -735,11 +735,11 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitPlotOption([NotNull] MppgParser.PlotOptionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.string"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.stringExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitString([NotNull] MppgParser.StringContext context);
+	Result VisitStringExpression([NotNull] MppgParser.StringExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.stringLiteral"/>.
 	/// </summary>

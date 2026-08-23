@@ -10,9 +10,9 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public class ComputableStringVisitor : MppgBaseVisitor<ComputableString>
 {
     /// <summary>
-    /// Builds a string, i.e. the pieces it is concatenated from.
+    /// Builds a string expression, i.e. the pieces it is concatenated from.
     /// </summary>
-    public override ComputableString VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
+    public override ComputableString VisitStringExpression(Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext context)
     {
         var cs = new ComputableString();
         for (int i = 0; i < context.ChildCount; i++)

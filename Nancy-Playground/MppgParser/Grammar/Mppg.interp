@@ -235,7 +235,7 @@ plotTikzCommand
 plotArg
 functionName
 plotOption
-string
+stringExpression
 stringLiteral
 stringVariable
 interval

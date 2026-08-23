@@ -162,7 +162,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             {
                 case "main":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -174,7 +174,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
 
                 case "title":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -216,7 +216,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
 
                 case "xlab":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with
@@ -228,7 +228,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
 
                 case "ylab":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var visitor = new ComputableStringVisitor();
                     var cs = visitor.Visit(stringContext);
                     settings = settings with

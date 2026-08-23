@@ -278,7 +278,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                 case "main":
                 case "title":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
                         argsDict["Title"] = formattableString.Single();
@@ -311,7 +311,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
                 case "xlab":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
                         argsDict["XLabel"] = formattableString.Single();
@@ -320,7 +320,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
                 case "ylab":
                 {
-                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringContext>(0);
+                    var stringContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext>(0);
                     var formattableString = stringContext.Accept(this);
                     if (formattableString is not null && formattableString.Count == 1)
                         argsDict["YLabel"] = formattableString.Single();
@@ -419,7 +419,7 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
         ];
     }
 
-    public override List<string> VisitString(Unipi.MppgParser.Grammar.MppgParser.StringContext context)
+    public override List<string> VisitStringExpression(Unipi.MppgParser.Grammar.MppgParser.StringExpressionContext context)
     {
         var visitor = new ComputableStringVisitor();
         var cs = context.Accept(visitor);

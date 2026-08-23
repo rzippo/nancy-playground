@@ -1170,7 +1170,7 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitPlotOption([NotNull] MppgParser.PlotOptionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.string"/>.
+	/// Visit a parse tree produced by <see cref="MppgParser.stringExpression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -1178,7 +1178,7 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitString([NotNull] MppgParser.StringContext context) { return VisitChildren(context); }
+	public virtual Result VisitStringExpression([NotNull] MppgParser.StringExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.stringLiteral"/>.
 	/// <para>

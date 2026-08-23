@@ -773,13 +773,13 @@ plotTikzCommand: PLOT_TIKZ '(' plotArg (',' plotArg)* ')';
 plotArg: functionName | plotOption;
 functionName: {IsFunctionVariable(CurrentToken.Text)}? IDENTIFIER;
 plotOption
-    : {IsPlotStringOption(CurrentToken.Text)}? IDENTIFIER '=' string
+    : {IsPlotStringOption(CurrentToken.Text)}? IDENTIFIER '=' stringExpression
     | {IsPlotIntervalOption(CurrentToken.Text)}? IDENTIFIER '=' interval
     | {IsPlotYesNoOption(CurrentToken.Text)}? IDENTIFIER '=' ('"no"'|'"yes"')
     ;
 
-string
-    : string '+' string
+stringExpression
+    : stringExpression '+' stringExpression
     | stringLiteral
     | stringVariable
     | numberLiteral;
