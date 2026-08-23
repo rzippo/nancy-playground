@@ -1,4 +1,4 @@
-﻿using Unipi.MppgParser.Grammar;
+using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 using Unipi.Nancy.Playground.MppgParser.Utility;
@@ -104,8 +104,7 @@ public record class Program
 
     /// <summary>
     /// Reports the version directives that declare a version this build cannot apply.
-    /// They come first among the errors, being the cause of the ones the gating of a wrong version
-    /// produces.
+    /// They come first among the errors, being the cause of the ones the gating of a wrong version produces.
     /// </summary>
     private static void ReportUnusableVersionDirectives(
         Unipi.MppgParser.Grammar.MppgParser.ProgramContext context,
@@ -120,7 +119,7 @@ public record class Program
         if (directives is null || directives.Count == 0)
             return;
 
-        var reported = new List<SyntaxErrorInfo>();
+        var directiveErrors = new List<SyntaxErrorInfo>();
         foreach (var directive in directives)
         {
             var directiveText = directive!.GetText();
@@ -132,27 +131,23 @@ public record class Program
                 ? SourceLineExtractor.ExtractLines(text, token.StartIndex)
                 : null;
 
-            var hint = SyntaxVersion.TryParseShebang(directiveText, out var declared) && declared > SyntaxVersion.Latest
-                ? VersionDirective.TooRecentHint(declared, hasOtherErrors: errors.Count > 0)
+            var declaresAVersion = SyntaxVersion.TryParseShebang(directiveText, out var version);
+            var hint = declaresAVersion && version > SyntaxVersion.Latest
+                ? VersionDirective.TooRecentHint(version, hasOtherErrors: errors.Count > 0)
                 : null;
 
-            reported.Add(new SyntaxErrorInfo(
-                Line: token.Line,
-                Column: token.Column,
-                Message: error!,
-                Type: SyntaxErrorInfo.ErrorType.Parser,
-                OffendingText: directiveText,
-                OffendingTokenType: token.Type,
-                RuleName: null,
-                RuleStack: null,
-                Expected: null,
-                SourceLine: lines?.Line,
-                PreviousLine: lines?.Previous,
-                Hint: hint
-            ));
+            var unusableVersionError = new UnusableVersionDirectiveError(
+                Position: new SourcePosition(token.Line, token.Column, lines?.Line, lines?.Previous),
+                DirectiveText: directiveText,
+                DeclaredVersion: declaresAVersion ? version : null,
+                Reason: error!,
+                DefaultHint: hint);
+
+            var report = SyntaxErrorInfo.From(unusableVersionError);
+            directiveErrors.Add(report);
         }
 
-        errors.InsertRange(0, reported);
+        errors.InsertRange(0, directiveErrors);
     }
 
     /// <summary>

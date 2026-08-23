@@ -22,10 +22,53 @@ internal enum ErrorRecovery
 }
 
 /// <summary>
+/// Records which recovery the parser is reporting, a token it had to invent or one it had to drop.
+/// </summary>
+/// <remarks>
+/// Both are reported with no exception and through the same listener call, so the recovery is read here, where the parser tells the two apart itself, rather than from the wording of the message.
+/// It holds only while the report is being made, which is when the listener reads it.
+/// </remarks>
+internal class RecordingErrorStrategy : DefaultErrorStrategy
+{
+    /// <summary>
+    /// The recovery being reported, or <see cref="ParserRecovery.None"/> outside a report of one.
+    /// </summary>
+    public ParserRecovery Recovery { get; private set; } = ParserRecovery.None;
+
+    /// <inheritdoc/>
+    protected override void ReportMissingToken(Parser recognizer)
+    {
+        Recovery = ParserRecovery.MissingToken;
+        try
+        {
+            base.ReportMissingToken(recognizer);
+        }
+        finally
+        {
+            Recovery = ParserRecovery.None;
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void ReportUnwantedToken(Parser recognizer)
+    {
+        Recovery = ParserRecovery.UnwantedToken;
+        try
+        {
+            base.ReportUnwantedToken(recognizer);
+        }
+        finally
+        {
+            Recovery = ParserRecovery.None;
+        }
+    }
+}
+
+/// <summary>
 /// Stops at the first syntax error, after reporting it to the error listeners.
 /// Not <see cref="BailErrorStrategy"/>, which throws before notifying them, leaving no <see cref="SyntaxErrorInfo"/>.
 /// </summary>
-internal sealed class ReportingBailErrorStrategy : DefaultErrorStrategy
+internal sealed class ReportingBailErrorStrategy : RecordingErrorStrategy
 {
     public override void Recover(Parser recognizer, RecognitionException e)
         => throw new ParseCanceledException(e);
@@ -124,8 +167,10 @@ internal static class MppgParsing
         var parser = new Unipi.MppgParser.Grammar.MppgParser(tokens);
         parser.RemoveErrorListeners();
         parser.AddErrorListener(new DiagnosticParserErrorListener(errors));
-        if (recovery == ErrorRecovery.FirstError)
-            parser.ErrorHandler = new ReportingBailErrorStrategy();
+        // both strategies record the recovery they report, which is how a missing token is told from an extraneous one
+        parser.ErrorHandler = recovery == ErrorRecovery.FirstError
+            ? new ReportingBailErrorStrategy()
+            : new RecordingErrorStrategy();
         parser.SeedVariableTypes(state);
 
         return new MppgParse(lexer, tokens, parser, errors);

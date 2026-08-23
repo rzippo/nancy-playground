@@ -6,12 +6,11 @@ using Antlr4.Runtime.Misc;
 namespace Unipi.Nancy.Playground.MppgParser;
 
 /// <summary>
-/// One syntax error, with everything needed to report it: where it is, what to say about it, and the
-/// source around it.
+/// One syntax error, with everything needed to report it: where it is, what to say about it, and the source around it.
 /// </summary>
 /// <param name="Line">The line the error is on, counted from one.</param>
 /// <param name="Column">The column the error is at, counted from zero.</param>
-/// <param name="Message">What to tell the reader about the error.</param>
+/// <param name="Message">What to tell the reader, rewritten from what ANTLR said where a pattern recognised the error.</param>
 /// <param name="Type">Whether the lexer or the parser reported it.</param>
 /// <param name="OffendingText">The token, or the character, that could not be used.</param>
 /// <param name="OffendingTokenType">Its token type, or null for an error of the lexer.</param>
@@ -21,6 +20,7 @@ namespace Unipi.Nancy.Playground.MppgParser;
 /// <param name="SourceLine">The line the error is on, raw and unescaped: a caret or a colour is for the display layer to add.</param>
 /// <param name="PreviousLine">The line before it, for the display layer to show as context.</param>
 /// <param name="Hint">What likely caused the error, where it can be told apart from the message alone.</param>
+/// <param name="AntlrMessage">What ANTLR said, kept when <paramref name="Message"/> was rewritten.</param>
 public sealed record SyntaxErrorInfo(
     int Line,
     int Column,
@@ -33,11 +33,20 @@ public sealed record SyntaxErrorInfo(
     IReadOnlyList<string>? Expected,
     string? SourceLine,
     string? PreviousLine,
-    string? Hint = null
+    string? Hint = null,
+    string? AntlrMessage = null
 )
 {
     /// <summary>
-    /// Which of the two stages reported the error.
+    /// The error this reports, i.e. what was known of it before anything was written about it.
+    /// </summary>
+    /// <remarks>
+    /// Kept so that the matchers can be held to what they recognise, which is what the tests read it for, and so that a report can be traced back to its facts.
+    /// </remarks>
+    internal ParseError? Source { get; init; }
+
+    /// <summary>
+    /// What reported the error.
     /// </summary>
     public enum ErrorType
     {
@@ -49,7 +58,44 @@ public sealed record SyntaxErrorInfo(
         /// <summary>
         /// The parser, which reads tokens into rules.
         /// </summary>
-        Parser
+        Parser,
+
+        /// <summary>
+        /// The playground itself, for a directive the grammar accepts but this build cannot apply.
+        /// </summary>
+        Directive
+    }
+
+    /// <summary>
+    /// The report of <paramref name="error"/>, i.e. what it knows together with what is written about it, which is the one place a <see cref="SyntaxErrorInfo"/> is built.
+    /// </summary>
+    /// <param name="error">The error to report.</param>
+    internal static SyntaxErrorInfo From(ParseError error)
+    {
+        var parser = error as ParserError;
+        return new SyntaxErrorInfo(
+            Line: error.Position.Line,
+            Column: error.Position.Column,
+            Message: error.DefaultMessage,
+            Type: error switch
+            {
+                LexerError => ErrorType.Lexer,
+                UnusableVersionDirectiveError => ErrorType.Directive,
+                _ => ErrorType.Parser
+            },
+            OffendingText: error.OffendingText,
+            OffendingTokenType: parser?.Tokens.Offending?.Type,
+            RuleName: parser?.Rule.Name,
+            RuleStack: parser?.Rule.Stack,
+            Expected: parser?.Expected.Names,
+            SourceLine: error.Position.SourceLine,
+            PreviousLine: error.Position.PreviousLine,
+            Hint: error.DefaultHint,
+            AntlrMessage: error.AntlrMessage
+        )
+        {
+            Source = error
+        };
     }
 
     /// <summary>
@@ -166,13 +212,6 @@ public sealed class DiagnosticLexerErrorListener : IAntlrErrorListener<int>
         string msg,
         RecognitionException e)
     {
-        string? offendingText = null;
-        if (offendingSymbol >= 0)
-        {
-            // offendingSymbol is a Unicode code point
-            offendingText = char.ConvertFromUtf32(offendingSymbol);
-        }
-
         var text = SourceLineExtractor.GetText(_charStream);
         var charIndex = text is null
             ? null
@@ -181,19 +220,18 @@ public sealed class DiagnosticLexerErrorListener : IAntlrErrorListener<int>
             ? SourceLineExtractor.ExtractLines(text, i)
             : null;
 
-        _errors.Add(new SyntaxErrorInfo(
-            Line: line,
-            Column: charPositionInLine,
-            Message: msg,
-            Type: SyntaxErrorInfo.ErrorType.Lexer,
-            OffendingText: offendingText,
-            OffendingTokenType: null,
-            RuleName: null,
-            RuleStack: null,
-            Expected: null,
-            SourceLine: lines?.Line,
-            PreviousLine: lines?.Previous
-        ));
+        // read from the input: a lexer reports the error with no offending symbol, passing zero
+        var character = text is not null && charIndex is int index
+            ? text[index].ToString()
+            : null;
+
+        var error = new LexerError(
+            Position: new SourcePosition(line, charPositionInLine, lines?.Line, lines?.Previous),
+            Character: character,
+            LexerMessage: msg);
+
+        var report = SyntaxErrorInfo.From(error);
+        _errors.Add(report);
     }
 }
 
@@ -224,44 +262,67 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
         string msg,
         RecognitionException e)
     {
-        string? ruleName = null;
-        IReadOnlyList<string>? ruleStack = null;
-        IReadOnlyList<string>? expected = null;
-        string? hint = null;
-
-        if (recognizer is Parser parser)
-        {
-            var ctx = parser.Context;
-            if (ctx != null)
-            {
-                ruleName = SafeRuleName(parser, ctx.RuleIndex);
-                ruleStack = GetRuleStack(parser, ctx);
-            }
-
-            expected = GetExpectedTokenNames(parser);
-            hint = VersionedKeywords.TryGetUsedAsNameHint(
-                VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol));
-        }
-
         var text = SourceLineExtractor.GetText(offendingSymbol?.TokenSource?.InputStream);
         var lines = text is not null && offendingSymbol?.StartIndex is int start and >= 0
             ? SourceLineExtractor.ExtractLines(text, start)
             : null;
+        var position = new SourcePosition(line, charPositionInLine, lines?.Line, lines?.Previous);
 
-        _errors.Add(new SyntaxErrorInfo(
-            Line: line,
-            Column: charPositionInLine,
-            Message: msg,
-            Type: SyntaxErrorInfo.ErrorType.Parser,
-            OffendingText: offendingSymbol?.Text,
-            OffendingTokenType: offendingSymbol?.Type,
-            RuleName: ruleName,
-            RuleStack: ruleStack,
-            Expected: expected,
-            SourceLine: lines?.Line,
-            PreviousLine: lines?.Previous,
-            Hint: hint
-        ));
+        if (recognizer is not Parser parser)
+        {
+            // no parser to ask, so the error carries only what the listener was handed
+            var unrecognised = new ParserError(
+                position,
+                new ErrorTokens(offendingSymbol, null, null),
+                ParsedRule.None,
+                ExpectedTokens.None,
+                e,
+                ParserError.NoVariables,
+                msg);
+
+            var unrecognisedReport = SyntaxErrorInfo.From(unrecognised);
+            _errors.Add(unrecognisedReport);
+            return;
+        }
+
+        var context = parser.Context;
+        var rule = context is null
+            ? ParsedRule.None
+            : new ParsedRule(SafeRuleName(parser, context.RuleIndex), GetRuleStack(parser, context), context.Start);
+
+        var error = new ParserError(
+            Position: position,
+            Tokens: new ErrorTokens(
+                offendingSymbol,
+                TokenAround(parser, offendingSymbol, -1),
+                TokenAround(parser, offendingSymbol, +1)),
+            Rule: rule,
+            Expected: new ExpectedTokens(GetExpectedTokenNames(parser) ?? [], parser.GetExpectedTokens().ToArray()),
+            Exception: e,
+            DeclaredVariables: parser is Unipi.MppgParser.Grammar.MppgParser mppgParser
+                ? mppgParser.VariableTypes
+                : ParserError.NoVariables,
+            ParserMessage: msg,
+            DefaultHint: VersionedKeywords.TryGetUsedAsNameHint(
+                VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol)),
+            Recovery: parser.ErrorHandler is RecordingErrorStrategy strategy
+                ? strategy.Recovery
+                : ParserRecovery.None);
+
+        var report = SyntaxErrorInfo.From(error);
+        _errors.Add(report);
+    }
+
+    /// <summary>
+    /// The token <paramref name="offset"/> places from <paramref name="token"/> in the stream, or null where there is none.
+    /// </summary>
+    private static IToken? TokenAround(Parser parser, IToken? token, int offset)
+    {
+        if (token is null || parser.TokenStream is not { } tokens)
+            return null;
+
+        var index = token.TokenIndex + offset;
+        return index >= 0 && index < tokens.Size ? tokens.Get(index) : null;
     }
 
     private static string? SafeRuleName(Parser parser, int ruleIndex)
