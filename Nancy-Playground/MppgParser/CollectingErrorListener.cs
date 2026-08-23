@@ -318,12 +318,39 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             ParserMessage: msg,
             DefaultHint: VersionedKeywords.TryGetUsedAsNameHint(
                 VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol)),
+            ReadableMessage: QuotedFromSource(msg, e, offendingSymbol, text),
             Recovery: parser.ErrorHandler is RecordingErrorStrategy strategy
                 ? strategy.Recovery
                 : ParserRecovery.None);
 
         var report = SyntaxErrorInfo.From(error);
         _errors.Add(report);
+    }
+
+    /// <summary>
+    /// The message of a viable-alternative error, quoting the source rather than the tokens joined together, or null where there is nothing to repair.
+    /// </summary>
+    /// <remarks>
+    /// ANTLR quotes the span from the start of the alternative to the token it stopped at, taken from the tokens, so '( floor comp' comes out as '(floorcomp'.
+    /// The span is read from the source instead, and clipped to the line the error is on, a span that opens on the line before being quoted as the newline it starts with.
+    /// </remarks>
+    private static string? QuotedFromSource(string message, RecognitionException? e, IToken? offending, string? text)
+    {
+        if (e is not NoViableAltException viable || offending is null || text is null)
+            return null;
+
+        var start = viable.StartToken?.StartIndex ?? offending.StartIndex;
+        var stop = offending.StopIndex;
+        if (start < 0 || stop < start || stop >= text.Length)
+            return null;
+
+        var span = text[start..(stop + 1)];
+        var lastBreak = span.LastIndexOf('\n');
+        if (lastBreak >= 0)
+            span = span[(lastBreak + 1)..];
+
+        span = span.Trim();
+        return span.Length == 0 ? null : $"no viable alternative at input '{span}'";
     }
 
     /// <summary>

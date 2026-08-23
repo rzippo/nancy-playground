@@ -177,6 +177,10 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
 /// <param name="DeclaredVariables">The variables declared up to the error, which a name has to be among to be one.</param>
 /// <param name="ParserMessage">What ANTLR said about it.</param>
 /// <param name="Recovery">What the parser did to carry on, which is what tells a token it invented from one it dropped.</param>
+/// <param name="ReadableMessage">
+/// The same, with the quoted input taken from the source rather than from the tokens joined together, or null where there is nothing to repair.
+/// ANTLR writes '(floorcomp' where the script reads '( floor comp', so this is what a reader is shown while <paramref name="ParserMessage"/> stays what was said.
+/// </param>
 /// <param name="DefaultHint">What to add to the message, where something is known beyond it.</param>
 internal sealed record ParserError(
     SourcePosition Position,
@@ -187,8 +191,9 @@ internal sealed record ParserError(
     IReadOnlyDictionary<string, Unipi.MppgParser.Grammar.MppgParser.VariableType> DeclaredVariables,
     string ParserMessage,
     string? DefaultHint = null,
+    string? ReadableMessage = null,
     ParserRecovery Recovery = ParserRecovery.None
-) : ParseError(Position, ParserMessage, DefaultHint)
+) : ParseError(Position, ReadableMessage ?? ParserMessage, DefaultHint)
 {
     /// <inheritdoc/>
     public override string? AntlrMessage => ParserMessage;

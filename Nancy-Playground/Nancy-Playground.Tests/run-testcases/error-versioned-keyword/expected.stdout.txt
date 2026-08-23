@@ -3,7 +3,7 @@ ERROR! Syntax errors, run aborted:
 	   'floor' is a keyword from version 1.3 on: to keep using it as a name, use '#!syntax version 1.2' before any other statement.
 	   floor := right-ext(stair(1, 1, 1))
 	         ^^
-	 - line 5:13 no viable alternative at input '(floorcomp'
+	 - line 5:13 no viable alternative at input '( floor comp'
 	   'floor' is a keyword from version 1.3 on: to keep using it as a name, use '#!syntax version 1.2' before any other statement.
 	   A := ( floor comp (C / 2) ) * 4
 	                ^^^^
