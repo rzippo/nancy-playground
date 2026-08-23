@@ -105,7 +105,8 @@ public static class VersionedKeywords
     /// </summary>
     private static bool IsUsedAsName(IToken token, IToken? next)
     {
-        // a name lexed as a variable is one, whatever it spells: it is not a keyword of this version
+        // an IDENTIFIER is a name the declared version allows, so it is no misuse:
+        // the hint is for a word that lexed as the keyword it spells
         return token.Type != Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
             && IntroducedIn.ContainsKey(token.Text)
             && next?.Text != "(";
@@ -115,10 +116,10 @@ public static class VersionedKeywords
     {
         var lastVersionWithoutIt = introducedIn.Previous();
         var directive = lastVersionWithoutIt is null
-            ? "declare an earlier syntax version"
-            : $"declare '#!syntax version {lastVersionWithoutIt}'";
+            ? "an earlier syntax version"
+            : $"'#!syntax version {lastVersionWithoutIt}'";
 
-        return $"'{keyword}' is a keyword of the syntax from version {introducedIn} on, so it cannot be a name: "
-            + $"to keep using it as one, {directive} before any other statement.";
+        return $"'{keyword}' is a keyword from version {introducedIn} on: "
+            + $"to keep using it as a name, use {directive} before any other statement.";
     }
 }

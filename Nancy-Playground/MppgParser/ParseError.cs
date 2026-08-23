@@ -107,7 +107,7 @@ internal sealed record ParsedRule(string? Name, IReadOnlyList<string> Stack, ITo
 /// </summary>
 /// <remarks>
 /// Each kind holds what that kind knows and nothing else, so a reader of one cannot ask for a field that its kind never has.
-/// The message layer turns these into what a user is shown.
+/// The message layer turns these into what a user is shown, see <see cref="SyntaxErrorMessages"/>.
 /// </remarks>
 /// <param name="Position">Where the error is.</param>
 /// <param name="DefaultMessage">What to show when no pattern recognises the error.</param>

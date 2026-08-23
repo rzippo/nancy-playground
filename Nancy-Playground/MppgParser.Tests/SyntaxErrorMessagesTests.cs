@@ -1,0 +1,283 @@
+using Unipi.Nancy.Playground.MppgParser.Statements;
+
+namespace Unipi.Nancy.Playground.MppgParser.Tests;
+
+/// <summary>
+/// The messages of the parser, rewritten into sentences addressed to whoever wrote the script.
+/// What no pattern recognises keeps what ANTLR said, which is what these pin as much as the rewrites.
+/// </summary>
+public class SyntaxErrorMessagesTests
+{
+    private static SyntaxErrorInfo FirstError(string programText)
+    {
+        var program = Program.FromText(programText);
+        Assert.NotEmpty(program.Errors);
+        return program.Errors[0];
+    }
+
+    [Theory]
+    // a name never declared, wherever an expression is what the syntax expects
+    [InlineData("g := f + 1")]
+    [InlineData("g := f(2)")]
+    [InlineData("f")]
+    [InlineData("assert( f = 1 )")]
+    [InlineData("g := 1 + f")]
+    public void UnknownVariableIsNamed(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal("unknown variable 'f'", error.Message);
+    }
+
+    [Fact]
+    public void UnknownVariableKeepsWhatAntlrSaid()
+    {
+        var error = FirstError("g := f + 1");
+
+        Assert.Equal("unknown variable 'f'", error.Message);
+        Assert.Equal("no viable alternative at input 'f'", error.AntlrMessage);
+    }
+
+    [Theory]
+    // the keyword is the offending token, and the assignment follows it
+    [InlineData("div := 3", "div")]
+    [InlineData("comp := 3", "comp")]
+    // the parser read past the keyword and stopped at the assignment
+    [InlineData("star := 3", "star")]
+    [InlineData("inv := 3", "inv")]
+    public void KeywordUsedAsNameIsNamed(string programText, string keyword)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal($"'{keyword}' is a keyword, so it cannot be a name", error.Message);
+    }
+
+    /// <summary>
+    /// The message says that it is a keyword, the hint says since when, so that the two do not repeat each other.
+    /// </summary>
+    [Fact]
+    public void VersionedKeywordUsedAsNameKeepsItsHint()
+    {
+        var error = FirstError("#!syntax version 1.3\nfloor := 3");
+
+        Assert.Equal("'floor' is a keyword, so it cannot be a name", error.Message);
+        Assert.Equal(
+            "'floor' is a keyword from version 1.3 on: to keep using it as a name, "
+                + "use '#!syntax version 1.2' before any other statement.",
+            error.Hint);
+    }
+
+    /// <summary>
+    /// A keyword that is wrong where it stands, but is not being named, is not claimed: in <c>( floor comp (C / 2) )</c> under 1.3 the error lands on <c>comp</c>, which is the operator it spells and is used correctly, the mistake being the <c>floor</c> before it.
+    /// </summary>
+    [Fact]
+    public void KeywordThatIsNotBeingNamedIsNotClaimed()
+    {
+        var program = Program.FromText("#!syntax version 1.3\nC := bucket(2, 5)\nA := ( floor comp (C / 2) ) * 4");
+
+        var error = Assert.Single(program.Errors);
+        Assert.Null(error.RewrittenBy);
+        Assert.DoesNotContain("is a keyword, so it cannot be a name", error.Message);
+    }
+
+    /// <summary>
+    /// A name of the syntax used where it belongs is no mistake, so nothing is reported at all.
+    /// </summary>
+    [Theory]
+    [InlineData("x := 1\ny := x + zero")]
+    // the plot options are contextual keywords, so they are names as well
+    [InlineData("f := bucket(2, 5)\nout := f")]
+    public void KeywordInItsPlaceIsNoError(string programText)
+    {
+        Assert.Empty(Program.FromText(programText).Errors);
+    }
+
+    [Theory]
+    // a bracket left open, where the parser reaches the end of the line looking for it
+    [InlineData("f := bucket(2, 5", "a ')' is missing at the end of the line")]
+    [InlineData("f := bucket(2, 5\ng := 1", "a ')' is missing at the end of the line")]
+    [InlineData("f := uaf( [(0,0)1(1,1)[ ", "a ')' is missing at the end of the line")]
+    // a separator left out, where the parser stops at the token that should have followed it
+    [InlineData("f := bucket(2 5)", "a ',' is missing before '5'")]
+    public void MissingTokenIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
+    /// A token too many comes the same way as one too few, with no exception to tell them apart, so it must not be read as something left out.
+    /// </summary>
+    [Fact]
+    public void ExtraneousTokenIsNotClaimedAsMissing()
+    {
+        var error = FirstError("f := bucket(2, 5))");
+
+        Assert.DoesNotContain("is missing", error.Message);
+    }
+
+    /// <summary>
+    /// A declared name is not the cause, so whatever the error is, it is not about an unknown one.
+    /// </summary>
+    [Fact]
+    public void DeclaredVariableIsNotClaimed()
+    {
+        var error = FirstError("f := bucket(2, 5)\ng := f ]");
+
+        Assert.DoesNotContain("unknown variable", error.Message);
+    }
+
+    /// <summary>
+    /// The argument of a plot names an option as well as a variable, so a name unknown there is not necessarily a variable: the pattern leaves it alone rather than guess.
+    /// </summary>
+    [Theory]
+    [InlineData("f := bucket(2, 5)\nplot(f, nosuch=\"x\")")]
+    [InlineData("plot(nosuch)")]
+    public void NameInAPlotArgumentIsNotClaimed(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Null(error.RewrittenBy);
+    }
+
+    [Theory]
+    // a constructor, and a function operation, closed too early or carried on too long
+    [InlineData("f := bucket(2)", "'bucket' needs another argument")]
+    [InlineData("f := stair(1, 2)", "'stair' needs another argument")]
+    [InlineData("f := bucket(2, 5)\ng := hShift(f)", "'hShift' needs another argument")]
+    [InlineData("f := bucket(2, 5, 7)", "'bucket' takes no more arguments")]
+    [InlineData("f := delay(1, 2)", "'delay' takes no more arguments")]
+    public void WrongNumberOfArgumentsIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
+    /// A scalar operation fails further out, in the expression, where what was expected is the whole start set of one: nothing there says which call it was, so it keeps its message.
+    /// </summary>
+    [Theory]
+    [InlineData("x := pow(2)")]
+    [InlineData("x := abs(2, 3)")]
+    public void WrongNumberOfScalarArgumentsIsNotClaimed(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Null(error.RewrittenBy);
+    }
+
+    [Theory]
+    [InlineData("x := 1\ny := x ÷ 2", "'÷' is not a supported character")]
+    [InlineData("x := 1 @ 2", "'@' is not a supported character")]
+    [InlineData("f := bucket(2, @)", "'@' is not a supported character")]
+    // the lexer stops at the quote that opens a string it never finds the end of
+    [InlineData("f := bucket(2, 5)\nplot(f, out=\"x)", "a string is not closed")]
+    public void CharacterTheLexerCannotReadIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(SyntaxErrorInfo.ErrorType.Lexer, error.Type);
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
+    /// Where the line says what the character was being written as, the message says that, and the character it could not read becomes the detail behind it.
+    /// </summary>
+    [Theory]
+    // the character is the whole of what was being named
+    [InlineData("@ := 1")]
+    // and where it is one character of a name, wherever in it that character stands
+    [InlineData("ab@ := 1")]
+    [InlineData("@ab := 1")]
+    [InlineData("a@b := 1")]
+    [InlineData("my@var := 1")]
+    public void CharacterWrittenAsANameIsNamedAsOne(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal("'@' is not a valid variable name", error.Message);
+        Assert.Equal("'@' is not a supported character.", error.Hint);
+    }
+
+    /// <summary>
+    /// A lexer reports its errors with no offending symbol, passing zero, so the character comes from the input at the position of the error rather than from what it was given.
+    /// </summary>
+    [Fact]
+    public void CharacterTheLexerCannotReadIsTheOneInTheInput()
+    {
+        var error = FirstError("x := 1 @ 2");
+
+        Assert.Equal("@", error.OffendingText);
+    }
+
+    /// <summary>
+    /// A line parsed on its own is anchored at the end of the input, where a program is anchored at the end of the line, so the two report what follows a statement the same way.
+    /// </summary>
+    [Fact]
+    public void SomethingAfterTheStatementReadsTheSameOnASingleLine()
+    {
+        var statement = Assert.Throws<Exceptions.SyntaxErrorException>(() => Statement.FromLine("x := 1 2"));
+
+        Assert.Equal("unexpected '2' after the end of the statement", statement.Error?.Message);
+        Assert.Equal("unexpected '2' after the end of the statement", FirstError("x := 1 2").Message);
+    }
+
+    /// <summary>
+    /// With nothing before it on the line, no statement was read, so nothing can follow one: the error keeps its message rather than say that it does.
+    /// </summary>
+    [Fact]
+    public void TokenOpeningALineIsNotAfterAStatement()
+    {
+        var statement = Assert.Throws<Exceptions.SyntaxErrorException>(() => Statement.FromLine(")"));
+
+        Assert.DoesNotContain("after the end of the statement", statement.Error?.Message);
+    }
+
+    [Theory]
+    // a bracket too many, reported as an extraneous token
+    [InlineData("f := bucket(2, 5))", "unexpected ')' after the end of the statement")]
+    // and a second statement on the same line, reported as a mismatched one
+    [InlineData("x := 1 2", "unexpected '2' after the end of the statement")]
+    [InlineData("x := 1 = 2", "unexpected '=' after the end of the statement")]
+    public void SomethingAfterTheStatementIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
+    }
+
+    [Theory]
+    // an operand still to come
+    [InlineData("g := 1 +")]
+    [InlineData("f := bucket(2, 5)\ng := f *")]
+    // and a bracket still to close, which the parser reports the same way, from the expression
+    [InlineData("g := (1 + 2")]
+    public void IncompleteExpressionIsNamed(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal("the expression is incomplete", error.Message);
+    }
+
+    [Theory]
+    // an error no pattern recognises keeps its message, which is what the fallback means
+    [InlineData("f := bucket(2, 5)\n)")]
+    public void WhatIsNotRecognisedKeepsItsMessage(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Null(error.RewrittenBy);
+        Assert.StartsWith("no viable alternative at input", error.Message);
+    }
+
+    [Fact]
+    public void EveryErrorCarriesWhatAntlrSaid()
+    {
+        var program = Program.FromText("g := f + 1\nx := 1 = 2\ny := 1 ÷ 2");
+
+        Assert.NotEmpty(program.Errors);
+        Assert.All(program.Errors, error => Assert.False(string.IsNullOrEmpty(error.AntlrMessage)));
+    }
+}

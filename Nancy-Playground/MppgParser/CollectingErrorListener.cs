@@ -21,6 +21,9 @@ namespace Unipi.Nancy.Playground.MppgParser;
 /// <param name="PreviousLine">The line before it, for the display layer to show as context.</param>
 /// <param name="Hint">What likely caused the error, where it can be told apart from the message alone.</param>
 /// <param name="AntlrMessage">What ANTLR said, kept when <paramref name="Message"/> was rewritten.</param>
+/// <param name="RewrittenBy">
+/// What recognised the error and wrote <paramref name="Message"/>, or null where nothing did and the message is the one the error came with.
+/// </param>
 public sealed record SyntaxErrorInfo(
     int Line,
     int Column,
@@ -34,7 +37,8 @@ public sealed record SyntaxErrorInfo(
     string? SourceLine,
     string? PreviousLine,
     string? Hint = null,
-    string? AntlrMessage = null
+    string? AntlrMessage = null,
+    string? RewrittenBy = null
 )
 {
     /// <summary>
@@ -69,14 +73,22 @@ public sealed record SyntaxErrorInfo(
     /// <summary>
     /// The report of <paramref name="error"/>, i.e. what it knows together with what is written about it, which is the one place a <see cref="SyntaxErrorInfo"/> is built.
     /// </summary>
+    /// <remarks>
+    /// The message and the hint of a pattern come first, and what the error carries is the fallback, so that an error no pattern recognises still reads as well as it can.
+    /// The patterns are read here rather than at each producer, which is what keeps the message and the facts of one and the same error together.
+    /// </remarks>
     /// <param name="error">The error to report.</param>
-    internal static SyntaxErrorInfo From(ParseError error)
+    /// <param name="rewrite">
+    /// False to keep what the error carries, without looking for a pattern that recognises it.
+    /// </param>
+    internal static SyntaxErrorInfo From(ParseError error, bool rewrite = true)
     {
+        var rewritten = rewrite ? SyntaxErrorMessages.Rewrite(error) : null;
         var parser = error as ParserError;
         return new SyntaxErrorInfo(
             Line: error.Position.Line,
             Column: error.Position.Column,
-            Message: error.DefaultMessage,
+            Message: rewritten?.Message ?? error.DefaultMessage,
             Type: error switch
             {
                 LexerError => ErrorType.Lexer,
@@ -90,8 +102,9 @@ public sealed record SyntaxErrorInfo(
             Expected: parser?.Expected.Names,
             SourceLine: error.Position.SourceLine,
             PreviousLine: error.Position.PreviousLine,
-            Hint: error.DefaultHint,
-            AntlrMessage: error.AntlrMessage
+            Hint: rewritten?.Hint ?? error.DefaultHint,
+            AntlrMessage: error.AntlrMessage,
+            RewrittenBy: rewritten?.WrittenBy
         )
         {
             Source = error

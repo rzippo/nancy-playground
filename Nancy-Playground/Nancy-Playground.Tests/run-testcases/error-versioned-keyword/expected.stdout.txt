@@ -1,9 +1,9 @@
 ERROR! Syntax errors, run aborted:
-	 - line 4:6 no viable alternative at input 'floor:='
-	   'floor' is a keyword of the syntax from version 1.3 on, so it cannot be a name: to keep using it as one, declare '#!syntax version 1.2' before any other statement.
+	 - line 4:6 'floor' is a keyword, so it cannot be a name
+	   'floor' is a keyword from version 1.3 on: to keep using it as a name, use '#!syntax version 1.2' before any other statement.
 	   floor := right-ext(stair(1, 1, 1))
 	         ^^
 	 - line 5:13 no viable alternative at input '(floorcomp'
-	   'floor' is a keyword of the syntax from version 1.3 on, so it cannot be a name: to keep using it as one, declare '#!syntax version 1.2' before any other statement.
+	   'floor' is a keyword from version 1.3 on: to keep using it as a name, use '#!syntax version 1.2' before any other statement.
 	   A := ( floor comp (C / 2) ) * 4
 	                ^^^^
