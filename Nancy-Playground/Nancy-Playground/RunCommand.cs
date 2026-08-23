@@ -131,7 +131,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 Console.MarkupLine("[red]ERROR! Syntax errors, run aborted:[/]");
                 foreach(var error in program.Errors)
                 {
-                    SyntaxErrorPrinter.PrintError(Console, error, "red");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red", settings.Verbose);
                 }
                 return 1;
             }
@@ -140,7 +140,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 Console.MarkupLine("[darkorange]WARNING! Syntax errors:[/]");
                 foreach(var error in program.Errors)
                 {
-                    SyntaxErrorPrinter.PrintError(Console, error, "darkorange");
+                    SyntaxErrorPrinter.PrintError(Console, error, "darkorange", settings.Verbose);
                 }
             }
         }
@@ -167,7 +167,7 @@ public class RunCommand : Command<RunCommand.Settings>
                 PlotFormatter = plotFormatter,
                 TikzPlotFormatter = tikzPlotFormatter,
             },
-            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console },
+            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console, Verbose = settings.Verbose },
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 Console = Console,
@@ -175,9 +175,10 @@ public class RunCommand : Command<RunCommand.Settings>
                 TikzPlotFormatter = tikzPlotFormatter,
                 PrintTimePerStatement = !settings.Deterministic,
                 PrintInputAsConfirmation = false,
-                EchoInput = echoInput
+                EchoInput = echoInput,
+                Verbose = settings.Verbose
             },
-            _ => new MppgClassicStatementFormatter { Console = Console }
+            _ => new MppgClassicStatementFormatter { Console = Console, Verbose = settings.Verbose }
         };
 
         var immediateComputeValue = settings.RunMode switch

@@ -113,7 +113,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         catch (SyntaxErrorException ex) when (ex.Error is { } error)
         {
             Console.MarkupLine($"[red]Error:[/] Cannot compile program from {Markup.Escape(mppgFile.FullName)}:");
-            SyntaxErrorPrinter.PrintError(Console, error, "red");
+            SyntaxErrorPrinter.PrintError(Console, error, "red", settings.Verbose);
             return 1;
         }
         catch (Exception ex)

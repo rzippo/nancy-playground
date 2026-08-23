@@ -19,6 +19,11 @@ namespace Unipi.Nancy.Playground.Cli;
 public class MppgClassicStatementFormatter : IStatementFormatter
 {
     /// <summary>
+    /// True for verbose output, meant for debugging.
+    /// </summary>
+    public bool Verbose { get; init; } = false;
+
+    /// <summary>
     /// Where the output is written.
     /// </summary>
     public required IAnsiConsole Console { get; init; }
@@ -55,7 +60,7 @@ public class MppgClassicStatementFormatter : IStatementFormatter
         if (error.Exception is SyntaxErrorException { Error: { } syntaxError })
         {
             Console.WriteLine("Error:");
-            SyntaxErrorPrinter.PrintError(Console, syntaxError, "default");
+            SyntaxErrorPrinter.PrintError(Console, syntaxError, "default", Verbose);
         }
         else
         {

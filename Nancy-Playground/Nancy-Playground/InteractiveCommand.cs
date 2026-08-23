@@ -19,6 +19,12 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     private IAnsiConsole Console { get; } = AnsiConsole.Console;
 
     /// <summary>
+    /// Whether an error is reported with what the parser said, taken from the settings of the session
+    /// so that the commands it runs report the same way.
+    /// </summary>
+    private bool Verbose { get; set; }
+
+    /// <summary>
     /// A command writing to the default console.
     /// </summary>
     public InteractiveCommand() { }
@@ -54,6 +60,8 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// </summary>
     protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
+        Verbose = settings.Verbose;
+
         if (settings.Version)
         {
             Console.MarkupLine(Program.CliVersionLine);
@@ -81,7 +89,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
-            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console },
+            OutputMode.MppgClassic => new MppgClassicStatementFormatter { Console = Console, Verbose = settings.Verbose },
             OutputMode.NancyNew => new AnsiConsoleStatementFormatter()
             {
                 Console = Console,
@@ -94,9 +102,10 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 // PlotFormatter = new XPlotPlotFormatter(exportRoot),
                 TikzPlotFormatter = new TikzPlotFormatter(exportRoot) { Console = Console },
                 PrintInputAsConfirmation = true,
-                EchoInput = echoInput
+                EchoInput = echoInput,
+                Verbose = settings.Verbose
             },
-            _ => new MppgClassicStatementFormatter { Console = Console }
+            _ => new MppgClassicStatementFormatter { Console = Console, Verbose = settings.Verbose }
         };
 
         var immediateComputeValue = settings.RunMode switch
@@ -198,7 +207,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 catch (SyntaxErrorException ex) when (ex.Error is { } error)
                 {
                     Console.MarkupLine("[red]Syntax error:[/]");
-                    SyntaxErrorPrinter.PrintError(Console, error, "red");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red", Verbose);
                     continue;
                 }
                 catch (Exception ex)
@@ -314,7 +323,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         catch (SyntaxErrorException e) when (e.Error is { } error)
         {
             Console.MarkupLine($"[red]Error:[/] Could not convert program to [blue]{Escape(outputPath)}[/]:");
-            SyntaxErrorPrinter.PrintError(Console, error, "red");
+            SyntaxErrorPrinter.PrintError(Console, error, "red", Verbose);
         }
         catch (Exception e)
         {
@@ -379,6 +388,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     TikzPlotFormatter = ansi.TikzPlotFormatter,
                     PrintInputAsConfirmation = ansi.PrintInputAsConfirmation,
                     PrintTimePerStatement = ansi.PrintTimePerStatement,
+                    Verbose = ansi.Verbose,
                     EchoInput = true
                 },
                 _ => formatter
@@ -424,7 +434,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                 catch (SyntaxErrorException ex) when (ex.Error is { } error)
                 {
                     Console.MarkupLine("[red]Error executing line:[/]");
-                    SyntaxErrorPrinter.PrintError(Console, error, "red");
+                    SyntaxErrorPrinter.PrintError(Console, error, "red", Verbose);
                     errorCount++;
                 }
                 catch (Exception ex)

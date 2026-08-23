@@ -38,6 +38,11 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     public bool EchoInput { get; init; } = false;
 
     /// <summary>
+    /// True for verbose output, meant for debugging.
+    /// </summary>
+    public bool Verbose { get; init; } = false;
+
+    /// <summary>
     /// If true, prints the time taken to execute each statement.
     /// </summary>
     public bool PrintTimePerStatement { get; init; } = true;
@@ -234,7 +239,7 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
             case SyntaxErrorException { Error: { } syntaxError }:
             {
                 Console.MarkupLine("[red]Syntax error[/]:");
-                SyntaxErrorPrinter.PrintError(Console, syntaxError, "red");
+                SyntaxErrorPrinter.PrintError(Console, syntaxError, "red", Verbose);
                 break;
             }
 
