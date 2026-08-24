@@ -29,7 +29,7 @@ of Nancy values.
 
 ## Grouping
 
-Expressions are parsed by the [precedence rules](/syntax.md#function-operator-precedence) of the
+Expressions are parsed by the [precedence rules](/docs/syntax.md#function-operator-precedence) of the
 syntax, and rule 11 then spells out the grouping that was read.
 The parentheses are added when printing, not expected in the input: `f - x + y` comes back as
 `(f - x) + y`, and `f + x * y` as `f + (x * y)`.

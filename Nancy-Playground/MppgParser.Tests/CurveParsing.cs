@@ -636,7 +636,7 @@ public class CurveParsing
 
     /// <summary>
     /// Where the two tools differ, middle column ours and right column RTaW's.
-    /// Changing one is a change of decision, not a bug fix: see "Scalar operands of the mixed operators" in syntax.md.
+    /// Changing one is a change of decision, not a bug fix: see "Scalar operands of the mixed operators" in docs/syntax.md.
     /// </summary>
     public static IEnumerable<object[]> ScalarDivisionDivergenceTestCases =>
         new List<(string expression, string ours, string rtaw, Rational observation)>

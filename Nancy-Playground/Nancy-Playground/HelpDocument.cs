@@ -17,7 +17,7 @@ public static class NancyPlaygroundDocs
 Here are the supported constructs by the MPPG syntax.
 The goal is to support as many constructs as possible to run existing code, and to optionally extend the syntax where useful.
 
-WARNING: the initial contents of this help page was written by AI, using the syntax.md document as source.
+WARNING: the initial contents of this help page was written by AI, using the docs/syntax.md document as source.
 Expect (and please report) oddities.
 """,
         Sections =

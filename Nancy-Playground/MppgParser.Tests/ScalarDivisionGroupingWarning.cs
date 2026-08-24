@@ -8,7 +8,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 /// <summary>
 /// Neither grouping errors, so the parser warns on exactly the shapes where we and RTaW disagree.
-/// See "Scalar operands of the mixed operators" in syntax.md.
+/// See "Scalar operands of the mixed operators" in docs/syntax.md.
 /// </summary>
 public class ScalarDivisionGroupingWarning
 {
