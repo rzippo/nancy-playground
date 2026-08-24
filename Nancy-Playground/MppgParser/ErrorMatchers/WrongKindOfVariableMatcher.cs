@@ -31,7 +31,7 @@ internal sealed class WrongKindOfVariableMatcher : IErrorMatcher<ParserError>
 
         return command is null
             ? new($"'{name}' is {kind}, which cannot stand here")
-            : new($"'{name}' is {kind}, '{command}' takes functions");
+            : new($"'{name}' is {kind}, and '{command}' takes functions");
     }
 
     /// <summary>

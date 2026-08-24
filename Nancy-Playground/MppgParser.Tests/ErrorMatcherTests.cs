@@ -76,6 +76,7 @@ public class ErrorMatcherTests
         "f := bucket(2, 5)\nplot(f, nosuch=\"x\")",
         "plot(nosuch)",
         "#!syntax version 9.9",
+        "#!syntax version 0.9",
         "#!syntax version banana"
     ];
 
@@ -144,16 +145,36 @@ public class ErrorMatcherTests
     /// The message is printed after the position, so it is a fragment: no capital opening it, no period closing it.
     /// The hint is the sentence.
     /// </summary>
+    /// <remarks>
+    /// Held of every message rather than of the rewritten ones alone, the ones the playground raises itself having been sentences for as long as nothing looked.
+    /// </remarks>
     [Theory]
     [MemberData(nameof(Corpus))]
-    public void WhatAMatcherWritesIsAFragment(string programText)
+    public void EveryMessageIsAFragment(string programText)
     {
-        var written = Program.FromText(programText).Errors.Where(error => error.RewrittenBy is not null);
-
-        Assert.All(written, error =>
+        Assert.All(Program.FromText(programText).Errors, error =>
         {
             Assert.False(char.IsUpper(error.Message[0]), $"'{error.Message}' opens with a capital");
             Assert.False(error.Message.EndsWith('.'), $"'{error.Message}' closes with a period");
+        });
+    }
+
+    /// <summary>
+    /// A hint is the sentence the message is not, so it is written as one.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Corpus))]
+    public void EveryHintIsASentence(string programText)
+    {
+        var hinted = Program.FromText(programText).Errors.Where(error => error.Hint is not null);
+
+        Assert.All(hinted, error =>
+        {
+            // a sentence whose subject is a quoted token opens with it, spelled as the script spells it
+            Assert.True(
+                error.Hint![0] == '\'' || char.IsUpper(error.Hint[0]),
+                $"'{error.Hint}' opens with neither a capital nor a quoted token");
+            Assert.EndsWith(".", error.Hint);
         });
     }
 

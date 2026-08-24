@@ -19,5 +19,5 @@ internal sealed class PlotOptionValueMatcher : IErrorMatcher<ParserError>
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)
-        => new($"'{error.TokenBefore(2)!.Text}' is given no value");
+        => new($"'{error.TokenBefore(2)!.Text}' needs a value");
 }

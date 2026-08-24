@@ -20,5 +20,5 @@ internal sealed class UnknownVariableMatcher : IErrorMatcher<ParserError>
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)
-        => new($"unknown variable '{error.Tokens.Offending!.Text}'");
+        => new($"'{error.Tokens.Offending!.Text}' is not a declared variable");
 }

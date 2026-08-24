@@ -17,6 +17,6 @@ internal sealed class CharacterInANameMatcher : IErrorMatcher<LexerError>
 
     /// <inheritdoc/>
     public RewrittenMessage Write(LexerError error)
-        => new($"'{error.Character}' is not a valid variable name",
+        => new($"'{error.Character}' is not a valid name",
             $"'{error.Character}' is not a supported character.");
 }

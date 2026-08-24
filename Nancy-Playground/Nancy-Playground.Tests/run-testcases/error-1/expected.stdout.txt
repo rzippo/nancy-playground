@@ -2,6 +2,6 @@ ERROR! Syntax errors, run aborted:
 	 - line 3:14 an operator is missing between the two expressions
 	   h := ((f + 1) (f - 1))
 	                 ^
-	 - line 4:12 unknown variable 'h'
+	 - line 4:12 'h' is not a declared variable
 	   assert( g = h )
 	               ^

@@ -15,21 +15,21 @@ public static class VersionDirective
     {
         if (!SyntaxVersion.TryParseShebang(text, out var version))
         {
-            error = $"'{text.Trim()}' is not a version directive: it is written "
-                + $"'#!syntax version <major>.<minor>', e.g. '#!syntax version {SyntaxVersion.Latest}'.";
+            error = $"'{text.Trim()}' is not a version directive, which is written "
+                + $"'#!syntax version <major>.<minor>', e.g. '#!syntax version {SyntaxVersion.Latest}'";
             return null;
         }
 
         if (version > SyntaxVersion.Latest)
         {
-            error = $"Syntax version {version} is not supported by this build, the latest being {SyntaxVersion.Latest}.";
+            error = $"syntax version {version} is not supported by this build, the latest being {SyntaxVersion.Latest}";
             return null;
         }
 
         if (!SyntaxVersion.All.Contains(version))
         {
-            error = $"{version} is not a known version of the syntax: the known versions are "
-                + $"{string.Join(", ", SyntaxVersion.All)}.";
+            error = $"{version} is not a known version of the syntax, the known ones being "
+                + $"{string.Join(", ", SyntaxVersion.All)}";
             return null;
         }
 

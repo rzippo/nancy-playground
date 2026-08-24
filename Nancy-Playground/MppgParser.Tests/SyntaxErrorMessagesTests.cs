@@ -26,7 +26,7 @@ public class SyntaxErrorMessagesTests
     {
         var error = FirstError(programText);
 
-        Assert.Equal("unknown variable 'f'", error.Message);
+        Assert.Equal("'f' is not a declared variable", error.Message);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class SyntaxErrorMessagesTests
     {
         var error = FirstError("g := f + 1");
 
-        Assert.Equal("unknown variable 'f'", error.Message);
+        Assert.Equal("'f' is not a declared variable", error.Message);
         Assert.Equal("no viable alternative at input 'f'", error.AntlrMessage);
     }
 
@@ -125,7 +125,7 @@ public class SyntaxErrorMessagesTests
     {
         var error = FirstError("f := bucket(2, 5)\ng := f ]");
 
-        Assert.DoesNotContain("unknown variable", error.Message);
+        Assert.DoesNotContain("is not a declared variable", error.Message);
     }
 
     /// <summary>
@@ -176,10 +176,10 @@ public class SyntaxErrorMessagesTests
     [InlineData("f := bucket(2, 5)\nplot(f, xlim=[1,])", "the interval is missing its right extreme")]
     [InlineData("f := bucket(2, 5)\nplot(f, xlim=[,2])", "the interval is missing its left extreme")]
     [InlineData("f := bucket(2, 5)\nassert(f)", "'assert' takes a comparison between two expressions")]
-    [InlineData("x := 1\nplot(x)", "'x' is a number, 'plot' takes functions")]
+    [InlineData("x := 1\nplot(x)", "'x' is a number, and 'plot' takes functions")]
     [InlineData("x := 1\ny := x(3)", "'x' is a number, and only a function can be sampled")]
     [InlineData("f := bucket(2, 5)\n)", "a statement cannot start with ')'")]
-    [InlineData("f := bucket(2, 5)\nplot(f, out=)", "'out' is given no value")]
+    [InlineData("f := bucket(2, 5)\nplot(f, out=)", "'out' needs a value")]
     [InlineData("f := bucket(2, 5)\ng := f(3, 4)", "'f' is sampled at one point, so it takes one argument")]
     [InlineData("f := bucket(2, 5)\ng := ((f + 1) (f - 1))", "an operator is missing between the two expressions")]
     [InlineData("assert(1, 2)", "unexpected ',', a comparison was expected instead")]
@@ -235,7 +235,7 @@ public class SyntaxErrorMessagesTests
     {
         var error = FirstError(programText);
 
-        Assert.Equal("'@' is not a valid variable name", error.Message);
+        Assert.Equal("'@' is not a valid name", error.Message);
         Assert.Equal("'@' is not a supported character.", error.Hint);
     }
 
