@@ -102,7 +102,8 @@ public sealed record SyntaxErrorInfo(
             Expected: parser?.Expected.Names,
             SourceLine: error.Position.SourceLine,
             PreviousLine: error.Position.PreviousLine,
-            Hint: rewritten?.Hint ?? error.DefaultHint,
+            // what the matcher says, then what the error carries, then the brackets, which are a suggestion rather than a reading of the mistake
+            Hint: rewritten?.Hint ?? error.DefaultHint ?? parser?.BracketHint,
             AntlrMessage: error.AntlrMessage,
             RewrittenBy: rewritten?.WrittenBy
         )
@@ -316,6 +317,7 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
                 ? mppgParser.VariableTypes
                 : ParserError.NoVariables,
             ParserMessage: msg,
+            // the keyword says what the mistake was, where the brackets only suggest where to look, so it comes first
             DefaultHint: VersionedKeywords.TryGetUsedAsNameHint(
                 VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol)),
             ReadableMessage: QuotedFromSource(msg, e, offendingSymbol, text),

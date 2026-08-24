@@ -341,6 +341,57 @@ internal sealed record ParserError(
     }
 
     /// <summary>
+    /// How many round brackets the line opens and closes, which are equal in a line that is written whole.
+    /// </summary>
+    /// <remarks>
+    /// Only the round ones: a square bracket says which end of a segment is included, so <c>](0, 1) 1 (1, 2)[</c> is written with two that never match, while its round ones do.
+    /// Read from the line rather than from its tokens, which are only buffered as far as the parser has read, and with the strings and the comment skipped so that a bracket written inside one is text.
+    /// </remarks>
+    public (int Opened, int Closed) RoundBrackets
+    {
+        get
+        {
+            if (Position.SourceLine is not { } line)
+                return (0, 0);
+
+            var opened = 0;
+            var closed = 0;
+            var insideAString = false;
+            for (var i = 0; i < line.Length; i++)
+            {
+                if (line[i] == '"')
+                    insideAString = !insideAString;
+                else if (insideAString)
+                    continue;
+                else if (line[i] == '/' && i + 1 < line.Length && line[i + 1] == '/')
+                    break;
+                else if (line[i] == '(')
+                    opened++;
+                else if (line[i] == ')')
+                    closed++;
+            }
+
+            return (opened, closed);
+        }
+    }
+
+    /// <summary>
+    /// True where the line opens more round brackets than it closes, or the other way round, which is a mistake wherever the parser happens to stop.
+    /// </summary>
+    public bool HasUnbalancedBrackets => RoundBrackets.Opened != RoundBrackets.Closed;
+
+    /// <summary>
+    /// What to suggest looking at where the brackets of the line are not balanced, or null where they are.
+    /// </summary>
+    /// <remarks>
+    /// A bracket left out is reported wherever the parser gives up, which is rarely where it was left out, so the count is worth saying whatever the message is about.
+    /// </remarks>
+    public string? BracketHint
+        => HasUnbalancedBrackets
+            ? $"The brackets of this line are not balanced: {RoundBrackets.Opened} opened and {RoundBrackets.Closed} closed."
+            : null;
+
+    /// <summary>
     /// The keyword the line is trying to use as a name, or null where no name is being written.
     /// </summary>
     /// <remarks>

@@ -335,6 +335,37 @@ public class SyntaxErrorMessagesTests
         Assert.Equal(error.DefaultMessage, kept.Message);
     }
 
+    /// <summary>
+    /// A bracket left out is reported wherever the parser gives up, which is rarely where it was left out, so the count of the line is suggested whatever the message says.
+    /// </summary>
+    [Fact]
+    public void UnbalancedBracketsAreSuggested()
+    {
+        var error = FirstError("f := bucket(2, 5)\ns := bucket(1, 1)\nb := ( f * s ) comp f) * ( s comp f)");
+
+        Assert.Equal("The brackets of this line are not balanced: 2 opened and 3 closed.", error.Hint);
+    }
+
+    /// <summary>
+    /// A segment says with a square bracket which of its ends it includes, so <c>](0, 1) 1 (1, 2)[</c> is written with two that do not match and round ones that do.
+    /// </summary>
+    [Fact]
+    public void TheBracketsOfASegmentAreNotCounted()
+    {
+        Assert.Empty(Program.FromText("f := uaf([(0, 0)] ](0, 1) 1 (1, 2)[ [(1, 3)] ](1, 3) 0 (+inf, 3)[)").Errors);
+    }
+
+    /// <summary>
+    /// A bracket inside a string is text, and one after a comment is not on the line at all.
+    /// </summary>
+    [Fact]
+    public void BracketsInAStringOrACommentAreNotCounted()
+    {
+        var error = FirstError("f := bucket(2, 5)\nplot(f, out=\"a)b\") ]");
+
+        Assert.DoesNotContain("are not balanced", error.Hint ?? string.Empty);
+    }
+
     [Fact]
     public void EveryErrorCarriesWhatAntlrSaid()
     {
