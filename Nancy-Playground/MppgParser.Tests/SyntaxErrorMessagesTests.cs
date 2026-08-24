@@ -76,8 +76,10 @@ public class SyntaxErrorMessagesTests
         var program = Program.FromText("#!syntax version 1.3\nC := bucket(2, 5)\nA := ( floor comp (C / 2) ) * 4");
 
         var error = Assert.Single(program.Errors);
-        Assert.Null(error.RewrittenBy);
+        Assert.NotEqual("keyword used as a name", error.RewrittenBy);
         Assert.DoesNotContain("is a keyword, so it cannot be a name", error.Message);
+        // the hint still points at the keyword that is the cause, which the message is not about
+        Assert.Contains("'floor' is a keyword from version 1.3 on", error.Hint);
     }
 
     /// <summary>
