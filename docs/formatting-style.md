@@ -1,7 +1,6 @@
 # MPPG Formatting Style
 
-The formatting style used here: by the statement echo of `nancy-playground`, and by the MPPG rendering
-of Nancy values.
+The formatting style used here: by the statement echo of `nancy-playground`, and by the MPPG rendering of Nancy values.
 
 | # | Construct | Prescription | Examples |
 | ---- | ---- | ---- | ---- |
@@ -29,13 +28,10 @@ of Nancy values.
 
 ## Grouping
 
-Expressions are parsed by the [precedence rules](/docs/syntax.md#function-operator-precedence) of the
-syntax, and rule 11 then spells out the grouping that was read.
-The parentheses are added when printing, not expected in the input: `f - x + y` comes back as
-`(f - x) + y`, and `f + x * y` as `f + (x * y)`.
+Expressions are parsed by the [precedence rules](/docs/syntax.md#function-operator-precedence) of the syntax, and rule 11 then spells out the grouping that was read.
+The parentheses are added when printing, not expected in the input: `f - x + y` comes back as `(f - x) + y`, and `f + x * y` as `f + (x * y)`.
 
 ## Differences from the original
 
-The [source material](https://www.realtimeatwork.com/minplus-console/RTaW-MinplusConsole-UserManual.pdf)
-writes a segment with no spaces, as `[(x1,y1)slope(x2,y2)[`.
+The [source material](https://www.realtimeatwork.com/minplus-console/RTaW-MinplusConsole-UserManual.pdf) writes a segment with no spaces, as `[(x1,y1)slope(x2,y2)[`.
 Rule 14 spaces it, so that an endpoint follows the same comma as any other pair of arguments.

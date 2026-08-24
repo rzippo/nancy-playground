@@ -1,7 +1,6 @@
 # Error messages
 
-When `nancy-playground` is given an invalid script as input, most of the time the failure happens during parsing,
-as ANTLR is unable to derive a coherent syntax tree for the script.
+When `nancy-playground` is given an invalid script as input, most of the time the failure happens during parsing, as ANTLR is unable to derive a coherent syntax tree for the script.
 However, ANTLR errors are very low level, and specific for grammar-parsing: useful for dev debugging, not so much for an end user making honest mistakes.
 
 So, `nancy-playground` has a mechanism to capture, analyze and rewrite ANTLR errors into something more readable, based on *known* patterns.
@@ -27,8 +26,7 @@ it lets a test ask every matcher *whether* it claims an error without asking any
 
 The matchers are held in a registry and tried in turn, and the first that recognises the error answers.
 There are seventeen of them today, covering the mistakes met so far: 
-a keyword used as a variable name, an argument list too short or too long, an interval missing an extreme, 
-a name a plot cannot take, an assignment written with `=`, and so on.
+a keyword used as a variable name, an argument list too short or too long, an interval missing an extreme, a name a plot cannot take, an assignment written with `=`, and so on.
 
 ## What a matcher reads
 

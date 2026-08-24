@@ -331,8 +331,7 @@ of numbers, variables and strings for labels
   Fractions, as in `xlim=[1/3, 10]`, are a `nancy-playground` addition: RTaW takes a variable there but not a fraction
 - *not documented*: args and function names can appear in any order
 - the `gui` option applies per plot, while the `--no-gui` option of the command line applies to the
-whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders
-code rather than an image, so neither has any effect there.
+whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders code rather than an image, so neither has any effect there.
 
 ### Examples
 - `plot(f1)`
@@ -405,8 +404,7 @@ It is applied only as the first line of the program, and only once: any later di
 In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
 Use `!clear` to start a new session, and with it select a new version.
 
-A keyword only acts as one from the version that introduced it: `lowclosure := 3` is an assignment under
-`#!syntax version 1.0`, and the closure operator from 1.2 on.
+A keyword only acts as one from the version that introduced it: `lowclosure := 3` is an assignment under `#!syntax version 1.0`, and the closure operator from 1.2 on.
 Declaring a version therefore keeps a program working as later versions add keywords.
 
 | Version | Keywords introduced |
@@ -415,7 +413,5 @@ Declaring a version therefore keeps a program working as later versions add keyw
 | 1.2 | `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure` |
 | 1.3 | `floor`, `ceil`, `abs`, `pow`, `mod`, `gcd`, `lcm` |
 
-Scripts that name a variable `floor`, as the ones that spell the floor function
-`right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.
-A program that uses one of these names without declaring a version is told which name it is and which
-directive keeps it.
+Scripts that name a variable `floor`, as the ones that spell the floor function `right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.
+A program that uses one of these names without declaring a version is told which name it is and which directive keeps it.
