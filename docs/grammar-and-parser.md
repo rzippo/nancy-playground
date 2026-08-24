@@ -1,7 +1,7 @@
 # The grammar and the parser
 
 MPPG is parsed by ANTLR, from the grammar in `MppgParser/Grammar/Mppg.g4`.
-This document explains why that grammar is shaped the way it is, and which of its choices are load-bearing.
+This document explains why that grammar is shaped the way it is, and which of its choices cannot be changed without breaking something else.
 It is meant for whoever is about to change it, since several of the rules below look like clutter until the reason for them is known.
 
 For adding a construct to the language, see [Extending the syntax](/docs/extending-the-syntax.md).

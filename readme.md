@@ -40,15 +40,21 @@ USAGE:
 OPTIONS:
     -h, --help           Prints help information
     -o, --output-mode    How the output is formatted. Available options: ExplicitPrintsOnly, MppgClassic, NancyNew (default)
-    -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: PerStatement
+    -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased
     -e, --on-error       Specifies what to do when an error occurs. Available options: Stop (default), Continue
         --no-welcome     Mutes the welcome message
+        --no-gui         Never shows a plot in a GUI window, overriding the gui option of each plot command. The image is still written, and its path printed. Has no effect on plotTikz, which uses no GUI
+        --echo           Echoes user input in interactive mode. Default: true in run mode, false in interactive mode
+        --line-input     Reads whole lines instead of using the interactive line editor. Default: enabled when the input is piped
+        --verbose        If enabled, the program prints out additional information about the execution, such as the time taken during parsing. Default: false
         --version        If used, the program prints out the version and immediately terminates
+        --export-root    Directory the files exported by the session are saved in, i.e. plots, !export and !convert. Relative paths are resolved against it. Default: the current directory
 
 COMMANDS:
     run <file>        Runs a .mppg script
     interactive       Interactive mode, where the user can input MPPG lines one by one
-    convert <file>
+    convert <file>    Converts a .mppg file to a Nancy program
+    manual            Shows the MPPG syntax manual and exits. Optionally filter by a search query
 ```
 
 # Installation
@@ -69,7 +75,7 @@ After it completes (and possibly after opening a new terminal) you should see th
 The [`docs/`](/docs) folder holds the guidelines for working on the project:
 how the [grammar and the parser](/docs/grammar-and-parser.md) are shaped, what it takes to [extend the syntax](/docs/extending-the-syntax.md), and how a script that does not parse is [reported](/docs/error-messages.md).
 
-`Nancy-Playground` is a .NET 9.0 application, written in C# 12. 
+`Nancy-Playground` is a .NET 10 application, written in C# 14.
 Both SDK and runtime for .NET are cross-platform, and can be downloaded from [here](https://dotnet.microsoft.com/en-us/download).
 
 A PowerShell script is available to "compile and install" `nancy-playground-dev` to be run from a terminal, which currently support only Windows and Linux.
