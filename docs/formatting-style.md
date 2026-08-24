@@ -1,6 +1,7 @@
 # MPPG Formatting Style
 
-The formatting style used here: by the statement echo of `nancy-playground`, and by the MPPG rendering of Nancy values.
+The formatting style used here:
+by the statement echo of `nancy-playground`, and by the MPPG rendering of Nancy values.
 
 | # | Construct | Prescription | Examples |
 | ---- | ---- | ---- | ---- |

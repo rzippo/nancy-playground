@@ -127,10 +127,12 @@ upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
 > The second part is the pseudo-periodic part. 
 > Both `incr` and `period` are optional.
 
-`incr` is authoritative: giving a height other than the one the periodic part implies produces a different curve.
+`incr` is authoritative:
+giving a height other than the one the periodic part implies produces a different curve.
 `period` is informational, and a length other than the one the periodic part implies is ignored.
 
-Unlike the endpoints and slopes of the segments, which are full [number expressions](#number-syntax), `incr` and `period` are literals: an integer, a decimal, an infinity, or a fraction of two of these.
+Unlike the endpoints and slopes of the segments, which are full [number expressions](#number-syntax), `incr` and `period` are literals:
+an integer, a decimal, an infinity, or a fraction of two of these.
 
 ##### Examples
 
@@ -150,7 +152,7 @@ upp( period( [(0, 0)] ](0, 0) 0 (1, 0)[ ), 1/2, 1)
 
 ### Number syntax
 
-Numbers are rationals. 
+Numbers are rationals.
 
 > There is an implementation using floats, we will ignore that
 
@@ -234,9 +236,9 @@ RTaW groups divisions differently based on the type of the dividend:
 - a divisor that *starts with a number* is read as one whole value, e.g. it reads `f / 1/2` as `f / (1/2)`
 - a divisor that instead starts with a variable, sampled value, etc. is folded left, e.g. it reads `f / x/y` as `(f / x) / y`.
 
-`nancy-playground` instead will always fold left. 
+`nancy-playground` instead will always fold left.
 This is internally coherent but may lead to unexpected different results w.r.t. RTaW.
-For this reason, a `WARNING` recommending explicit parentheses will be printed whenever an expression like `f / 1 / 2` is used. 
+For this reason, a `WARNING` recommending explicit parentheses will be printed whenever an expression like `f / 1 / 2` is used.
 
 ## Scalar-returning operations
 
@@ -306,8 +308,8 @@ The value of a _function_ variable is its definition as `uaf` or `upp`, regardle
 
 `plot(f1, ..., args)`
 
-Plot a graph displaying the functions `f1, f2, ...` 
-`args` contains parameters for the drawing. 
+Plot a graph displaying the functions `f1, f2, ...`
+`args` contains parameters for the drawing.
 Valid `args` are the following.
 
 | Arg | Description | Implemented |
@@ -323,12 +325,13 @@ Valid `args` are the following.
 | `bg ="no"` | Use white background instead of default grey. | ❌ |
 | `gui ="no"` | Custom option, skips showing the plot in a GUI window. Default: `"yes"`. | ✅ |
 
-Notes: 
+Notes:
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
 of numbers, variables and strings for labels
 - the bounds of the `xlim` and `ylim` intervals are literals, not expressions: an integer, a decimal, an infinity, or a fraction of two of these.
-  Fractions, as in `xlim=[1/3, 10]`, are a `nancy-playground` addition: RTaW takes a variable there but not a fraction
+  Fractions, as in `xlim=[1/3, 10]`, are a `nancy-playground` addition:
+RTaW takes a variable there but not a fraction
 - *not documented*: args and function names can appear in any order
 - the `gui` option applies per plot, while the `--no-gui` option of the command line applies to the
 whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders code rather than an image, so neither has any effect there.
@@ -370,7 +373,7 @@ The `args` are the same as `plot`, with these differences.
 > The behavior is therefore not well specified, I poked around.
 
 The general form is `assert( f OP g )`, which tests relation `OP` between `f` and `g`.
-If successful, outputs `true`. 
+If successful, outputs `true`.
 Otherwise, it outputs `assertion failed` followed by an explanation.
 
 > If the assertion syntax is not supported, or "too complex to be understood", it outputs `-1`
@@ -399,7 +402,8 @@ There seems _not_ to be any support for complex logic like `and`, `or` and `not`
 `#!syntax version X.Y`
 
 Selects the syntax version used for the program, defaulting to the latest.
-It is applied only as the first line of the program, and only once: any later directive is reported as a duplicate and ignored.
+It is applied only as the first line of the program, and only once:
+any later directive is reported as a duplicate and ignored.
 
 In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
 Use `!clear` to start a new session, and with it select a new version.

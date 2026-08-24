@@ -1,7 +1,8 @@
 # Extending the syntax
 
 This describes what it takes to add an operator, a constructor or a command to MPPG.
-There are many parts to be altered, due to the modular architecture of the tool: the grammar, the visitors, the user manual.
+There are many parts to be altered, due to the modular architecture of the tool:
+the grammar, the visitors, the user manual.
 
 For the syntax as it stands, see [MPPG Syntax](/docs/syntax.md); for how the tool writes it back, [MPPG Formatting Style](/docs/formatting-style.md).
 
@@ -11,7 +12,8 @@ For the syntax as it stands, see [MPPG Syntax](/docs/syntax.md); for how the too
 Every operator, constructor and command is a thin layer on top of something [`Unipi.Nancy.Expressions`](https://github.com/rzippo/nancy) already does.
 This is not only about reuse, but also about keeping the symbolic nature of expressions: `f + g` builds an expression rather than a value, which is what lets `printExpression` show what was written and lets `convert` emit a program that builds the same thing.
 
-To adopt an operation one should probe its edge cases: signs, zero, the infinities, and arguments outside its domain.
+To adopt an operation one should probe its edge cases:
+signs, zero, the infinities, and arguments outside its domain.
 In some instances [`Unipi.Nancy.Expressions`](https://github.com/rzippo/nancy) may silently return a wrong value rather than refusing, but that leans on the C# language and documentation.
 For a simple syntax as this one, instead, quietly computing the wrong answer is worse than one that stopping it, so it is better to refuse that input immediately.
 
@@ -33,9 +35,10 @@ This implies distinguishing curves from numbers, and function expressions `f + g
 
 To do so, the parser holds a dictionary of declared variables with typing based on assignments, and expressions need to be distinguished based on their result type to properly type those assignments.
 An operation returning a curve is an alternative of the function-expression rules; one returning a number is an alternative of the number-expression rules, in both their plain and bracketed forms.
-Note that getting this wrong may note be immediately apparent: the parser will work, but its output may be ambiguous and it may take a very specific example to stress the wrong path and surface the mistake.
+Note that getting this wrong may note be immediately apparent:
+the parser will work, but its output may be ambiguous and it may take a very specific example to stress the wrong path and surface the mistake.
 
-The operators that mix the two kinds, i.e. those that take a curve on one side and a scalar on the other, are resolved with lookahead: 
+The operators that mix the two kinds, i.e. those that take a curve on one side and a scalar on the other, are resolved with lookahead:
 the grammar tests whether what follows starts a function operand or a number one.
 An operation that can stand on either side of such an operator has to be recognisable by those lookahead helpers.
 
@@ -65,12 +68,14 @@ To implement something, one should override the methods related to some relevant
 The main advantage is that this allows to implement a visit by handling only *some* nodes rather than *all* of the nodes.
 The main disadvantage is that if one *forgets* to implement a visit from one node, the visitor will *silently* do nothing with it and carry on.
 
-That is why the conversion tests exist and why they are the layer that catches an omission: a run may look perfectly healthy while `convert` silently drops the new operation from the generated program.
+That is why the conversion tests exist and why they are the layer that catches an omission:
+a run may look perfectly healthy while `convert` silently drops the new operation from the generated program.
 
 ## Providing documentation
 
 An addition a user cannot find has not been actually added.
-Three places make the difference between a working keyword and a usable one: the autocomplete list of the interactive session, the manual behind `!help` and `manual`, and [MPPG Syntax](/docs/syntax.md), in both the operator table of its kind and the version table.
+Three places make the difference between a working keyword and a usable one:
+the autocomplete list of the interactive session, the manual behind `!help` and `manual`, and [MPPG Syntax](/docs/syntax.md), in both the operator table of its kind and the version table.
 The last is the one a reader consults before the other two, and the version table is what tells them which release they need.
 
 Scripts in the repository that used the new keyword as a variable name have to be given a `#!syntax version` declaring the version *before* it, which is both the fix and a demonstration that the gating works.
@@ -85,4 +90,5 @@ Each layer of the tool can fail independently, so each has its own kind of test:
 - that both conversions emit code, which catches the missing visitor override;
 - that a script using it runs end to end, and that a converted program compiles and runs.
 
-Version gating needs no test of its own: the version tests are driven by what `VersionedKeywords` lists, so listing the keyword there is what covers it.
+Version gating needs no test of its own:
+the version tests are driven by what `VersionedKeywords` lists, so listing the keyword there is what covers it.
