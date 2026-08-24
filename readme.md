@@ -66,6 +66,9 @@ After it completes (and possibly after opening a new terminal) you should see th
 
 ## For devs
 
+The [`docs/`](/docs) folder holds the guidelines for working on the project:
+how the [grammar and the parser](/docs/grammar-and-parser.md) are shaped, what it takes to [extend the syntax](/docs/extending-the-syntax.md), and how a script that does not parse is [reported](/docs/error-messages.md).
+
 `Nancy-Playground` is a .NET 9.0 application, written in C# 12. 
 Both SDK and runtime for .NET are cross-platform, and can be downloaded from [here](https://dotnet.microsoft.com/en-us/download).
 
