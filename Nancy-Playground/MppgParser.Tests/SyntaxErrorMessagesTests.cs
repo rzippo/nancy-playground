@@ -143,11 +143,12 @@ public class SyntaxErrorMessagesTests
 
     [Theory]
     // a constructor, and a function operation, closed too early or carried on too long
-    [InlineData("f := bucket(2)", "'bucket' needs another argument")]
-    [InlineData("f := stair(1, 2)", "'stair' needs another argument")]
-    [InlineData("f := bucket(2, 5)\ng := hShift(f)", "'hShift' needs another argument")]
-    [InlineData("f := bucket(2, 5, 7)", "'bucket' takes no more arguments")]
-    [InlineData("f := delay(1, 2)", "'delay' takes no more arguments")]
+    [InlineData("f := bucket(2)", "'bucket' takes 2 arguments")]
+    [InlineData("f := stair(1, 2)", "'stair' takes 3 arguments")]
+    [InlineData("f := stair(1)", "'stair' takes 3 arguments")]
+    [InlineData("f := bucket(2, 5)\ng := hShift(f)", "'hShift' takes 2 arguments")]
+    [InlineData("f := bucket(2, 5, 7)", "'bucket' takes 2 arguments")]
+    [InlineData("f := delay(1, 2)", "'delay' takes 1 argument")]
     public void WrongNumberOfArgumentsIsNamed(string programText, string expected)
     {
         var error = FirstError(programText);
@@ -159,14 +160,30 @@ public class SyntaxErrorMessagesTests
     /// A scalar operation fails further out, in the expression, so nothing there says which call it was: what was expected is still named, the whole start set of an expression being what it is.
     /// </summary>
     [Theory]
-    [InlineData("x := pow(2)")]
-    [InlineData("x := abs(2, 3)")]
-    public void WrongNumberOfScalarArgumentsNamesWhatWasExpected(string programText)
+    [InlineData("x := pow(2)", "'pow' takes 2 arguments")]
+    [InlineData("x := abs(2, 3)", "'abs' takes 1 argument")]
+    public void WrongNumberOfScalarArgumentsIsNamed(string programText, string expected)
     {
         var error = FirstError(programText);
 
-        Assert.Equal("something else was expected", error.RewrittenBy);
-        Assert.EndsWith("an expression was expected instead", error.Message);
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
+    /// What a construct needs is said in its own terms, where the rule being parsed says which construct it is.
+    /// </summary>
+    [Theory]
+    [InlineData("f := bucket(2, 5)\nplot(f, xlim=[1,])", "the interval is missing its right extreme")]
+    [InlineData("f := bucket(2, 5)\nplot(f, xlim=[,2])", "the interval is missing its left extreme")]
+    [InlineData("f := bucket(2, 5)\nassert(f)", "'assert' takes a comparison between two expressions")]
+    [InlineData("x := 1\nplot(x)", "'x' is a number, 'plot' takes functions")]
+    [InlineData("x := 1\ny := x(3)", "'x' is a number, and only a function can be sampled")]
+    [InlineData("f := bucket(2, 5)\n)", "a statement cannot start with ')'")]
+    public void WhatTheConstructNeedsIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
     }
 
     /// <summary>
@@ -178,7 +195,6 @@ public class SyntaxErrorMessagesTests
     // the same, reached by a token the parser dropped rather than one it could not use
     [InlineData("x := * 2", "unexpected '*', an expression was expected instead")]
     // and a set small enough to say
-    [InlineData("f := bucket(2, 5)\nplot(f, xlim=[1,])", "unexpected ']', a number, '+' or '-' was expected instead")]
     public void WhatWasExpectedIsNamedOrSpelled(string programText, string expected)
     {
         var error = FirstError(programText);
@@ -281,7 +297,7 @@ public class SyntaxErrorMessagesTests
 
     [Theory]
     // an error no pattern recognises keeps its message, which is what the fallback means
-    [InlineData("f := bucket(2, 5)\n)")]
+    [InlineData("f := bucket(2, 5)\ng := ((f + 1) (f - 1))")]
     public void WhatIsNotRecognisedKeepsItsMessage(string programText)
     {
         var error = FirstError(programText);

@@ -15,7 +15,7 @@ namespace Unipi.Nancy.Playground.MppgParser;
 /// <param name="OffendingText">The token, or the character, that could not be used.</param>
 /// <param name="OffendingTokenType">Its token type, or null for an error of the lexer.</param>
 /// <param name="RuleName">The rule being parsed, or null for an error of the lexer.</param>
-/// <param name="RuleStack">The rules it was nested in, innermost first.</param>
+/// <param name="RuleStack">The rules it was nested in, outermost first.</param>
 /// <param name="Expected">The tokens that would have fitted, which only the parser knows.</param>
 /// <param name="SourceLine">The line the error is on, raw and unescaped: a caret or a colour is for the display layer to add.</param>
 /// <param name="PreviousLine">The line before it, for the display layer to show as context.</param>
@@ -321,7 +321,8 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             ReadableMessage: QuotedFromSource(msg, e, offendingSymbol, text),
             Recovery: parser.ErrorHandler is RecordingErrorStrategy strategy
                 ? strategy.Recovery
-                : ParserRecovery.None);
+                : ParserRecovery.None,
+            LineTokens: VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol).ToList());
 
         var report = SyntaxErrorInfo.From(error);
         _errors.Add(report);

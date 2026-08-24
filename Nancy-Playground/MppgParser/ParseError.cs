@@ -109,8 +109,8 @@ internal sealed record ErrorTokens(IToken? Offending, IToken? Previous, IToken? 
 /// <summary>
 /// The rule being parsed when the error was found.
 /// </summary>
-/// <param name="Name">Its name, innermost first in <paramref name="Stack"/>.</param>
-/// <param name="Stack">The rules it was nested in, innermost first.</param>
+/// <param name="Name">Its name, which is the last of <paramref name="Stack"/>.</param>
+/// <param name="Stack">The rules it was nested in, outermost first.</param>
 /// <param name="StartToken">
 /// Its first token, which is the name of the construct being written where the rule names of the grammar are internal: 'bucket' where the rule is called tokenBucket.
 /// </param>
@@ -202,6 +202,7 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
 /// <param name="DeclaredVariables">The variables declared up to the error, which a name has to be among to be one.</param>
 /// <param name="ParserMessage">What ANTLR said about it.</param>
 /// <param name="Recovery">What the parser did to carry on, which is what tells a token it invented from one it dropped.</param>
+/// <param name="LineTokens">The tokens of the line the error is on, which is where a call the rule stack lost is read from.</param>
 /// <param name="ReadableMessage">
 /// The same, with the quoted input taken from the source rather than from the tokens joined together, or null where there is nothing to repair.
 /// ANTLR writes '(floorcomp' where the script reads '( floor comp', so this is what a reader is shown while <paramref name="ParserMessage"/> stays what was said.
@@ -217,7 +218,8 @@ internal sealed record ParserError(
     string ParserMessage,
     string? DefaultHint = null,
     string? ReadableMessage = null,
-    ParserRecovery Recovery = ParserRecovery.None
+    ParserRecovery Recovery = ParserRecovery.None,
+    IReadOnlyList<IToken>? LineTokens = null
 ) : ParseError(Position, ReadableMessage ?? ParserMessage, DefaultHint)
 {
     /// <inheritdoc/>
@@ -236,6 +238,51 @@ internal sealed record ParserError(
     /// True if <paramref name="name"/> is one of the variables declared up to the error.
     /// </summary>
     public bool IsDeclared(string name) => DeclaredVariables.ContainsKey(name);
+
+    /// <summary>
+    /// The call the offending token stands inside, by the name it is written with, or null where it stands in none.
+    /// </summary>
+    /// <remarks>
+    /// Read from the tokens of the line rather than from the rule being parsed: prediction leaves the rule of a scalar call behind, so <c>pow(2)</c> fails with <c>expression</c> on the stack and nothing on it saying which call it was.
+    /// The brackets are counted back from the offending token, and the name is what stands before the one still open.
+    /// </remarks>
+    public IToken? EnclosingCall
+    {
+        get
+        {
+            if (Tokens.Offending is not { } offending || LineTokens is not { Count: > 0 } tokens)
+                return null;
+
+            var at = -1;
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                if (tokens[i].TokenIndex == offending.TokenIndex)
+                {
+                    at = i;
+                    break;
+                }
+            }
+
+            if (at < 0)
+                return null;
+
+            var depth = 0;
+            for (var i = at - 1; i >= 0; i--)
+            {
+                var text = tokens[i].Text;
+                if (text == ")")
+                    depth++;
+                else if (text == "(")
+                {
+                    if (depth == 0)
+                        return i > 0 && TokenFacts.IsKeywordSpelledLikeAName(tokens[i - 1]) ? tokens[i - 1] : null;
+                    depth--;
+                }
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// The keyword the line is trying to use as a name, or null where no name is being written.

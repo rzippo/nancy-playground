@@ -19,8 +19,7 @@ internal sealed class WrongNumberOfArgumentsMatcher : IErrorMatcher<ParserError>
     /// <summary>
     /// The name is the first token of the rule being parsed, the rule names of the grammar being internal: <c>tokenBucket</c> for what a user writes as <c>bucket</c>.
     /// </summary>
-    public RewrittenMessage Write(ParserError error)
-        => new($"'{error.Rule.StartToken!.Text}' {Complaint(error)}");
+    public RewrittenMessage Write(ParserError error) => new(Complaint(error)!);
 
     /// <summary>
     /// What is wrong with the list, or null where the error is not about one.
@@ -33,11 +32,7 @@ internal sealed class WrongNumberOfArgumentsMatcher : IErrorMatcher<ParserError>
             || !TokenFacts.IsKeywordSpelledLikeAName(error.Rule.StartToken))
             return null;
 
-        return (error.Expected.Only, token.Text) switch
-        {
-            (",", ")") => "needs another argument",
-            (")", ",") => "takes no more arguments",
-            _ => null
-        };
+        var listWasCutShortOrRanOn = (error.Expected.Only, token.Text) is (",", ")") or (")", ",");
+        return listWasCutShortOrRanOn ? CallArity.Says(error.Rule.StartToken!.Text) : null;
     }
 }

@@ -38,6 +38,8 @@ public class ErrorMatcherTests
         "f := bucket(2, 5, 7)",
         "f := delay(1, 2)",
         "x := pow(2)",
+        "f := stair(1)",
+        "f := bucket(2, 5)\nplot(f, xlim=[,2])",
         "x := abs(2, 3)",
         // something after a statement that was read whole
         "f := bucket(2, 5))",
@@ -122,8 +124,16 @@ public class ErrorMatcherTests
             .SelectMany(MatchersRecognising)
             .ToHashSet();
 
+        // the naming is a stage of its own, reached where no matcher recognised the error
+        foreach (var report in Corpus.SelectMany(row => Program.FromText(row.Data).Errors))
+        {
+            if (report.RewrittenBy is { } name)
+                reached.Add(name);
+        }
+
         var declared = SyntaxErrorMessages.ParserMatchers.Select(matcher => matcher.Name)
-            .Concat(SyntaxErrorMessages.LexerMatchers.Select(matcher => matcher.Name));
+            .Concat(SyntaxErrorMessages.LexerMatchers.Select(matcher => matcher.Name))
+            .Append(SyntaxErrorMessages.ExpectedInWords.Name);
 
         Assert.All(declared, name => Assert.Contains(name, reached));
     }
@@ -154,7 +164,7 @@ public class ErrorMatcherTests
         var rewritten = Assert.Single(Program.FromText("g := f + 1").Errors);
         Assert.Equal("unknown variable", rewritten.RewrittenBy);
 
-        var kept = Assert.Single(Program.FromText("f := bucket(2, 5)\n)").Errors);
+        var kept = Assert.Single(Program.FromText("f := bucket(2, 5)\ng := ((f + 1) (f - 1))").Errors);
         Assert.Null(kept.RewrittenBy);
         Assert.StartsWith("no viable alternative at input", kept.Message);
     }

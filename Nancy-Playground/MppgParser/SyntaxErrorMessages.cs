@@ -24,8 +24,21 @@ internal static class SyntaxErrorMessages
         new AfterTheEndOfTheStatementMatcher(),
         new IncompleteExpressionMatcher(),
         new UnknownVariableMatcher(),
-        new SomethingElseWasExpectedMatcher()
+        new ScalarCallArgumentsMatcher(),
+        new IntervalEndMatcher(),
+        new AssertionComparisonMatcher(),
+        new WrongKindOfVariableMatcher(),
+        new StatementCannotStartMatcher()
     ];
+
+    /// <summary>
+    /// What to say about an error none of them recognised, which is what was expected put in words.
+    /// </summary>
+    /// <remarks>
+    /// A stage of its own rather than a matcher among the others: it knows nothing about the mistake, only what could have stood there, so anything that does know is asked first.
+    /// Held apart is also what keeps it from overlapping every matcher that reads an expected set.
+    /// </remarks>
+    internal static readonly IErrorMatcher<ParserError> ExpectedInWords = new SomethingElseWasExpectedMatcher();
 
     /// <summary>
     /// The matchers of an error of the lexer.
@@ -45,10 +58,15 @@ internal static class SyntaxErrorMessages
     /// </remarks>
     public static RewrittenMessage? Rewrite(ParseError error) => error switch
     {
-        ParserError parserError => FirstMatch(parserError, ParserMatchers),
+        ParserError parserError => FirstMatch(parserError, ParserMatchers) ?? InWords(parserError),
         LexerError lexerError => FirstMatch(lexerError, LexerMatchers),
         _ => null
     };
+
+    private static RewrittenMessage? InWords(ParserError error)
+        => ExpectedInWords.Recognises(error)
+            ? ExpectedInWords.Write(error) with { WrittenBy = ExpectedInWords.Name }
+            : null;
 
     private static RewrittenMessage? FirstMatch<TError>(TError error, IReadOnlyList<IErrorMatcher<TError>> matchers)
         where TError : ParseError
