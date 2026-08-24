@@ -183,9 +183,38 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
             if (Position.SourceLine is not { } line || Position.Column < 0 || Position.Column >= line.Length)
                 return false;
 
-            var assignment = line.IndexOf(":=", StringComparison.Ordinal);
-            return assignment >= 0 && Position.Column < assignment;
+            var assignment = AssignmentOutsideAString(line);
+            if (assignment < 0 || Position.Column >= assignment)
+                return false;
+
+            // what stands before the assignment is the name being written, so nothing else can stand there
+            return line[..assignment]
+                .Where((_, column) => column != Position.Column)
+                .All(character => char.IsLetterOrDigit(character)
+                    || character is '_' or '-'
+                    || char.IsWhiteSpace(character));
         }
+    }
+
+    /// <summary>
+    /// Where the assignment of <paramref name="line"/> is, or -1 where the line has none.
+    /// </summary>
+    /// <remarks>
+    /// A ':=' inside a string is text rather than an assignment, as the one in <c>@ + "a := b"</c> is, so the quotes are followed while scanning.
+    /// The string is read from the line and not from the tokens, there being none: the lexer stopped before it could make any.
+    /// </remarks>
+    private static int AssignmentOutsideAString(string line)
+    {
+        var insideAString = false;
+        for (var i = 0; i < line.Length - 1; i++)
+        {
+            if (line[i] == '"')
+                insideAString = !insideAString;
+            else if (!insideAString && line[i] == ':' && line[i + 1] == '=')
+                return i;
+        }
+
+        return -1;
     }
 }
 

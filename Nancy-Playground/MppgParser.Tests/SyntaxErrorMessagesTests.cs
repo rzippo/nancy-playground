@@ -240,6 +240,25 @@ public class SyntaxErrorMessagesTests
     }
 
     /// <summary>
+    /// A ':=' inside a string is text, not an assignment, so a character before it is not a name being written.
+    /// </summary>
+    /// <remarks>
+    /// The line is read rather than its tokens, the lexer having stopped before making any, so the quotes are what say which ':=' is one.
+    /// </remarks>
+    [Theory]
+    // the only ':=' of the line is inside a string, so the character stands before no assignment
+    [InlineData("f := bucket(2, 5)\nplot(f, out=@ + \"a := b\")")]
+    // and where there is an assignment, what stands before it is not a name, so the character is not part of one
+    [InlineData("f(2) @ := 3")]
+    public void CharacterThatIsNotInANameIsNotNamedAsOne(string programText)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal("'@' is not a supported character", error.Message);
+        Assert.Null(error.Hint);
+    }
+
+    /// <summary>
     /// A lexer reports its errors with no offending symbol, passing zero, so the character comes from the input at the position of the error rather than from what it was given.
     /// </summary>
     [Fact]
