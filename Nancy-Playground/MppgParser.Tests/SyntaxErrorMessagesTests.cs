@@ -336,6 +336,34 @@ public class SyntaxErrorMessagesTests
     }
 
     /// <summary>
+    /// A line that opens with a name and an equals sign is an assignment written with the wrong operator, which is one of the few mistypings sure enough to name.
+    /// </summary>
+    [Theory]
+    [InlineData("T4 = 60", "an assignment to 'T4' is written with ':=', not with '='")]
+    [InlineData("f := bucket(2, 5)\ng = f + 1", "an assignment to 'g' is written with ':=', not with '='")]
+    // where the lines after it give the parser somewhere else to go, it stops at the '=' rather than at the name
+    [InlineData("T4 = 60\nA := stair(0, T4, 12)", "an assignment to 'T4' is written with ':=', not with '='")]
+    public void AssignmentWrittenWithAnEqualsIsNamed(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
+    /// An equals sign after a name is a comparison inside an assertion and an option inside a plot, so neither is read as an assignment.
+    /// </summary>
+    [Theory]
+    [InlineData("f := bucket(2, 5)\nassert(nosuch = 1)", "'nosuch' is not a declared variable")]
+    [InlineData("f := bucket(2, 5)\nplot(f, nosuch=\"x\")", "'nosuch' is not an option of a plot")]
+    public void AnEqualsElsewhereIsNotAnAssignment(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
+    }
+
+    /// <summary>
     /// A bracket left out is reported wherever the parser gives up, which is rarely where it was left out, so the count of the line is suggested whatever the message says.
     /// </summary>
     [Fact]

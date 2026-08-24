@@ -392,6 +392,46 @@ internal sealed record ParserError(
             : null;
 
     /// <summary>
+    /// True where the line opens with a name and an '=', which is an assignment written with the operator of a comparison.
+    /// </summary>
+    /// <remarks>
+    /// Only where the name opens the line: an '=' after a name is a comparison inside an assertion and an option inside a plot, so those are left to what knows about them.
+    /// What the mistake was is otherwise rarely worth guessing, a name and an expression with nothing between them saying only that something is missing.
+    /// </remarks>
+    public bool IsAssignmentWrittenWithAnEquals => NameAssignedWithAnEquals is not null;
+
+    /// <summary>
+    /// The name the line assigns to with an '=', or null where the line is not one.
+    /// </summary>
+    /// <remarks>
+    /// The error lands on either side of the operator, on the name where the line is read on its own and on the '=' where the lines after it give the parser somewhere else to go, so whichever it did not land on is read.
+    /// </remarks>
+    public IToken? NameAssignedWithAnEquals
+    {
+        get
+        {
+            if (Rule.IsInside("plotArg") || Rule.IsInside("assertion"))
+                return null;
+
+            // the error is on the name, and the '=' follows it
+            if (Tokens.Offending is { } token
+                && token.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
+                && Tokens.Next?.Text == "="
+                && (Tokens.Previous is null || TokenFacts.EndsTheLine(Tokens.Previous)))
+                return token;
+
+            // the error is on the '=', and the name opens the line before it
+            if (Tokens.Offending?.Text == "="
+                && Tokens.Previous is { } name
+                && name.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
+                && TokenBefore(2) is null)
+                return name;
+
+            return null;
+        }
+    }
+
+    /// <summary>
     /// The keyword the line is trying to use as a name, or null where no name is being written.
     /// </summary>
     /// <remarks>

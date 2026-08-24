@@ -16,7 +16,9 @@ internal sealed class UnknownVariableMatcher : IErrorMatcher<ParserError>
         => error.Tokens.Offending is { } token
             && token.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
             && error.Rule.IsInside("expression")
-            && !error.IsDeclared(token.Text);
+            && !error.IsDeclared(token.Text)
+            // a name the line opens an assignment with is not unknown, it is the name being assigned
+            && !error.IsAssignmentWrittenWithAnEquals;
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)

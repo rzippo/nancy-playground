@@ -22,6 +22,9 @@ public class ErrorMatcherTests
         "g := 1 + f",
         // a keyword written where a name belongs, reported at either side of the assignment
         "div := 3",
+        // an assignment written with the operator of a comparison
+        "T4 = 60",
+        "f := bucket(2, 5)\nassert(nosuch = 1)",
         "comp := 3",
         "star := 3",
         "inv := 3",
