@@ -71,6 +71,8 @@ public class ErrorMatcherTests
         "x := 1\nplot(x)",
         "x := 1\ny := x(3)",
         "f := bucket(2, 5)\nplot(f, out=)",
+        "f := bucket(2, 5)\ng := f(3, 4)",
+        "assert(1, 2)",
         "f := bucket(2, 5)\nplot(f, nosuch=\"x\")",
         "plot(nosuch)",
         "#!syntax version 9.9",
@@ -164,8 +166,8 @@ public class ErrorMatcherTests
         var rewritten = Assert.Single(Program.FromText("g := f + 1").Errors);
         Assert.Equal("unknown variable", rewritten.RewrittenBy);
 
-        var kept = Assert.Single(Program.FromText("f := bucket(2, 5)\ng := ((f + 1) (f - 1))").Errors);
+        var error = Assert.IsAssignableFrom<ParseError>(rewritten.Source);
+        var kept = SyntaxErrorInfo.From(error, rewrite: false);
         Assert.Null(kept.RewrittenBy);
-        Assert.StartsWith("no viable alternative at input", kept.Message);
     }
 }

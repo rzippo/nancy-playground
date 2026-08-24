@@ -28,7 +28,11 @@ internal static class SyntaxErrorMessages
         new IntervalEndMatcher(),
         new AssertionComparisonMatcher(),
         new WrongKindOfVariableMatcher(),
-        new StatementCannotStartMatcher()
+        new StatementCannotStartMatcher(),
+        new PlotOptionValueMatcher(),
+        new PlotArgumentMatcher(),
+        new SamplingArgumentsMatcher(),
+        new MissingOperatorMatcher()
     ];
 
     /// <summary>

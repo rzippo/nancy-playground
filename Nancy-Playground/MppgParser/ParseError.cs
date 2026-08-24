@@ -275,13 +275,40 @@ internal sealed record ParserError(
                 else if (text == "(")
                 {
                     if (depth == 0)
-                        return i > 0 && TokenFacts.IsKeywordSpelledLikeAName(tokens[i - 1]) ? tokens[i - 1] : null;
+                        return i > 0 && IsNameLike(tokens[i - 1]) ? tokens[i - 1] : null;
                     depth--;
                 }
             }
 
             return null;
         }
+    }
+
+    /// <summary>
+    /// True where the token reads as the name of a call, i.e. a keyword or a variable, both of which are written the same way in front of a bracket.
+    /// </summary>
+    private static bool IsNameLike(IToken token)
+        => TokenFacts.IsKeywordSpelledLikeAName(token)
+            || token.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER;
+
+    /// <summary>
+    /// The token <paramref name="steps"/> places before the offending one on its line, or null where the line does not reach that far back.
+    /// </summary>
+    /// <remarks>
+    /// The two beside the offending token are on <see cref="Tokens"/>; this reaches further, for what is written before them, e.g. the name of the plot option in <c>out=)</c>.
+    /// </remarks>
+    public IToken? TokenBefore(int steps)
+    {
+        if (Tokens.Offending is not { } offending || LineTokens is not { Count: > 0 } tokens)
+            return null;
+
+        for (var i = 0; i < tokens.Count; i++)
+        {
+            if (tokens[i].TokenIndex == offending.TokenIndex)
+                return i >= steps ? tokens[i - steps] : null;
+        }
+
+        return null;
     }
 
     /// <summary>

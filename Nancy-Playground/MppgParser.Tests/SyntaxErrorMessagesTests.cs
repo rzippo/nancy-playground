@@ -129,16 +129,16 @@ public class SyntaxErrorMessagesTests
     }
 
     /// <summary>
-    /// The argument of a plot names an option as well as a variable, so a name unknown there is not necessarily a variable: the pattern leaves it alone rather than guess.
+    /// The argument of a plot names an option as well as a function, so a name that is neither is told which of the two it failed to be, by the equals sign that says how it was written.
     /// </summary>
     [Theory]
-    [InlineData("f := bucket(2, 5)\nplot(f, nosuch=\"x\")")]
-    [InlineData("plot(nosuch)")]
-    public void NameInAPlotArgumentIsNotClaimed(string programText)
+    [InlineData("f := bucket(2, 5)\nplot(f, nosuch=\"x\")", "'nosuch' is not an option of a plot")]
+    [InlineData("plot(nosuch)", "'nosuch' is neither a declared function nor an option of a plot")]
+    public void NameAPlotCannotTakeIsNamed(string programText, string expected)
     {
         var error = FirstError(programText);
 
-        Assert.Null(error.RewrittenBy);
+        Assert.Equal(expected, error.Message);
     }
 
     [Theory]
@@ -179,6 +179,10 @@ public class SyntaxErrorMessagesTests
     [InlineData("x := 1\nplot(x)", "'x' is a number, 'plot' takes functions")]
     [InlineData("x := 1\ny := x(3)", "'x' is a number, and only a function can be sampled")]
     [InlineData("f := bucket(2, 5)\n)", "a statement cannot start with ')'")]
+    [InlineData("f := bucket(2, 5)\nplot(f, out=)", "'out' is given no value")]
+    [InlineData("f := bucket(2, 5)\ng := f(3, 4)", "'f' is sampled at one point, so it takes one argument")]
+    [InlineData("f := bucket(2, 5)\ng := ((f + 1) (f - 1))", "an operator is missing between the two expressions")]
+    [InlineData("assert(1, 2)", "unexpected ',', a comparison was expected instead")]
     public void WhatTheConstructNeedsIsNamed(string programText, string expected)
     {
         var error = FirstError(programText);
@@ -295,15 +299,19 @@ public class SyntaxErrorMessagesTests
         Assert.Equal("the expression is incomplete", error.Message);
     }
 
-    [Theory]
-    // an error no pattern recognises keeps its message, which is what the fallback means
-    [InlineData("f := bucket(2, 5)\ng := ((f + 1) (f - 1))")]
-    public void WhatIsNotRecognisedKeepsItsMessage(string programText)
+    /// <summary>
+    /// What no matcher recognises keeps what the error carries, which is what the fallback means.
+    /// It is pinned by reporting an error with the rewriting turned off, there being fewer and fewer errors that nothing claims.
+    /// </summary>
+    [Fact]
+    public void WhatIsNotRecognisedKeepsItsMessage()
     {
-        var error = FirstError(programText);
+        var error = Assert.IsAssignableFrom<ParseError>(FirstError("g := f + 1").Source);
 
-        Assert.Null(error.RewrittenBy);
-        Assert.StartsWith("no viable alternative at input", error.Message);
+        var kept = SyntaxErrorInfo.From(error, rewrite: false);
+
+        Assert.Null(kept.RewrittenBy);
+        Assert.Equal(error.DefaultMessage, kept.Message);
     }
 
     [Fact]

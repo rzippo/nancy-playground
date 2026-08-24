@@ -18,7 +18,8 @@ internal static class GrammarSets
         ("an expression", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_expression)),
         ("a function", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_functionExpression)),
         ("a number", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_numberExpression)),
-        ("a statement", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_statement))
+        ("a statement", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_statement)),
+        ("a comparison", StartSetOf(Unipi.MppgParser.Grammar.MppgParser.RULE_assertionOperator))
     ]);
 
     /// <summary>
