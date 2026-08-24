@@ -23,7 +23,8 @@ internal static class SyntaxErrorMessages
         new WrongNumberOfArgumentsMatcher(),
         new AfterTheEndOfTheStatementMatcher(),
         new IncompleteExpressionMatcher(),
-        new UnknownVariableMatcher()
+        new UnknownVariableMatcher(),
+        new SomethingElseWasExpectedMatcher()
     ];
 
     /// <summary>

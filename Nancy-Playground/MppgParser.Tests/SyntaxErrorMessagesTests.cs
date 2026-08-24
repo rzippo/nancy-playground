@@ -156,16 +156,34 @@ public class SyntaxErrorMessagesTests
     }
 
     /// <summary>
-    /// A scalar operation fails further out, in the expression, where what was expected is the whole start set of one: nothing there says which call it was, so it keeps its message.
+    /// A scalar operation fails further out, in the expression, so nothing there says which call it was: what was expected is still named, the whole start set of an expression being what it is.
     /// </summary>
     [Theory]
     [InlineData("x := pow(2)")]
     [InlineData("x := abs(2, 3)")]
-    public void WrongNumberOfScalarArgumentsIsNotClaimed(string programText)
+    public void WrongNumberOfScalarArgumentsNamesWhatWasExpected(string programText)
     {
         var error = FirstError(programText);
 
-        Assert.Null(error.RewrittenBy);
+        Assert.Equal("something else was expected", error.RewrittenBy);
+        Assert.EndsWith("an expression was expected instead", error.Message);
+    }
+
+    /// <summary>
+    /// A set of forty-odd tokens is named after the construct it opens, and a set of two or three is spelled, which is where listing still reads.
+    /// </summary>
+    [Theory]
+    // the start set of an expression, which is what most of the grammar expects
+    [InlineData("x := ]", "unexpected ']', an expression was expected instead")]
+    // the same, reached by a token the parser dropped rather than one it could not use
+    [InlineData("x := * 2", "unexpected '*', an expression was expected instead")]
+    // and a set small enough to say
+    [InlineData("f := bucket(2, 5)\nplot(f, xlim=[1,])", "unexpected ']', a number, '+' or '-' was expected instead")]
+    public void WhatWasExpectedIsNamedOrSpelled(string programText, string expected)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal(expected, error.Message);
     }
 
     [Theory]

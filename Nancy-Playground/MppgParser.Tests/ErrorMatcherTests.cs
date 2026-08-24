@@ -56,16 +56,19 @@ public class ErrorMatcherTests
         "ab@ := 1",
         "a@b := 1",
         "f := bucket(2, 5)\nplot(f, out=\"x)",
-        // errors no matcher claims today, which must stay claimed by none
-        "f := bucket(2, 5)\n)",
-        "f := bucket(2, 5)\ng := f ]",
+        // a token that could not stand where it did, where what was expected is named or spelled
         "x := ]",
         "x := * 2",
+        "f := bucket(2, 5)\nplot(f, xlim=[1,])",
+        "f := bucket(2, 5)\nassert(f)",
+        // a token that could open what was expected, so naming it would read as a contradiction
+        "f := bucket(2, 5)\ng := ((f + 1) (f - 1))",
+        // shapes met while reviewing, claimed or not, which the checks above hold either way
+        "f := bucket(2, 5)\n)",
+        "f := bucket(2, 5)\ng := f ]",
         "x := 1\nplot(x)",
         "x := 1\ny := x(3)",
-        "f := bucket(2, 5)\nassert(f)",
         "f := bucket(2, 5)\nplot(f, out=)",
-        "f := bucket(2, 5)\nplot(f, xlim=[1,])",
         "f := bucket(2, 5)\nplot(f, nosuch=\"x\")",
         "plot(nosuch)",
         "#!syntax version 9.9",

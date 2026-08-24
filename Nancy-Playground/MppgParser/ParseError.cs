@@ -34,6 +34,31 @@ internal sealed record ExpectedTokens(IReadOnlyList<string> Names, IReadOnlyList
     public string? Only => Names.Count == 1 ? Names[0].Trim('\'') : null;
 
     /// <summary>
+    /// What would have fitted, in words, or null where it cannot be put in any.
+    /// </summary>
+    /// <remarks>
+    /// A set of a few tokens is spelled, which is where listing still reads; a larger one is named after the construct it opens, an expression being forty-odd tokens that no reader wants listed.
+    /// </remarks>
+    public string? InWords => GrammarSets.Naming(Types) ?? Spelled;
+
+    /// <summary>
+    /// The tokens listed, where there are few enough of them, each in the terms a reader knows.
+    /// </summary>
+    private string? Spelled
+    {
+        get
+        {
+            if (Names.Count == 0 || Names.Count >= GrammarSets.MinimumToName)
+                return null;
+
+            var words = Names.Select(TokenWords.Of).Distinct().ToList();
+            return words.Count == 1
+                ? words[0]
+                : string.Join(", ", words.SkipLast(1)) + " or " + words[^1];
+        }
+    }
+
+    /// <summary>
     /// True where nothing but the end of the statement would have fitted, i.e. the statement was read whole and something follows it.
     /// </summary>
     /// <remarks>
@@ -211,6 +236,29 @@ internal sealed record ParserError(
     /// True if <paramref name="name"/> is one of the variables declared up to the error.
     /// </summary>
     public bool IsDeclared(string name) => DeclaredVariables.ContainsKey(name);
+
+    /// <summary>
+    /// The keyword the line is trying to use as a name, or null where no name is being written.
+    /// </summary>
+    /// <remarks>
+    /// The assignment that follows the keyword is what says a name was meant, and the error lands on either side of it: on the keyword in 'div := 3' and on the ':=' in 'star := 3'.
+    /// A fact rather than a matcher's own reading, since one matcher says so and another has to keep quiet about it.
+    /// </remarks>
+    public IToken? KeywordBeingNamed
+    {
+        get
+        {
+            if (TokenFacts.IsKeywordSpelledLikeAName(Tokens.Offending)
+                && Tokens.Next?.Type == Unipi.MppgParser.Grammar.MppgLexer.ASSIGN)
+                return Tokens.Offending;
+
+            if (Tokens.Offending?.Type == Unipi.MppgParser.Grammar.MppgLexer.ASSIGN
+                && TokenFacts.IsKeywordSpelledLikeAName(Tokens.Previous))
+                return Tokens.Previous;
+
+            return null;
+        }
+    }
 }
 
 /// <summary>

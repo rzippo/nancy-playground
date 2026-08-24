@@ -36,6 +36,8 @@ internal static class SyntaxErrorPrinter
             console.MarkupLineInterpolated($"[grey]{indent}reworded by: {matcher}[/]");
         if (error.RuleName is { } rule)
             console.MarkupLineInterpolated($"[grey]{indent}rule: {rule}[/]");
+        if (error.Expected is { Count: > 0 } expected)
+            console.MarkupLineInterpolated($"[grey]{indent}expected: {string.Join(", ", expected)}[/]");
     }
 
     public static void PrintSourceExcerpt(IAnsiConsole console, SyntaxErrorInfo error, string color)
