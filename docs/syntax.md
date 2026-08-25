@@ -416,7 +416,7 @@ There seems _not_ to be any support for complex logic like `and`, `or` and `not`
 
 Selects the syntax version used for the program, defaulting to the latest.
 It is applied only as the first line of the program, and only once:
-any later directive is reported as a duplicate and ignored.
+any other directive is ignored, and says so where it stands.
 
 In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
 Use `!clear` to start a new session, and with it select a new version.
