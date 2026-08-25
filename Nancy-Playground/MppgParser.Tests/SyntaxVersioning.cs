@@ -286,6 +286,45 @@ public class SyntaxVersioning
         Assert.Equal(2, program.Statements.OfType<Assignment>().Count());
     }
 
+    /// <summary>
+    /// A second directive at the top of the file is as ineffective as one written after a statement, and is reported the same way.
+    /// </summary>
+    [Fact]
+    public void SecondShebangOfThePreamble_ProducesWarning()
+    {
+        const string programText = """
+        #!syntax version 1.0
+        #!syntax version 1.1
+        a := 1
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        var vds = Assert.Single(program.Statements.OfType<VersionDirectiveStatement>());
+        Assert.True(vds.IsDuplicate);
+        Assert.Equal(new SyntaxVersion(1, 1), vds.Version);
+    }
+
+    /// <summary>
+    /// The warning names the version the program is read with, which is not the one the directive declares.
+    /// </summary>
+    [Theory]
+    // the version of the directive that opens the program
+    [InlineData("#!syntax version 1.0\n#!syntax version 1.1\na := 1", "1.0")]
+    // the default, no directive having been applied
+    [InlineData("a := 1\n#!syntax version 1.0", "1.3")]
+    public void ShebangNotApplied_WarningNamesTheVersionInForce(string programText, string inForce)
+    {
+        var program = Program.FromText(programText);
+
+        var vds = Assert.Single(program.Statements.OfType<VersionDirectiveStatement>());
+        var warning = vds.Execute(new State());
+
+        Assert.Contains("is not applied", warning);
+        Assert.Contains($"Active version: {inForce}.", warning);
+    }
+
     [Fact]
     public void MultipleShebangs_AllInStatementPosition_AllAreWarnings()
     {

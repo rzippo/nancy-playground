@@ -16,9 +16,14 @@ public record class VersionDirectiveStatement : Statement
     public string? Error { get; init; }
 
     /// <summary>
-    /// True where an earlier directive already declared a version, this one having no effect.
+    /// True where the directive was not applied, i.e. it does not open the program.
     /// </summary>
     public bool IsDuplicate { get; init; }
+
+    /// <summary>
+    /// The version the program is read with, which a directive that was not applied did not set.
+    /// </summary>
+    public SyntaxVersion? ActiveVersion { get; init; }
 
     /// <summary>
     /// A directive declaring <paramref name="version"/>.
@@ -36,7 +41,8 @@ public record class VersionDirectiveStatement : Statement
         if (Error is not null)
             return $"ERROR: {Error}";
         if (IsDuplicate)
-            return $"WARNING: Duplicate syntax version directive. Only the first '#!syntax version X.Y' is applied. Active version: {Version}.";
+            return "WARNING: This syntax version directive is not applied. "
+                + $"Only one that opens the program is. Active version: {ActiveVersion ?? Version}.";
         return string.Empty;
     }
 

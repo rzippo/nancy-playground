@@ -1,0 +1,8 @@
+> #!syntax version 1.3
+WARNING: This syntax version directive is not applied. Only one that opens the program is. Active version: 1.2.
+> f := bucket(2, 5)
+f = bucket(2, 5)
+> #!syntax version 1.3
+WARNING: This syntax version directive is not applied. Only one that opens the program is. Active version: 1.2.
+> g := f + 1
+g = uaf([(0, 1)] ](0, 6) 2 (1, 8)[ [(1, 8)] ](1, 8) 2 (+inf, +inf)[)

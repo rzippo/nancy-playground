@@ -33,9 +33,10 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           for (int i = 0; i < context.ChildCount; i++)
           {
                var child = context.GetChild(i);
-               if (child is Unipi.MppgParser.Grammar.MppgParser.PreambleContext)
+               if (child is Unipi.MppgParser.Grammar.MppgParser.PreambleContext preamble)
                {
-                    // preamble is metadata, handled above — no statements from it
+                    // the directive that was applied is metadata and says nothing, the others report that they were not
+                    statements.AddRange(DirectivesNotApplied(preamble));
                     continue;
                }
                if (child is Unipi.MppgParser.Grammar.MppgParser.StatementLineContext statementLine)
@@ -52,11 +53,10 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
                               Message = "Statement could not be parsed."
                          };
                     }
-                    // All version directives in statement position are duplicates/warnings.
-                    // Only preamble version directives are valid.
+                    // a directive in statement position is never the one applied, that being the one the program opens with
                     if (statement is VersionDirectiveStatement vds)
                     {
-                         statement = vds with { IsDuplicate = true };
+                         statement = vds with { IsDuplicate = true, ActiveVersion = _syntaxVersion };
                     }
                     statement = statement with
                     {
@@ -72,6 +72,39 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
           };
           return program;
      }
+
+     /// <summary>
+     /// The directives of the preamble that were not applied, as the statements that report so.
+     /// </summary>
+     /// <remarks>
+     /// Only the directive the program opens with is applied, so a second one on the next line is as ineffective as one written after a statement, and is told so the same way.
+     /// A directive declaring a version this build cannot apply is left out, being reported as an error by <see cref="Program.FromText"/>.
+     /// </remarks>
+     private IEnumerable<Statement> DirectivesNotApplied(Unipi.MppgParser.Grammar.MppgParser.PreambleContext preamble)
+     {
+          foreach (var preambleStatement in preamble.preambleStatement())
+          {
+               if (preambleStatement.versionDirective() is not { } directive || IsTheOneApplied(directive))
+                    continue;
+
+               var text = directive.GetJoinedText();
+               if (VersionDirective.Read(text, out _) is not { } version)
+                    continue;
+
+               yield return new VersionDirectiveStatement(version)
+               {
+                    Text = text,
+                    IsDuplicate = true,
+                    ActiveVersion = _syntaxVersion
+               };
+          }
+     }
+
+     /// <summary>
+     /// True for the directive the program opens with, which is the one the lexer applies.
+     /// </summary>
+     private static bool IsTheOneApplied(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext directive)
+          => directive.Start?.TokenIndex == 0;
 
      /// <summary>
      /// Reads the preamble, which is where a version directive is allowed to stand.
