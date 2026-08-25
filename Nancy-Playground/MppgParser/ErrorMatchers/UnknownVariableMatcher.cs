@@ -18,7 +18,9 @@ internal sealed class UnknownVariableMatcher : IErrorMatcher<ParserError>
             && error.Rule.IsInside("expression")
             && !error.IsDeclared(token.Text)
             // a name the line opens an assignment with is not unknown, it is the name being assigned
-            && !error.IsAssignmentWrittenWithAnEquals;
+            && !error.IsAssignmentWrittenWithAnEquals
+            // a word the version in force does not have is an operation the program cannot use, not a name it forgot to declare
+            && error.KeywordOfALaterVersion is null;
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)

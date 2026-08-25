@@ -19,7 +19,9 @@ internal sealed class AfterTheEndOfTheStatementMatcher : IErrorMatcher<ParserErr
             // nothing before it on the line means no statement was read, so nothing follows one
             && error.Tokens.Previous is not null
             && !TokenFacts.EndsTheLine(error.Tokens.Previous)
-            && error.Expected.AreOnlyTheEndOfTheStatement;
+            && error.Expected.AreOnlyTheEndOfTheStatement
+            // an infix operation of a later version reads as a name after the statement, and is not one
+            && error.KeywordOfALaterVersion is null;
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)

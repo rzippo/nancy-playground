@@ -28,7 +28,7 @@ a test can ask every matcher whether it claims an error, without any of them wri
 The checks further down are built on that.
 
 The matchers are held in a registry and tried in turn, and the first that recognises the error answers.
-There is one registry for the errors of the parser, holding sixteen of them, and one for the errors of the lexer, holding three.
+There is one registry for the errors of the parser, holding seventeen of them, and one for the errors of the lexer, holding three.
 Between them they cover the mistakes met so far:
 a keyword used as a variable name, an argument list too short or too long, an interval missing an extreme, a name a plot cannot take, an assignment written with `=`, and so on.
 

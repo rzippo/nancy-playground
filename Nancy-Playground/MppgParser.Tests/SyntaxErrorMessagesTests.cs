@@ -63,8 +63,50 @@ public class SyntaxErrorMessagesTests
         Assert.Equal("'floor' is a keyword, so it cannot be a name", error.Message);
         Assert.Equal(
             "'floor' is a keyword from version 1.3 on: to keep using it as a name, "
-                + "use '#!syntax version 1.2' before any other statement.",
+                + "use '#!syntax version 1.2', or earlier, before any other statement.",
             error.Hint);
+    }
+
+    [Theory]
+    // the word opens the statement, or stands where an expression does
+    [InlineData("#!syntax version 1.0\na := 1\nprintExpression(a)", "printExpression", "1.0", "1.1")]
+    [InlineData("#!syntax version 1.2\nx := abs(2)", "abs", "1.2", "1.3")]
+    // an infix operation, which reads as a name after a statement that was read whole
+    [InlineData("#!syntax version 1.2\nx := 5 mod 2", "mod", "1.2", "1.3")]
+    // a call whose arity is right, which is reported inside the argument list
+    [InlineData("#!syntax version 1.2\nx := pow(2, 3)", "pow", "1.2", "1.3")]
+    public void OperationOfALaterVersionIsNamed(string programText, string keyword, string inForce, string introducedIn)
+    {
+        var error = FirstError(programText);
+
+        Assert.Equal($"'{keyword}' is not an operation of syntax version {inForce}", error.Message);
+        Assert.Equal(
+            $"'{keyword}' is an operation from version {introducedIn} on: to use it, "
+                + $"declare '#!syntax version {introducedIn}', or later, before any other statement.",
+            error.Hint);
+    }
+
+    /// <summary>
+    /// A name the program declares is its own, whatever it spells, so the error is about the use and not about the version.
+    /// </summary>
+    [Fact]
+    public void NameDeclaredUnderAnOlderVersionIsNotClaimed()
+    {
+        var error = FirstError("#!syntax version 1.2\nfloor := 3\nx := floor(2)");
+
+        Assert.NotEqual("operation of a later syntax version", error.RewrittenBy);
+        Assert.Equal("'floor' is a number, and only a function can be sampled", error.Message);
+    }
+
+    /// <summary>
+    /// A name that spells nothing of a later version stays an unknown variable, whatever the declared version is.
+    /// </summary>
+    [Fact]
+    public void UnknownNameUnderAnOlderVersionIsNotClaimed()
+    {
+        var error = FirstError("#!syntax version 1.2\ny := nosuch + 1");
+
+        Assert.Equal("'nosuch' is not a declared variable", error.Message);
     }
 
     /// <summary>

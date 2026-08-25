@@ -237,6 +237,7 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
 /// ANTLR writes '(floorcomp' where the script reads '( floor comp', so this is what a reader is shown while <paramref name="ParserMessage"/> stays what was said.
 /// </param>
 /// <param name="DefaultHint">What to add to the message, where something is known beyond it.</param>
+/// <param name="Version">The syntax version the input was read with, which decides the words that are keywords in it.</param>
 internal sealed record ParserError(
     SourcePosition Position,
     ErrorTokens Tokens,
@@ -248,7 +249,8 @@ internal sealed record ParserError(
     string? DefaultHint = null,
     string? ReadableMessage = null,
     ParserRecovery Recovery = ParserRecovery.None,
-    IReadOnlyList<IToken>? LineTokens = null
+    IReadOnlyList<IToken>? LineTokens = null,
+    SyntaxVersion? Version = null
 ) : ParseError(Position, ReadableMessage ?? ParserMessage, DefaultHint)
 {
     /// <inheritdoc/>
@@ -267,6 +269,28 @@ internal sealed record ParserError(
     /// True if <paramref name="name"/> is one of the variables declared up to the error.
     /// </summary>
     public bool IsDeclared(string name) => DeclaredVariables.ContainsKey(name);
+
+    /// <summary>
+    /// The operation of a later version the error is about, with the version that introduced it, or null where it is about none.
+    /// </summary>
+    /// <remarks>
+    /// Under an older version the word is not a keyword, so it lexes as a name and fails as one: at the token itself in <c>abs(x)</c>, and inside the call in <c>pow(x, 2)</c>, which are the two places read here.
+    /// A name the program declares is its own, whatever it spells.
+    /// </remarks>
+    public (string Keyword, SyntaxVersion IntroducedIn)? KeywordOfALaterVersion
+        => Version is not { } inForce
+            ? null
+            : OperationOfALaterVersion(Tokens.Offending, inForce)
+                ?? OperationOfALaterVersion(EnclosingCall, inForce);
+
+    private (string Keyword, SyntaxVersion IntroducedIn)? OperationOfALaterVersion(IToken? token, SyntaxVersion inForce)
+        => token is { } named
+            && named.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
+            && !IsDeclared(named.Text)
+            && VersionedKeywords.IntroducedIn.TryGetValue(named.Text, out var introducedIn)
+            && introducedIn > inForce
+                ? (named.Text, introducedIn)
+                : null;
 
     /// <summary>
     /// The call the offending token stands inside, by the name it is written with, or null where it stands in none.

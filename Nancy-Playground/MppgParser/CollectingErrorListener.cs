@@ -324,7 +324,10 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
             Recovery: parser.ErrorHandler is RecordingErrorStrategy strategy
                 ? strategy.Recovery
                 : ParserRecovery.None,
-            LineTokens: VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol).ToList());
+            LineTokens: VersionedKeywords.TokensOfLine(parser.TokenStream, offendingSymbol).ToList(),
+            Version: (parser.TokenStream?.TokenSource as Unipi.MppgParser.Grammar.MppgLexer)?.SyntaxVersion is { } version
+                ? new SyntaxVersion(version.Major, version.Minor)
+                : null);
 
         var report = SyntaxErrorInfo.From(error);
         _errors.Add(report);

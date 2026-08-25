@@ -19,6 +19,7 @@ internal static class SyntaxErrorMessages
     internal static readonly IReadOnlyList<IErrorMatcher<ParserError>> ParserMatchers =
     [
         new KeywordUsedAsNameMatcher(),
+        new KeywordOfALaterVersionMatcher(),
         new AssignmentOperatorMatcher(),
         new MissingTokenMatcher(),
         new WrongNumberOfArgumentsMatcher(),

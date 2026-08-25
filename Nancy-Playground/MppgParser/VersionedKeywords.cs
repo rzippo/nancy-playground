@@ -117,7 +117,7 @@ public static class VersionedKeywords
         var lastVersionWithoutIt = introducedIn.Previous();
         var directive = lastVersionWithoutIt is null
             ? "an earlier syntax version"
-            : $"'#!syntax version {lastVersionWithoutIt}'";
+            : $"'#!syntax version {lastVersionWithoutIt}', or earlier,";
 
         return $"'{keyword}' is a keyword from version {introducedIn} on: "
             + $"to keep using it as a name, use {directive} before any other statement.";

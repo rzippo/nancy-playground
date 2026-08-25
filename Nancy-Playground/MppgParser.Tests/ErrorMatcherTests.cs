@@ -29,6 +29,12 @@ public class ErrorMatcherTests
         "star := 3",
         "inv := 3",
         "#!syntax version 1.3\nfloor := 3",
+        // an operation of a version later than the one declared, which reads as a name
+        "#!syntax version 1.0\na := 1\nprintExpression(a)",
+        "#!syntax version 1.2\nx := abs(2)",
+        "#!syntax version 1.2\nx := 5 mod 2",
+        "#!syntax version 1.2\nx := pow(2, 3)",
+        "#!syntax version 1.2\nfloor := 3\nx := floor(2)",
         // a bracket or a separator left out
         "f := bucket(2, 5",
         "f := bucket(2, 5\ng := 1",

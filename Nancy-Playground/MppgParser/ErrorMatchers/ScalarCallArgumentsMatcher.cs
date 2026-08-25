@@ -19,7 +19,9 @@ internal sealed class ScalarCallArgumentsMatcher : IErrorMatcher<ParserError>
             && !error.Rule.IsInside("assertion")
             && error.Tokens.Offending?.Text is ")" or ","
             && error.Expected.Count > 1
-            && CallArity.Says(error.EnclosingCall?.Text) is not null;
+            && CallArity.Says(error.EnclosingCall?.Text) is not null
+            // the arity of a call the version in force does not have is beside the point
+            && error.KeywordOfALaterVersion is null;
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error) => new(CallArity.Says(error.EnclosingCall!.Text)!);
