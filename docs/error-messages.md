@@ -59,7 +59,6 @@ The sets it names are computed from the grammar itself, so an expression that ga
 
 Then, whatever is still unclaimed keeps its own wording:
 ANTLR's for a parse error, the tool's own for a directive it cannot apply.
-Even here the text is tidied rather than replaced.
 In `no viable alternative at input '(floorcomp'` the quoted span comes from ANTLR clamping tokens together with no separator, so it is re-read from the source and shown as `'( floor comp'`, just as the user wrote it.
 
 ## Hints
@@ -96,7 +95,7 @@ The set as a whole is checked against a corpus of failing programs, kept for the
 - at most one matcher recognises any given error, so the order of the registry does not matter;
 - every matcher recognises something, so that none sits there unreachable because its guard is wrong or its case is no longer reported that way;
 - every message reads as a fragment, since it is printed after `line 3:14` and neither opens with a capital nor closes with a period;
-- every hint reads as a sentence, since it stands on its own rather than continuing the line above it.
+- every hint is a full sentence.
 
 A new kind of failing program belongs in the corpus even when nothing claims it yet, since these checks are about the whole set.
 
