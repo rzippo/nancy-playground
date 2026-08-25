@@ -39,7 +39,7 @@ USAGE:
 
 OPTIONS:
     -h, --help           Prints help information
-    -o, --output-mode    How the output is formatted. Available options: ExplicitPrintsOnly, MppgClassic, NancyNew (default)
+    -o, --output-mode    How the output is formatted. Available options: ConvertReferencePrints, MppgClassic, NancyNew (default)
     -r, --run-mode       How the computations are performed. Available options are PerStatement (computes the result of each line as it comes), ExpressionsBased (computes only as needed, e.g. for plots and value prints). Default: ExpressionsBased
     -e, --on-error       Specifies what to do when an error occurs. Available options: Stop (default), Continue
         --no-welcome     Mutes the welcome message

@@ -12,7 +12,7 @@ public class CommonExecutionSettings : CommandSettings
     /// How the output is formatted.
     /// </summary>
     [CommandOption("-o|--output-mode")] 
-    [Description("How the output is formatted. Available options: ExplicitPrintsOnly, MppgClassic, NancyNew (default).")]
+    [Description("How the output is formatted. Available options: ConvertReferencePrints, MppgClassic, NancyNew (default).")]
     public OutputMode? OutputMode { get; init; } 
         = Cli.OutputMode.NancyNew;
     
@@ -82,9 +82,10 @@ public class CommonExecutionSettings : CommandSettings
 public enum OutputMode
 {
     /// <summary>
+    /// Prints in the notation of Nancy, so a converted program can be compared against it.
     /// Only prints when explicitly asked with a non-assignment expression.
     /// </summary>
-    ExplicitPrintsOnly,
+    ConvertReferencePrints,
     /// <summary>
     /// Follows the output style of RTaW Min-Plus Playground.
     /// </summary>

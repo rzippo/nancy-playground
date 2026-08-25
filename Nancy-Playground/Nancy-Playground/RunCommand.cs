@@ -161,7 +161,7 @@ public class RunCommand : Command<RunCommand.Settings>
 
         IStatementFormatter formatter = settings.OutputMode switch
         {
-            OutputMode.ExplicitPrintsOnly => new OutputOnlyFormatter()
+            OutputMode.ConvertReferencePrints => new OutputOnlyFormatter()
             {
                 Console = Console,
                 PlotFormatter = plotFormatter,

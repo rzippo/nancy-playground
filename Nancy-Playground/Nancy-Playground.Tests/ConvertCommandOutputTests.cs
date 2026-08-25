@@ -735,7 +735,7 @@ public class ConvertCommandOutputTests
         List<string> runCommandArgs = [
             "run",
             scriptPath,
-            "--output-mode", "ExplicitPrintsOnly",
+            "--output-mode", "ConvertReferencePrints",
             "--run-mode", "PerStatement",
             "--deterministic",
             "--no-welcome"
@@ -894,7 +894,7 @@ public class ConvertCommandOutputTests
         List<string> runCommandArgs = [
             "run",
             scriptPath,
-            "--output-mode", "ExplicitPrintsOnly",
+            "--output-mode", "ConvertReferencePrints",
             "--run-mode", "PerStatement",
             "--deterministic",
             "--no-welcome"
@@ -1035,7 +1035,7 @@ public class ConvertCommandOutputTests
         List<string> runCommandArgs = [
             "run",
             scriptPath,
-            "--output-mode", "ExplicitPrintsOnly",
+            "--output-mode", "ConvertReferencePrints",
             "--run-mode", "ExpressionsBased",
             "--deterministic",
             "--no-welcome"
@@ -1195,7 +1195,7 @@ public class ConvertCommandOutputTests
         List<string> runCommandArgs = [
             "run",
             scriptPath,
-            "--output-mode", "ExplicitPrintsOnly",
+            "--output-mode", "ConvertReferencePrints",
             "--run-mode", "ExpressionsBased",
             "--deterministic",
             "--no-welcome"

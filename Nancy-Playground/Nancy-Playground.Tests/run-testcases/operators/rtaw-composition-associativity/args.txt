@@ -1,5 +1,5 @@
 --output-mode
-ExplicitPrintsOnly
+ConvertReferencePrints
 --run-mode
 PerStatement
 --on-error
