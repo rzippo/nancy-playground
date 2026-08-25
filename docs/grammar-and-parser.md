@@ -1,7 +1,7 @@
 # The grammar and the parser
 
 MPPG is parsed by ANTLR, from the grammar in `MppgParser/Grammar/Mppg.g4`.
-This document explains why that grammar is shaped the way it is, and which of its choices cannot be changed without breaking something else.
+This document describes how that grammar is put together, and which of its choices cannot be changed without breaking something else.
 It is meant for whoever is about to change it, since several of the rules below look like clutter until the reason for them is known.
 
 For adding a construct to the language, see [Extending the syntax](/docs/extending-the-syntax.md).
@@ -9,6 +9,75 @@ For what happens when a script fails to parse, see [Error messages](/docs/error-
 
 What ANTLR itself does is described in *The Definitive ANTLR 4 Reference* [[1]](https://pragprog.com/titles/tpantlr2/the-definitive-antlr-4-reference/), by Terence Parr.
 The section numbers below, such as §15.7, point into that book.
+
+## A script is statements, one to a line
+
+```antlr
+program       : preamble? statementLine (NEW_LINE statementLine)* NEW_LINE? EOF;
+statementLine : statement inlineComment?;
+```
+
+A script may open with a preamble, which is where the directives go, like the version directive `#!syntax version 1.2`.
+The rest is statement lines, one to a line, each a statement with an optional comment after it.
+
+A statement is one of a short list.
+An assignment, an expression on its own, a `plot` or `plotTikz`, an `assert`, a `printExpression`, a directive, a comment, or nothing at all.
+The assignment is the only one that declares a name, which is why it is also the one that records what kind of value that name holds.
+
+```antlr
+assignment : name=IDENTIFIER ASSIGN value=expression { DeclareVariable($name.text, $value.ctx); } ;
+```
+
+The three statements that are not expressions have a shape of their own.
+`plot` and `plotTikz` take function names and options, each option keyed by its name to the kind of value it takes, a string, an interval or a yes or no.
+`assert` takes two expressions with a comparison between them.
+`printExpression` takes a variable name and prints how that variable was built.
+
+`program` reads a whole script, which is what `nancy-playground run` and `convert` need.
+That is not always what we want:
+`interactive` parses one line at a time, and in testing we parse one expression at a time.
+What makes `program` a good entry point is that it ends with `EOF`, i.e. the whole content must be parsed.
+`statementLine` and `expression` do not have that, so we need separate entry points to add this behavior.
+
+```antlr
+statementEntry : statementLine EOF;
+expressionEntry : expression EOF;
+```
+
+Note that the use of `statementEntry` in `interactive` mode is the reason directives are parsed as statements as well, and not only as part of the preamble.
+
+## Expressions are built in tiers
+
+An expression is either a function or a number, and `expression` picks the set of rules to use.
+Both sets have the same four tiers, from the operators that bind loosest to those that bind tightest.
+
+| Tier | Functions | Numbers | Operators |
+| ---- | ---- | ---- | ---- |
+| sum | `functionSumExpression` | `numberExpression` | `+` `-` `/\` `\/` |
+| product | `functionProductExpression` | `numberProductExpression` | `*` `/` `*_` `*^` `/_` `/^` `comp` for functions, `*` `/` `div` `mod` for numbers |
+| unary | `functionUnaryExpression` | `numberUnaryExpression` | a leading `+` or `-` |
+| enclosed | `functionEnclosedExpression` | `numberEnclosedExpression` | brackets, named operations, constructors, variables, literals |
+
+Each tier is written in terms of the one below it, and that is what gives the operators their precedence.
+`x + y * z` groups as `x + (y * z)`, because the sum rule can reach a product only through the product rule.
+The precedence and grouping the language promises are stated in [MPPG Syntax](/docs/syntax.md), and the tiers are how the grammar keeps that promise.
+
+The enclosed tier is the bottom of both sets, and an operation spelled as a name with brackets belongs there, as `star(f)` and `pow(x, 2)` do.
+It is also where the two sides meet.
+An operation that takes a function and gives back a number, such as `f(3)` or `hDev(f, g)`, is an alternative of `numberEnclosedExpression`, which is how a function comes to sit inside a number expression.
+
+A function can also be written out rather than computed.
+The constructors name a shape and its parameters, as `ratency(r, l)` and `step(a, b)` do, while `uaf` and `upp` take a sequence of points and segments, the brackets around each one saying which of its endpoints it includes.
+
+### The function tiers cannot be left-recursive
+
+The number tiers are plain left-recursive rules, which ANTLR allows (§14).
+Both operands of a number operator are numbers, so there is nothing to decide at those tiers.
+
+The function tiers are shaped differently, and this is the one place where the grammar looks like it needs fixing.
+Their operators take a number on one side too, as `f + 1/2` and `2 * f` do, so which alternative applies depends on the kind of the operand that comes next.
+The predicate that decides it has to be read before that operand is parsed, which means standing at the left edge of the alternative, and in a left-recursive rule that place is taken by the recursive call.
+The tier is written as a start followed by suffixes instead, `functionSumStart functionSumSuffix*`, where each suffix opens with its predicate and folds to the left all the same.
 
 ## Names are known while parsing
 
@@ -34,6 +103,13 @@ These are parsed through the function rules, and the kinds are settled later by 
 A branch handling two numbers, inside a visitor of the function operators, means the expression was routed through the wrong rules.
 The fix belongs in the grammar, not in the visitor:
 a visitor that quietly handles the wrong case hides the misparse instead of correcting it.
+
+### Note: mistakes from the first version
+
+In the first release of this tool, I tried the different approach of using a simple grammar that matched the shape of expressions without keeping track of variable types.
+That resulted in an ambiguous grammar, where `h := f + g` could be parsed by both number and function rules, and the visitors had to deal with this with extra layers of checks and mis-parsing handling.
+That resulted in many, many edge cases and bugs.
+The current grammar is much more complex, and its use of predicates ties it to C# projects, but its unambiguous parsing makes this worth it.
 
 ## Semantic predicates, and where they go
 
