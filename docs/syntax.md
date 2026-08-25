@@ -128,7 +128,7 @@ upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
 > Both `incr` and `period` are optional.
 
 `incr` is authoritative:
-giving a height other than the one the periodic part implies produces a different curve.
+giving a height other than the one the periodic part implies produces a different function.
 `period` is informational, and a length other than the one the periodic part implies is ignored.
 
 Unlike the endpoints and slopes of the segments, which are full [number expressions](#number-syntax), `incr` and `period` are literals:

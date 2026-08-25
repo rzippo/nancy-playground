@@ -31,14 +31,14 @@ When one or more new keywords are added, a contributor will also have to adds a 
 ### Typing is embedded in the grammar
 
 The MPPG grammar is defined to have non-ambiguous parsing, where the produced AST can be trusted to accurately reflect the computations to be performed.
-This implies distinguishing curves from numbers, and function expressions `f + g` from scalar expressions `x + y`.
+This implies distinguishing functions from numbers, and function expressions `f + g` from number expressions `x + y`.
 
 To do so, the parser holds a dictionary of declared variables with typing based on assignments, and expressions need to be distinguished based on their result type to properly type those assignments.
-An operation returning a curve is an alternative of the function-expression rules; one returning a number is an alternative of the number-expression rules, in both their plain and bracketed forms.
+An operation returning a function is an alternative of the function-expression rules; one returning a number is an alternative of the number-expression rules, in both their plain and bracketed forms.
 Note that getting this wrong may note be immediately apparent:
 the parser will work, but its output may be ambiguous and it may take a very specific example to stress the wrong path and surface the mistake.
 
-The operators that mix the two kinds, i.e. those that take a curve on one side and a scalar on the other, are resolved with lookahead:
+The operators that mix the two kinds, i.e. those that take a function on one side and a number on the other, are resolved with lookahead:
 the grammar tests whether what follows starts a function operand or a number one.
 An operation that can stand on either side of such an operator has to be recognisable by those lookahead helpers.
 
