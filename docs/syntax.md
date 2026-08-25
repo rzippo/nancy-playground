@@ -292,6 +292,19 @@ These operations work between scalars, and return scalars.
 > convolution.
 
 
+### Scalar operator precedence
+
+The supported precedence order is:
+
+1. Values, calls and unary signs, i.e. `3`, `x`, `f(2)`, `abs(x)` and `-x`.
+2. Product operators: `*`, `/`, `div` and `mod`, evaluated left-to-right.
+3. Sum/min/max operators: `+`, `-`, `/\` and `\/`, evaluated left-to-right.
+
+Thus `2 + 3 * 4` is `2 + (3 * 4)`, and `8 / 4 / 2` is `(8 / 4) / 2`.
+The min and max operators sit with the sums, so `4 /\ 2 + 3` is `(4 /\ 2) + 3`.
+A sign binds tighter than any operator, so `-x + 1` is `(-x) + 1`.
+
+
 ## Output ✅
 
 Any operation that does not assign to a variable, prints its value to the console.
