@@ -5,6 +5,7 @@ using CliWrap;
 using CliWrap.Buffered;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
+using static Unipi.Nancy.Playground.Cli.Tests.ConvertedProgram;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
@@ -85,7 +86,7 @@ public class ConvertCommandExpressionPlotTests
         try
         {
             programResult = await CliWrap.Cli.Wrap("dotnet")
-                .WithArguments([programPath])
+                .WithArguments(RunArguments(programPath))
                 .WithWorkingDirectory(convertOutputDir)
                 .WithValidation(CommandResultValidation.None)
                 .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);

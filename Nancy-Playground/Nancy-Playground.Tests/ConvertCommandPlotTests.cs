@@ -7,6 +7,7 @@ using CliWrap.Buffered;
 using Spectre.Console.Cli.Testing;
 using Spectre.Console.Testing;
 using static Unipi.Nancy.Playground.Cli.Tests.BuildDiagnostics;
+using static Unipi.Nancy.Playground.Cli.Tests.ConvertedProgram;
 
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
@@ -210,7 +211,7 @@ public class ConvertCommandPlotTests
         await using var buildScope = new BuildOutputScope(buildPersistPath);
         var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
-            .WithArguments(["build", programPath, "-o", buildDir])
+            .WithArguments(BuildArguments(programPath, buildDir))
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
         Assert.True(
@@ -393,7 +394,7 @@ public class ConvertCommandPlotTests
         await using var buildScope = new BuildOutputScope(buildPersistPath);
         var buildDir = buildScope.Path;
         var buildResult = await CliWrap.Cli.Wrap("dotnet")
-            .WithArguments(["build", programPath, "-o", buildDir])
+            .WithArguments(BuildArguments(programPath, buildDir))
             .WithValidation(CommandResultValidation.None)
             .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
         Assert.True(
