@@ -10,6 +10,7 @@ on:
       - "Nancy-Playground/Nancy-Playground.Tests/**"
       - "Nancy-Playground/MppgParser/**"
       - "Nancy-Playground/MppgParser.Tests/**"
+      - "Nancy-Playground/Directory.Packages.props"
   pull_request:
     branches:
       - master
@@ -18,6 +19,7 @@ on:
       - "Nancy-Playground/Nancy-Playground.Tests/**"
       - "Nancy-Playground/MppgParser/**"
       - "Nancy-Playground/MppgParser.Tests/**"
+      - "Nancy-Playground/Directory.Packages.props"
 
 jobs:
   Nancy-Playground-test:
