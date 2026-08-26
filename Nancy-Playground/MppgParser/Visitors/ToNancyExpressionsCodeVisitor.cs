@@ -32,11 +32,11 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         var statementLineContexts = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
 
         List<string> code = [
-            "#:package Unipi.Nancy.Expressions@1.0.8",
-            "#:package Unipi.Nancy.Plots.ScottPlot@1.0.9",
+            $"#:package Unipi.Nancy.Expressions@{PackageVersions.NancyExpressions}",
+            $"#:package Unipi.Nancy.Plots.ScottPlot@{PackageVersions.ScottPlot}",
         ];
         if (statementLineContexts.UsesTikzPlots())
-            code.Add("#:package Unipi.Nancy.Plots.Tikz@1.0.9");
+            code.Add($"#:package Unipi.Nancy.Plots.Tikz@{PackageVersions.Tikz}");
         code.AddRange([
             string.Empty,
             "using System.Globalization;",

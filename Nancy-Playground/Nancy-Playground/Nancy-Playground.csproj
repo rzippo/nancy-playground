@@ -32,10 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Spectre.Console.Cli" Version="0.55.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203" PrivateAssets="All" />
-    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.9" />
-    <PackageReference Include="Unipi.Nancy.Plots.Tikz" Version="1.0.9" />
+    <PackageReference Include="Spectre.Console.Cli" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="Unipi.Nancy.Plots.ScottPlot" />
+    <PackageReference Include="Unipi.Nancy.Plots.Tikz" />
   </ItemGroup>
 
   <PropertyGroup>

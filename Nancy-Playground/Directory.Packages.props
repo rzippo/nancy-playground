@@ -1,0 +1,26 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Pins Unipi.Nancy, which is transitive, so a stale entry here fails the restore instead of reaching a converted program. -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+    <PackageVersion Include="CliWrap" Version="3.10.1" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.0" />
+    <PackageVersion Include="coverlet.MTP" Version="10.0.0" />
+    <PackageVersion Include="Meziantou.Xunit.v3.ParallelTestFramework" Version="1.0.6" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.203" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
+    <PackageVersion Include="Spectre.Console.Cli.Testing" Version="0.55.0" />
+    <!-- Transitive via Unipi.Nancy.Expressions, and pinned, so that a converted program pins what this one resolves. -->
+    <PackageVersion Include="Unipi.Nancy" Version="1.4.0" />
+    <PackageVersion Include="Unipi.Nancy.Expressions" Version="1.0.8" />
+    <PackageVersion Include="Unipi.Nancy.Plots.ScottPlot" Version="1.0.9" />
+    <PackageVersion Include="Unipi.Nancy.Plots.Tikz" Version="1.0.9" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+
+</Project>
