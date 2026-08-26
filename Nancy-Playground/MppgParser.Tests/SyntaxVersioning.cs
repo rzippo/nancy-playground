@@ -1,3 +1,4 @@
+using Antlr4.Runtime;
 using Unipi.Nancy.Playground.MppgParser.Exceptions;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 
@@ -712,9 +713,8 @@ public class SyntaxVersioning
     [Fact]
     public void EveryVersionGatedLexerRuleHasAKeywordEntry()
     {
-        // A keyword is gated by a semantic predicate on its lexer rule, for which ANTLR generates a
-        // <RULE>_sempred method. Every such keyword must also be listed in VersionedKeywords.IntroducedIn,
-        // or the tests above would silently not cover it.
+        // A keyword is gated by a semantic predicate on its lexer rule, of [Parr13] §15.7, for which ANTLR generates a <RULE>_sempred method.
+        // Every such keyword must also be listed in VersionedKeywords.IntroducedIn, or the tests above would silently not cover it.
         const string suffix = "_sempred";
         var lexerType = typeof(Unipi.MppgParser.Grammar.MppgLexer);
 
@@ -755,9 +755,9 @@ public class SyntaxVersioning
         var literal = Unipi.MppgParser.Grammar.MppgLexer.DefaultVocabulary.GetLiteralName(tokenType);
         return literal is null || literal.Length < 2 ? null : literal[1..^1];
     }
-    // The lexer DFA is cached in a static field, shared by every lexer of the process. If ANTLR cached an
-    // edge whose computation evaluated a version predicate, a parse would inherit the version of a previous
-    // one, which would only show up as an order-dependent failure.
+    // Prediction results are cached in a DFA, of [Parr13] §13.1, and the generated lexer holds the array of them in a static field, so every lexer of the process shares it.
+    // The version is read by a predicate, and ANTLR does not cache a state it reached by traversing one, so the gating is never answered from that shared cache, which PredicateIsEvaluatedOnEveryLex pins.
+    // What this holds is the version state staying on the instance, which is what would leak if it were made static.
     [Theory]
     [MemberData(nameof(VersionedKeywordCases))]
     public void GatingIsNotLeakedBetweenParsesOfDifferentVersions(string keyword)
@@ -780,6 +780,45 @@ public class SyntaxVersioning
         // and the other way round
         Assert.Empty(Program.FromText(asVariable).Errors);
         Assert.NotEmpty(Program.FromText(asKeyword).Errors);
+    }
+
+    /// <summary>
+    /// Counts the predicate evaluations of a lexer, which is how the DFA cache is caught answering for one.
+    /// </summary>
+    private sealed class CountingLexer : Unipi.MppgParser.Grammar.MppgLexer
+    {
+        public CountingLexer(ICharStream input) : base(input) { }
+
+        public int Evaluations { get; private set; }
+
+        public override bool Sempred(RuleContext _localctx, int ruleIndex, int predIndex)
+        {
+            Evaluations++;
+            return base.Sempred(_localctx, ruleIndex, predIndex);
+        }
+    }
+
+    // The gating above rests on the predicate being read for every token matched, and not once into the DFA that every lexer of the process shares, where a cached answer would carry the version of whichever parse filled it in.
+    // ANTLR does not cache a state it reached by traversing a predicate, and this is what says so.
+    [Fact]
+    public void PredicateIsEvaluatedOnEveryLex()
+    {
+        int Evaluations(SyntaxVersion version)
+        {
+            var lexer = new CountingLexer(CharStreams.fromString("floor := 3"));
+            lexer.SetSyntaxVersion(version.Major, version.Minor);
+            lexer.RemoveErrorListeners();
+
+            new CommonTokenStream(lexer).Fill();
+            return lexer.Evaluations;
+        }
+
+        var first = Evaluations(SyntaxVersion.V1_3);
+        Assert.NotEqual(0, first);
+
+        // the same lex, after the shared DFA has had every chance to fill in, and under the other version
+        foreach (var version in new[] { SyntaxVersion.V1_0, SyntaxVersion.V1_3, SyntaxVersion.V1_0 })
+            Assert.Equal(first, Evaluations(version));
     }
 
     // Interactive mode parses one line per lexer, so the directive typed earlier in the session is not in
@@ -877,11 +916,9 @@ public class SyntaxVersioning
 
     // Regression test: the shebang and a following plain comment used to lex as the same token
     // type (INLINABLE_COMMENT), so the parser needed a content-dependent predicate to tell them
-    // apart when deciding whether to keep parsing the preamble. That predicate was evaluated
-    // against the wrong lookahead position during ANTLR's adaptive prediction of the preamble's
-    // loop, so it optimistically kept parsing the preamble, then failed for real on the comment,
-    // throwing "rule versionDirective failed predicate". Giving '#!' its own token type
-    // (DIRECTIVE_START / VERSION_DIRECTIVE_START) removes the need for that predicate entirely.
+    // apart when deciding whether to keep parsing the preamble.
+    // Prediction may evaluate a predicate out of order or several times, as [Parr13] §15.7 warns, and that one was evaluated against the wrong lookahead position during the adaptive prediction of the preamble's loop, so it optimistically kept parsing the preamble, then failed for real on the comment, throwing "rule versionDirective failed predicate".
+    // Giving '#!' its own token type (DIRECTIVE_START / VERSION_DIRECTIVE_START) removes the need for that predicate entirely.
     [Fact]
     public void ShebangImmediatelyFollowedByComment_ParsesWithoutError()
     {
