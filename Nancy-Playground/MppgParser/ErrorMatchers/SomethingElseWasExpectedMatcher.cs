@@ -5,6 +5,7 @@ namespace Unipi.Nancy.Playground.MppgParser.ErrorMatchers;
 /// </summary>
 /// <remarks>
 /// This is the shape ANTLR reports by listing the tokens it would have accepted, which runs to forty-odd for an expression, so what is expected is put in words instead.
+/// The messages it writes are the ones of [Parr13] §9.1.
 /// It is the stage below the matchers, so it says nothing about the mistake and needs no guard against them: whatever knows more has already spoken.
 /// </remarks>
 internal sealed class SomethingElseWasExpectedMatcher : IErrorMatcher<ParserError>

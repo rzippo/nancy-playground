@@ -22,7 +22,7 @@ internal enum ErrorRecovery
 }
 
 /// <summary>
-/// Records which recovery the parser is reporting, a token it had to invent or one it had to drop.
+/// Records which recovery the parser is reporting, a token it had to invent or one it had to drop, which [Parr13] §9.3 calls single-token insertion and single-token deletion.
 /// </summary>
 /// <remarks>
 /// Both are reported with no exception and through the same listener call, so the recovery is read here, where the parser tells the two apart itself, rather than from the wording of the message.
@@ -66,7 +66,7 @@ internal class RecordingErrorStrategy : DefaultErrorStrategy
 
 /// <summary>
 /// Stops at the first syntax error, after reporting it to the error listeners.
-/// Not <see cref="BailErrorStrategy"/>, which throws before notifying them, leaving no <see cref="SyntaxErrorInfo"/>.
+/// Not <see cref="BailErrorStrategy"/>, of [Parr13] §9.5, which throws before notifying them, leaving no <see cref="SyntaxErrorInfo"/>.
 /// </summary>
 internal sealed class ReportingBailErrorStrategy : RecordingErrorStrategy
 {

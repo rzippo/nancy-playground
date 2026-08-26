@@ -7,8 +7,8 @@ It is meant for whoever is about to change it, since several of the rules below 
 For adding a construct to the language, see [Extending the syntax](/docs/extending-the-syntax.md).
 For what happens when a script fails to parse, see [Error messages](/docs/error-messages.md).
 
-What ANTLR itself does is described in *The Definitive ANTLR 4 Reference* [[1]](https://pragprog.com/titles/tpantlr2/the-definitive-antlr-4-reference/), by Terence Parr.
-The section numbers below, such as §15.7, point into that book.
+What ANTLR itself does is described in [Parr13], listed in [References](/docs/references.md).
+The sections below, such as §15.7, point into that book, and the sources cite it the same way.
 
 ## A script is statements, one to a line
 

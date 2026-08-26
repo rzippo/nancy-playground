@@ -337,7 +337,7 @@ public sealed class DiagnosticParserErrorListener : BaseErrorListener
     /// The message of a viable-alternative error, quoting the source rather than the tokens joined together, or null where there is nothing to repair.
     /// </summary>
     /// <remarks>
-    /// ANTLR quotes the span from the start of the alternative to the token it stopped at, taken from the tokens, so '( floor comp' comes out as '(floorcomp'.
+    /// ANTLR quotes the span from the start of the alternative to the token it stopped at, taken from the tokens, so '( floor comp' comes out as '(floorcomp'; see the messages of [Parr13] §9.1.
     /// The span is read from the source instead, and clipped to the line the error is on, a span that opens on the line before being quoted as the newline it starts with.
     /// </remarks>
     private static string? QuotedFromSource(string message, RecognitionException? e, IToken? offending, string? text)

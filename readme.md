@@ -15,8 +15,7 @@ The acronym stands for _Min-Plus PlayGround_.
 
 > I am not aware of a better or more fitting idea, let me know if you do.
 
-See the [MPPG Syntax](/docs/syntax.md) docs for a summary of the supported constructs, and the
-[MPPG Formatting Style](/docs/formatting-style.md) for the formatting style used.
+See the [MPPG Syntax](/docs/syntax.md) docs for a summary of the supported constructs, and the [MPPG Formatting Style](/docs/formatting-style.md) for the formatting style used.
 
 The file extension can be used to associate it with the programs created in this project.
 
@@ -74,6 +73,7 @@ After it completes (and possibly after opening a new terminal) you should see th
 
 The [`docs/`](/docs) folder holds the guidelines for working on the project:
 how the [grammar and the parser](/docs/grammar-and-parser.md) are shaped, what it takes to [extend the syntax](/docs/extending-the-syntax.md), and how a script that does not parse is [reported](/docs/error-messages.md).
+The works those lean on are listed in [References](/docs/references.md), which is what a tag like `[Parr13]` in the sources points at.
 
 `Nancy-Playground` is a .NET 10 application, written in C# 14.
 Both SDK and runtime for .NET are cross-platform, and can be downloaded from [here](https://dotnet.microsoft.com/en-us/download).

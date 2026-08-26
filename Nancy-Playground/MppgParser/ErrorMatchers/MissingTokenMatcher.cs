@@ -19,6 +19,7 @@ internal sealed class MissingTokenMatcher : IErrorMatcher<ParserError>
 
     /// <summary>
     /// Where the token it stopped at ends the line, saying so reads better than quoting a newline, which is what the message of ANTLR does.
+    /// The token itself is one the parser invented to carry on, which [Parr13] §9.3 calls single-token insertion.
     /// </summary>
     public RewrittenMessage Write(ParserError error)
         => new(TokenFacts.EndsTheLine(error.Tokens.Offending)

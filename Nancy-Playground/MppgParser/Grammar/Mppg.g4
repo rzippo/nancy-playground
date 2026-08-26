@@ -529,6 +529,7 @@ INLINABLE_COMMENT: ('//'|'%'|'#') [\p{L}\p{Nd}\p{P}\p{S} \t]*;
 
 // Keywords introduced after version 1.0.
 // Each is a keyword only from the version that introduced it, and lexes as IDENTIFIER before that.
+// A false predicate prunes the rule wherever it sits, which is what lets the name fall through: [Parr13] §15.7.
 PRINT_EXPRESSION : 'printExpression' {IsVersion1_1OrLater()}?;
 PLOT_TIKZ : 'plotTikz' {IsVersion1_1OrLater()}?;
 SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
@@ -591,6 +592,7 @@ functionSumExpression
 
 // The start/suffix split preserves left-to-right folding while letting predicates
 // classify mixed scalar/function operands before ANTLR commits to an alternative.
+// A predicate steers a choice only where prediction meets it first, i.e. at the left edge: [Parr13] §15.7.
 functionSumStart
     : {IsFunctionProductExpressionStart(1)}? functionProductExpression #functionSumFunctionStart
     | {IsNumberProductExpressionStart(1)}? numberProductExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev

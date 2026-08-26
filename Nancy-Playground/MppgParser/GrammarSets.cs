@@ -23,7 +23,7 @@ internal static class GrammarSets
     ]);
 
     /// <summary>
-    /// The tokens <paramref name="rule"/> can begin with.
+    /// The tokens <paramref name="rule"/> can begin with, read from the ATN of the generated parser, i.e. the network of states described in [Parr13] §13.1.
     /// </summary>
     private static IntervalSet StartSetOf(int rule)
     {

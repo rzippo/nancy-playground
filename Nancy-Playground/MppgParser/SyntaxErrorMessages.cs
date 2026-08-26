@@ -7,7 +7,7 @@ namespace Unipi.Nancy.Playground.MppgParser;
 /// What no matcher recognises keeps the message of ANTLR, so a message is never invented for an error that is not understood.
 /// </summary>
 /// <remarks>
-/// A matcher reads the structure of the error rather than the text of its message: two of the shapes ANTLR reports carry no exception at all, and the rule being parsed, which says the most about what the user was writing, never reaches the message.
+/// A matcher reads the structure of the error rather than the text of its message: two of the shapes ANTLR reports carry no exception at all, being the recoveries of [Parr13] §9.3, and the rule being parsed, which says the most about what the user was writing, never reaches the message.
 /// Two matchers recognising the same error is a defect rather than a precedence to settle: the registries are read in order, and a test holds them to at most one match per error.
 /// Each matcher is a file of its own under <c>ErrorMatchers</c>, and joins a registry below.
 /// </remarks>
