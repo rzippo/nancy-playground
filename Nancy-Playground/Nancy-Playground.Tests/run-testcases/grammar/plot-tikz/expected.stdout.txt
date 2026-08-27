@@ -6,34 +6,27 @@ g = bucket(2, 1)
 \begin{tikzpicture}
 	\begin{axis}[
 		font = \small,
-		clip = false,
+		clip = true,
 		grid = both,
-		minor tick num = 1,
 		grid style = {draw=gray!30},
 		axis lines = left,
-		axis equal image,
 		xlabel = {time},
 		ylabel = {data},
 		x label style = {at={(axis description cs:1,0)},anchor=north west},
 		y label style = {at={(axis description cs:0,1)},rotate=-90,anchor=south},
-		xmin = 0,
-		ymin = 0,
-		xmax = 6,
-		ymax = 3,
-		xticklabels = \empty,
-		yticklabels = \empty,
-		extra x ticks = { 0, 3, 5 },
-		extra y ticks = { 0, 2 },
+		xmin = -0.09,
+		ymin = -0.0477,
+		xmax = 6.18,
+		ymax = 3.2754,
 		legend pos = south east
 	]
 		% lines out of order, for the legend
-		\addplot [ color = blue!60!black, thick, -, solid ] coordinates { (0, 0) (3, 0) (5, 2) };
+		\addplot [ color = blue!60!black, thick, -, solid ] coordinates { (0, 0) (3, 0) (6, 3) (6.18, 3.18) };
 
 		\addlegendentry{$ f $};
 
 		% f
 		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (0,0) };
-		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (5,2) };
 
 		\node [ anchor = north ] at (axis cs:3, 0) {$T_{f}$};
 
@@ -54,41 +47,33 @@ g = bucket(2, 1)
 \begin{tikzpicture}
 	\begin{axis}[
 		font = \small,
-		clip = false,
+		clip = true,
 		grid = both,
-		minor tick num = 1,
 		grid style = {draw=gray!30},
 		axis lines = left,
-		axis equal image,
 		xlabel = {time},
 		ylabel = {data},
 		x label style = {at={(axis description cs:1,0)},anchor=north west},
 		y label style = {at={(axis description cs:0,1)},rotate=-90,anchor=south},
-		xmin = 0,
-		ymin = 0,
-		xmax = 10,
-		ymax = 10,
-		xticklabels = \empty,
-		yticklabels = \empty,
-		extra x ticks = { 0, 3, 10 },
-		extra y ticks = { 0, 1, 7 },
+		xmin = -0.15,
+		ymin = -0.15,
+		xmax = 10.3,
+		ymax = 10.3,
 		legend pos = south east
 	]
 		% lines out of order, for the legend
-		\addplot [ color = blue!60!black, thick, -, solid ] coordinates { (0, 0) (3, 0) (10, 7) };
+		\addplot [ color = blue!60!black, thick, -, solid ] coordinates { (0, 0) (3, 0) (10, 7) (10.3, 7.3) };
 
-		\addplot [ color = green!60!black, thick, )-, solid, shorten < = 1pt ] coordinates { (0, 1) (10, 21) };
+		\addplot [ color = green!60!black, thick, )-, dashed, shorten < = 1pt ] coordinates { (0, 1) (10, 21) (10.3, 21.6) };
 
 		\addlegendentry{$ f $};
 		\addlegendentry{$ g $};
 
 		% f
 		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (0,0) };
-		\addplot [ color = blue!60!black, thick, only marks, mark size = 1pt ] coordinates { (10,7) };
 
 		% g
 		\addplot [ color = green!60!black, thick, only marks, mark size = 1pt ] coordinates { (0,0) };
-		\addplot [ color = green!60!black, thick, only marks, mark size = 1pt ] coordinates { (10,21) };
 
 	\end{axis}
 \end{tikzpicture}
