@@ -28,7 +28,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds a scalar multiplication written with the scalar first, as in 2 * f.
+    /// Builds a scalar multiplication written with the scalar first, as in <c>2 * f</c>.
     /// </summary>
     public override IExpression VisitFunctionScalarMulRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionScalarMulRevContext context)
@@ -77,7 +77,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds a sum-level operation with the scalar written first, as in 1 + f.
+    /// Builds a sum-level operation with the scalar written first, as in <c>1 + f</c>.
     /// </summary>
     public override IExpression VisitFunctionShiftMinMaxRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
@@ -175,7 +175,7 @@ public partial class ExpressionVisitor
         Expressions.Expressions.FromCurve(new PureConstantCurve(value.Compute()));
 	    
     /// <summary>
-    /// Builds the expression of 'star', also spelled 'subaddclosure', the sub-additive closure of a curve.
+    /// Builds the expression of <c>star</c>, also spelled <c>subaddclosure</c>, the sub-additive closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionSubadditiveClosure(
         Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context)
@@ -196,7 +196,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'superaddclosure', the super-additive closure of a curve.
+    /// Builds the expression of <c>superaddclosure</c>, the super-additive closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionSuperadditiveClosure(
         Unipi.MppgParser.Grammar.MppgParser.FunctionSuperadditiveClosureContext context)
@@ -217,7 +217,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'hShift', a horizontal shift.
+    /// Builds the expression of <c>hShift</c>, a horizontal shift.
     /// </summary>
     public override IExpression VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context)
     {
@@ -235,7 +235,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'vShift', a vertical shift.
+    /// Builds the expression of <c>vShift</c>, a vertical shift.
     /// </summary>
     public override IExpression VisitFunctionVShift(Unipi.MppgParser.Grammar.MppgParser.FunctionVShiftContext context)
     {
@@ -253,7 +253,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'inv', also spelled 'low_inv', the lower pseudo-inverse of a curve.
+    /// Builds the expression of <c>inv</c>, also spelled <c>low_inv</c>, the lower pseudo-inverse of a curve.
     /// </summary>
     public override IExpression VisitFunctionLowerPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionLowerPseudoInverseContext context)
     {
@@ -273,7 +273,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'up_inv', the upper pseudo-inverse of a curve.
+    /// Builds the expression of <c>up_inv</c>, the upper pseudo-inverse of a curve.
     /// </summary>
     public override IExpression VisitFunctionUpperPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionUpperPseudoInverseContext context)
     {
@@ -293,7 +293,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'upclosure', the upward non-decreasing closure of a curve.
+    /// Builds the expression of <c>upclosure</c>, the upward non-decreasing closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context)
     {
@@ -313,7 +313,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'nnupclosure', the non-negative upward non-decreasing closure of a curve.
+    /// Builds the expression of <c>nnupclosure</c>, the non-negative upward non-decreasing closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionNonNegativeUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context)
     {
@@ -335,7 +335,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'lowclosure', the downward non-decreasing closure of a curve.
+    /// Builds the expression of <c>lowclosure</c>, the downward non-decreasing closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonDecreasingClosureContext context)
     {
@@ -355,7 +355,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'nnlowclosure', the non-negative downward non-decreasing closure of a curve.
+    /// Builds the expression of <c>nnlowclosure</c>, the non-negative downward non-decreasing closure of a curve.
     /// </summary>
     public override IExpression VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context)
     {
@@ -377,7 +377,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'left-ext', the left extension of a curve.
+    /// Builds the expression of <c>left-ext</c>, the left extension of a curve.
     /// </summary>
     public override IExpression VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)
     {
@@ -397,7 +397,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'right-ext', the right extension of a curve.
+    /// Builds the expression of <c>right-ext</c>, the right extension of a curve.
     /// </summary>
     public override IExpression VisitFunctionRightExt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightExtContext context)
     {
@@ -417,7 +417,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'floor' applied to a curve.
+    /// Builds the expression of <c>floor</c> applied to a curve.
     /// </summary>
     public override IExpression VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context)
     {
@@ -437,7 +437,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'ceil' applied to a curve.
+    /// Builds the expression of <c>ceil</c> applied to a curve.
     /// </summary>
     public override IExpression VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context)
     {
@@ -457,7 +457,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the negation of a curve, as in -f.
+    /// Builds the negation of a curve, as in <c>-f</c>.
     /// </summary>
     public override IExpression VisitFunctionNegative(Unipi.MppgParser.Grammar.MppgParser.FunctionNegativeContext context)
     {

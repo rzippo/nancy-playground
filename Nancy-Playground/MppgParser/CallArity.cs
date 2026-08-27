@@ -63,7 +63,7 @@ internal static class CallArity
     public static IEnumerable<KeyValuePair<string, int>> All => Arities;
 
     /// <summary>
-    /// What a call of <paramref name="call"/> takes, said as a number: 'stair' takes 3 arguments.
+    /// What a call of <paramref name="call"/> takes, said as a number: <c>stair</c> takes 3 arguments.
     /// </summary>
     public static string? Says(string? call)
         => Of(call) is not { } arity

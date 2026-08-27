@@ -107,26 +107,26 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
 
     // An assertion is call-shaped around a comparison: assert(f * g = g * f).
     /// <summary>
-    /// Writes an 'assert' command.
+    /// Writes an <c>assert</c> command.
     /// </summary>
     public override string? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context) =>
         $"assert({Render(context.expression(0))} {context.assertionOperator().GetText()} {Render(context.expression(1))})";
 
     // The commands are call-shaped too: printExpression(f), plot(f, out="p.png").
     /// <summary>
-    /// Writes a 'printExpression' command.
+    /// Writes a <c>printExpression</c> command.
     /// </summary>
     public override string? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context) =>
         RenderCall(context);
 
     /// <summary>
-    /// Writes a 'plot' command.
+    /// Writes a <c>plot</c> command.
     /// </summary>
     public override string? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context) =>
         RenderCall(context);
 
     /// <summary>
-    /// Writes a 'plotTikz' command.
+    /// Writes a <c>plotTikz</c> command.
     /// </summary>
     public override string? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
         RenderCall(context);
@@ -238,102 +238,102 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     }
 
     /// <summary>
-    /// Writes a 'ratency' call.
+    /// Writes a <c>ratency</c> call.
     /// </summary>
     public override string? VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'bucket' call.
+    /// Writes a <c>bucket</c> call.
     /// </summary>
     public override string? VisitTokenBucket(Unipi.MppgParser.Grammar.MppgParser.TokenBucketContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes an 'affine' call.
+    /// Writes an <c>affine</c> call.
     /// </summary>
     public override string? VisitAffineFunction(Unipi.MppgParser.Grammar.MppgParser.AffineFunctionContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'step' call.
+    /// Writes a <c>step</c> call.
     /// </summary>
     public override string? VisitStepFunction(Unipi.MppgParser.Grammar.MppgParser.StepFunctionContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'stair' call.
+    /// Writes a <c>stair</c> call.
     /// </summary>
     public override string? VisitStairFunction(Unipi.MppgParser.Grammar.MppgParser.StairFunctionContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'delay' call.
+    /// Writes a <c>delay</c> call.
     /// </summary>
     public override string? VisitDelayFunction(Unipi.MppgParser.Grammar.MppgParser.DelayFunctionContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'star' call, which is also spelled 'subaddclosure'.
+    /// Writes a <c>star</c> call, which is also spelled <c>subaddclosure</c>.
     /// </summary>
     public override string? VisitFunctionSubadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSubadditiveClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'superaddclosure' call.
+    /// Writes a <c>superaddclosure</c> call.
     /// </summary>
     public override string? VisitFunctionSuperadditiveClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionSuperadditiveClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'hShift' call.
+    /// Writes a <c>hShift</c> call.
     /// </summary>
     public override string? VisitFunctionHShift(Unipi.MppgParser.Grammar.MppgParser.FunctionHShiftContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'vShift' call.
+    /// Writes a <c>vShift</c> call.
     /// </summary>
     public override string? VisitFunctionVShift(Unipi.MppgParser.Grammar.MppgParser.FunctionVShiftContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes an 'inv' call, which is also spelled 'low_inv'.
+    /// Writes an <c>inv</c> call, which is also spelled <c>low_inv</c>.
     /// </summary>
     public override string? VisitFunctionLowerPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionLowerPseudoInverseContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes an 'up_inv' call.
+    /// Writes an <c>up_inv</c> call.
     /// </summary>
     public override string? VisitFunctionUpperPseudoInverse(Unipi.MppgParser.Grammar.MppgParser.FunctionUpperPseudoInverseContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes an 'upclosure' call.
+    /// Writes an <c>upclosure</c> call.
     /// </summary>
     public override string? VisitFunctionUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonDecreasingClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'nnupclosure' call.
+    /// Writes a <c>nnupclosure</c> call.
     /// </summary>
     public override string? VisitFunctionNonNegativeUpNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeUpNonDecreasingClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'lowclosure' call.
+    /// Writes a <c>lowclosure</c> call.
     /// </summary>
     public override string? VisitFunctionLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonDecreasingClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'nnlowclosure' call.
+    /// Writes a <c>nnlowclosure</c> call.
     /// </summary>
     public override string? VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'left-ext' call.
+    /// Writes a <c>left-ext</c> call.
     /// </summary>
     public override string? VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'right-ext' call.
+    /// Writes a <c>right-ext</c> call.
     /// </summary>
     public override string? VisitFunctionRightExt(Unipi.MppgParser.Grammar.MppgParser.FunctionRightExtContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'floor' call applied to a curve.
+    /// Writes a <c>floor</c> call applied to a curve.
     /// </summary>
     public override string? VisitFunctionFloor(Unipi.MppgParser.Grammar.MppgParser.FunctionFloorContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'ceil' call applied to a curve.
+    /// Writes a <c>ceil</c> call applied to a curve.
     /// </summary>
     public override string? VisitFunctionCeil(Unipi.MppgParser.Grammar.MppgParser.FunctionCeilContext context) => RenderCall(context);
 
@@ -343,47 +343,47 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     public override string? VisitFunctionValueAt(Unipi.MppgParser.Grammar.MppgParser.FunctionValueAtContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'hDev' call.
+    /// Writes a <c>hDev</c> call.
     /// </summary>
     public override string? VisitFunctionHorizontalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'vDev' call.
+    /// Writes a <c>vDev</c> call.
     /// </summary>
     public override string? VisitFunctionVerticalDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'zDev' call.
+    /// Writes a <c>zDev</c> call.
     /// </summary>
     public override string? VisitFunctionZDeviation(Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'floor' call applied to a number.
+    /// Writes a <c>floor</c> call applied to a number.
     /// </summary>
     public override string? VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'ceil' call applied to a number.
+    /// Writes a <c>ceil</c> call applied to a number.
     /// </summary>
     public override string? VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes an 'abs' call.
+    /// Writes an <c>abs</c> call.
     /// </summary>
     public override string? VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'pow' call.
+    /// Writes a <c>pow</c> call.
     /// </summary>
     public override string? VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'gcd' call.
+    /// Writes a <c>gcd</c> call.
     /// </summary>
     public override string? VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) => RenderCall(context);
 
     /// <summary>
-    /// Writes a 'lcm' call.
+    /// Writes a <c>lcm</c> call.
     /// </summary>
     public override string? VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) => RenderCall(context);
 
@@ -412,7 +412,7 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     }
 
     /// <summary>
-    /// Writes a 'uaf' call, i.e. the sequence it is given.
+    /// Writes a <c>uaf</c> call, i.e. the sequence it is given.
     /// </summary>
     public override string? VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context) =>
         $"uaf({Render(context.sequence())})";
@@ -457,7 +457,7 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         RenderSegment("[", context, "]");
 
     /// <summary>
-    /// Writes a 'upp' call, i.e. the transient and periodic parts it is given.
+    /// Writes a <c>upp</c> call, i.e. the transient and periodic parts it is given.
     /// </summary>
     public override string? VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {

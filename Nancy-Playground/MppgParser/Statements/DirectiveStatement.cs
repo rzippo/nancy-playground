@@ -1,7 +1,7 @@
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
-/// A '#!' directive other than the version one, which is kept but not acted upon.
+/// A <c>#!</c> directive other than the version one, which is kept but not acted upon.
 /// </summary>
 public record class DirectiveStatement : Statement
 {

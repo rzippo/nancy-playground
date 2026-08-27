@@ -78,7 +78,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     }
 
     /// <summary>
-    /// Reads a segment including both its endpoints, written '[' … ']'.
+    /// Reads a segment including both its endpoints, written <c>[</c> … <c>]</c>.
     /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightClosed(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightClosedContext context)
@@ -96,7 +96,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     }
 
     /// <summary>
-    /// Reads a segment including its left endpoint alone, written '[' … '['.
+    /// Reads a segment including its left endpoint alone, written <c>[</c> … <c>[</c>.
     /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftClosedRightOpen(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftClosedRightOpenContext context)
@@ -110,7 +110,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     }
 
     /// <summary>
-    /// Reads a segment including its right endpoint alone, written ']' … ']'.
+    /// Reads a segment including its right endpoint alone, written <c>]</c> … <c>]</c>.
     /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightClosed(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightClosedContext context)
@@ -127,7 +127,7 @@ public class ElementsVisitor : MppgBaseVisitor<IEnumerable<Element>>
     }
 
     /// <summary>
-    /// Reads a segment including neither endpoint, written ']' … '['.
+    /// Reads a segment including neither endpoint, written <c>]</c> … <c>[</c>.
     /// </summary>
     public override IEnumerable<Element> VisitSegmentLeftOpenRightOpen(
         Unipi.MppgParser.Grammar.MppgParser.SegmentLeftOpenRightOpenContext context)

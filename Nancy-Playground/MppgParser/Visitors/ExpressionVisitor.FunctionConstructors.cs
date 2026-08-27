@@ -8,7 +8,7 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public partial class ExpressionVisitor
 {
     /// <summary>
-    /// Builds the expression of 'ratency', a rate-latency curve.
+    /// Builds the expression of <c>ratency</c>, a rate-latency curve.
     /// </summary>
     public override IExpression VisitRateLatency(Unipi.MppgParser.Grammar.MppgParser.RateLatencyContext context)
     {
@@ -37,7 +37,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'bucket', a token-bucket curve.
+    /// Builds the expression of <c>bucket</c>, a token-bucket curve.
     /// </summary>
     public override IExpression VisitTokenBucket(Unipi.MppgParser.Grammar.MppgParser.TokenBucketContext context)
     {
@@ -66,7 +66,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'affine', an affine curve.
+    /// Builds the expression of <c>affine</c>, an affine curve.
     /// </summary>
     public override IExpression VisitAffineFunction(
         Unipi.MppgParser.Grammar.MppgParser.AffineFunctionContext context)
@@ -111,7 +111,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'step', a step curve.
+    /// Builds the expression of <c>step</c>, a step curve.
     /// </summary>
     public override IExpression VisitStepFunction(
         Unipi.MppgParser.Grammar.MppgParser.StepFunctionContext context)
@@ -138,7 +138,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'stair', a staircase curve.
+    /// Builds the expression of <c>stair</c>, a staircase curve.
     /// </summary>
     public override IExpression VisitStairFunction(
         Unipi.MppgParser.Grammar.MppgParser.StairFunctionContext context)
@@ -164,7 +164,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'delay', a curve that is zero until the given delay and infinite after it.
+    /// Builds the expression of <c>delay</c>, a curve that is zero until the given delay and infinite after it.
     /// </summary>
     public override IExpression VisitDelayFunction(
         Unipi.MppgParser.Grammar.MppgParser.DelayFunctionContext context)
@@ -189,7 +189,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'zero', the curve that is zero everywhere.
+    /// Builds the expression of <c>zero</c>, the curve that is zero everywhere.
     /// </summary>
     public override IExpression VisitZeroFunction(
         Unipi.MppgParser.Grammar.MppgParser.ZeroFunctionContext context)
@@ -199,7 +199,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'epsilon', the curve that is infinite everywhere but the origin.
+    /// Builds the expression of <c>epsilon</c>, the curve that is infinite everywhere but the origin.
     /// </summary>
     public override IExpression VisitEpsilonFunction(
         Unipi.MppgParser.Grammar.MppgParser.EpsilonFunctionContext context)
@@ -209,7 +209,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'upp', a curve given as an ultimately pseudo-periodic sequence.
+    /// Builds the expression of <c>upp</c>, a curve given as an ultimately pseudo-periodic sequence.
     /// </summary>
     public override IExpression VisitUltimatelyPseudoPeriodicFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyPseudoPeriodicFunctionContext context)
     {
@@ -297,7 +297,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'uaf', a curve given as an ultimately affine sequence.
+    /// Builds the expression of <c>uaf</c>, a curve given as an ultimately affine sequence.
     /// </summary>
     public override IExpression VisitUltimatelyAffineFunction(Unipi.MppgParser.Grammar.MppgParser.UltimatelyAffineFunctionContext context)
     {

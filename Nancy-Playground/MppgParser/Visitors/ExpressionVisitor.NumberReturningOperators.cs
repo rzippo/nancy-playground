@@ -80,7 +80,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'hDev', the horizontal deviation between two curves.
+    /// Builds the expression of <c>hDev</c>, the horizontal deviation between two curves.
     /// </summary>
     public override IExpression VisitFunctionHorizontalDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionHorizontalDeviationContext context)
@@ -103,7 +103,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'vDev', the vertical deviation between two curves.
+    /// Builds the expression of <c>vDev</c>, the vertical deviation between two curves.
     /// </summary>
     public override IExpression VisitFunctionVerticalDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionVerticalDeviationContext context)
@@ -126,7 +126,7 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'zDev', the z-deviation between two curves.
+    /// Builds the expression of <c>zDev</c>, the z-deviation between two curves.
     /// </summary>
     public override IExpression VisitFunctionZDeviation(
         Unipi.MppgParser.Grammar.MppgParser.FunctionZDeviationContext context)

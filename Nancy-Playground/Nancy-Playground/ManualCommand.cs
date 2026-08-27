@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
-/// The 'manual' command, which prints the manual of the syntax.
+/// The <c>manual</c> command, which prints the manual of the syntax.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public class ManualCommand : Command<ManualCommand.Settings>
@@ -27,7 +27,7 @@ public class ManualCommand : Command<ManualCommand.Settings>
     }
 
     /// <summary>
-    /// The options of the 'manual' command.
+    /// The options of the <c>manual</c> command.
     /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {

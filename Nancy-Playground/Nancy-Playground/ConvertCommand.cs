@@ -8,14 +8,14 @@ using Unipi.Nancy.Playground.MppgParser.Utility;
 namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
-/// The 'convert' command, which writes an MPPG program as the C# program that runs it with Nancy.
+/// The <c>convert</c> command, which writes an MPPG program as the C# program that runs it with Nancy.
 /// </summary>
 public class ConvertCommand : Command<ConvertCommand.Settings>
 {
     private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
     
     /// <summary>
-    /// The options of the 'convert' command.
+    /// The options of the <c>convert</c> command.
     /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {

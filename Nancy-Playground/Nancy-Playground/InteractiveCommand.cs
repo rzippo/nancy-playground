@@ -11,7 +11,7 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
-/// The 'interactive' command, which runs a session one statement at a time.
+/// The <c>interactive</c> command, which runs a session one statement at a time.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
@@ -38,7 +38,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     }
 
     /// <summary>
-    /// The options of the 'interactive' command.
+    /// The options of the <c>interactive</c> command.
     /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {

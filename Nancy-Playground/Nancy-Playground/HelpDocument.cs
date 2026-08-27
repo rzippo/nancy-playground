@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Unipi.Nancy.Playground.Cli;
 
 /// <summary>
-/// The manual of the syntax, as the 'manual' command and the interactive help print it.
+/// The manual of the syntax, as the <c>manual</c> command and the interactive help print it.
 /// </summary>
 [ExcludeFromCodeCoverage]
 public static class NancyPlaygroundDocs

@@ -48,7 +48,7 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     public static SyntaxVersion FromParts(int major, int minor) => new(major, minor);
 
     /// <summary>
-    /// Reads the version a '#!syntax version X.Y' line declares, returning false where the line does not declare one.
+    /// Reads the version a <c>#!syntax version X.Y</c> line declares, returning false where the line does not declare one.
     /// </summary>
     public static bool TryParseShebang(string shebang, out SyntaxVersion version)
     {
@@ -96,7 +96,7 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     public static bool operator <(SyntaxVersion a, SyntaxVersion b) => a.CompareTo(b) < 0;
 
     /// <summary>
-    /// The version as it is written in a directive, i.e. 'major.minor'.
+    /// The version as it is written in a directive, i.e. <c>major.minor</c>.
     /// </summary>
     public override string ToString() => $"{Major}.{Minor}";
 }

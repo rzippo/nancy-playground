@@ -3,7 +3,7 @@ using Unipi.Nancy.Expressions;
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
-/// The 'plot' command, which draws the given functions.
+/// The <c>plot</c> command, which draws the given functions.
 /// </summary>
 public record class PlotCommand : Statement
 {

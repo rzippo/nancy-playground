@@ -25,14 +25,14 @@ public enum PlotRootMode
 }
 
 /// <summary>
-/// The 'run' command, which runs an MPPG program from start to end.
+/// The <c>run</c> command, which runs an MPPG program from start to end.
 /// </summary>
 public class RunCommand : Command<RunCommand.Settings>
 {
     private IAnsiConsole Console {get; init;} = AnsiConsole.Console;
 
     /// <summary>
-    /// The options of the 'run' command.
+    /// The options of the <c>run</c> command.
     /// </summary>
     public sealed class Settings : CommonExecutionSettings
     {

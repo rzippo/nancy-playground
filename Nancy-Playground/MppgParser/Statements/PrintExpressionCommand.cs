@@ -4,7 +4,7 @@ using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
-/// The 'printExpression' command, which shows how a variable was written rather than what it computes.
+/// The <c>printExpression</c> command, which shows how a variable was written rather than what it computes.
 /// </summary>
 public record class PrintExpressionCommand : Statement
 {

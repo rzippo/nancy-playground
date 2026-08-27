@@ -74,7 +74,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of a '#!syntax version' directive.
+    /// Builds the statement of a <c>#!syntax version</c> directive.
     /// </summary>
     public override Statement? VisitVersionDirective(Unipi.MppgParser.Grammar.MppgParser.VersionDirectiveContext context)
     {
@@ -84,7 +84,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of a '#!' directive that is not the version one.
+    /// Builds the statement of a <c>#!</c> directive that is not the version one.
     /// </summary>
     public override Statement? VisitDirective(Unipi.MppgParser.Grammar.MppgParser.DirectiveContext context)
     {
@@ -101,7 +101,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of a 'plot' command, with the functions and the options it was given.
+    /// Builds the statement of a <c>plot</c> command, with the functions and the options it was given.
     /// </summary>
     public override Statement? VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context)
     {
@@ -116,7 +116,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of a 'plotTikz' command, with the functions and the options it was given.
+    /// Builds the statement of a <c>plotTikz</c> command, with the functions and the options it was given.
     /// </summary>
     public override Statement? VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context)
     {
@@ -325,7 +325,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of a 'printExpression' command.
+    /// Builds the statement of a <c>printExpression</c> command.
     /// </summary>
     public override Statement? VisitPrintExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.PrintExpressionCommandContext context)
     {
@@ -339,7 +339,7 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of an 'assert' command.
+    /// Builds the statement of an <c>assert</c> command.
     /// </summary>
     public override Statement? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {

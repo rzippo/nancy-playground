@@ -1,7 +1,7 @@
 namespace Unipi.Nancy.Playground.MppgParser;
 
 /// <summary>
-/// Reads the version a '#!syntax version' directive declares, and says why it cannot be used when it
+/// Reads the version a <c>#!syntax version</c> directive declares, and says why it cannot be used when it
 /// declares one this build does not have.
 /// </summary>
 public static class VersionDirective
@@ -9,7 +9,7 @@ public static class VersionDirective
     /// <summary>
     /// The version declared by <paramref name="text"/>, or null if it is not one that can be applied.
     /// </summary>
-    /// <param name="text">The line to read, which is a '#!syntax version' directive.</param>
+    /// <param name="text">The line to read, which is a <c>#!syntax version</c> directive.</param>
     /// <param name="error">Why the directive cannot be applied, or null if it can.</param>
     public static SyntaxVersion? Read(string text, out string? error)
     {

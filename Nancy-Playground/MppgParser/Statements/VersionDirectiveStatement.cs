@@ -1,7 +1,7 @@
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
-/// A '#!syntax version' directive, which declares the version the rest of the program is written in.
+/// A <c>#!syntax version</c> directive, which declares the version the rest of the program is written in.
 /// </summary>
 public record class VersionDirectiveStatement : Statement
 {

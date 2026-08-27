@@ -99,7 +99,7 @@ internal enum ParserRecovery
 /// The token the parser could not use, and the two beside it.
 /// </summary>
 /// <remarks>
-/// The neighbours say what was being written where the offending token alone does not: a keyword used as a name is reported at the keyword in 'div := 3' and at the ':=' in 'star := 3', so both are needed to recognise the one mistake.
+/// The neighbours say what was being written where the offending token alone does not: a keyword used as a name is reported at the keyword in <c>div := 3</c> and at the <c>:=</c> in <c>star := 3</c>, so both are needed to recognise the one mistake.
 /// </remarks>
 /// <param name="Offending">The token that could not be used.</param>
 /// <param name="Previous">The token before it, or null where it opens the input.</param>
@@ -112,7 +112,7 @@ internal sealed record ErrorTokens(IToken? Offending, IToken? Previous, IToken? 
 /// <param name="Name">Its name, which is the last of <paramref name="Stack"/>.</param>
 /// <param name="Stack">The rules it was nested in, outermost first.</param>
 /// <param name="StartToken">
-/// Its first token, which is the name of the construct being written where the rule names of the grammar are internal: 'bucket' where the rule is called tokenBucket.
+/// Its first token, which is the name of the construct being written where the rule names of the grammar are internal: <c>bucket</c> where the rule is called tokenBucket.
 /// </param>
 internal sealed record ParsedRule(string? Name, IReadOnlyList<string> Stack, IToken? StartToken)
 {
@@ -200,7 +200,7 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
     /// Where the assignment of <paramref name="line"/> is, or -1 where the line has none.
     /// </summary>
     /// <remarks>
-    /// A ':=' inside a string is text rather than an assignment, as the one in <c>@ + "a := b"</c> is, so the quotes are followed while scanning.
+    /// A <c>:=</c> inside a string is text rather than an assignment, as the one in <c>@ + "a := b"</c> is, so the quotes are followed while scanning.
     /// The string is read from the line and not from the tokens, there being none: the lexer stopped before it could make any.
     /// </remarks>
     private static int AssignmentOutsideAString(string line)
@@ -234,7 +234,7 @@ internal sealed record LexerError(SourcePosition Position, string? Character, st
 /// <param name="LineTokens">The tokens of the line the error is on, which is where a call the rule stack lost is read from.</param>
 /// <param name="ReadableMessage">
 /// The same, with the quoted input taken from the source rather than from the tokens joined together, or null where there is nothing to repair.
-/// ANTLR writes '(floorcomp' where the script reads '( floor comp', so this is what a reader is shown while <paramref name="ParserMessage"/> stays what was said.
+/// ANTLR writes <c>(floorcomp</c> where the script reads <c>( floor comp</c>, so this is what a reader is shown while <paramref name="ParserMessage"/> stays what was said.
 /// </param>
 /// <param name="DefaultHint">What to add to the message, where something is known beyond it.</param>
 /// <param name="Version">The syntax version the input was read with, which decides the words that are keywords in it.</param>
@@ -416,19 +416,19 @@ internal sealed record ParserError(
             : null;
 
     /// <summary>
-    /// True where the line opens with a name and an '=', which is an assignment written with the operator of a comparison.
+    /// True where the line opens with a name and an <c>=</c>, which is an assignment written with the operator of a comparison.
     /// </summary>
     /// <remarks>
-    /// Only where the name opens the line: an '=' after a name is a comparison inside an assertion and an option inside a plot, so those are left to what knows about them.
+    /// Only where the name opens the line: an <c>=</c> after a name is a comparison inside an assertion and an option inside a plot, so those are left to what knows about them.
     /// What the mistake was is otherwise rarely worth guessing, a name and an expression with nothing between them saying only that something is missing.
     /// </remarks>
     public bool IsAssignmentWrittenWithAnEquals => NameAssignedWithAnEquals is not null;
 
     /// <summary>
-    /// The name the line assigns to with an '=', or null where the line is not one.
+    /// The name the line assigns to with an <c>=</c>, or null where the line is not one.
     /// </summary>
     /// <remarks>
-    /// The error lands on either side of the operator, on the name where the line is read on its own and on the '=' where the lines after it give the parser somewhere else to go, so whichever it did not land on is read.
+    /// The error lands on either side of the operator, on the name where the line is read on its own and on the <c>=</c> where the lines after it give the parser somewhere else to go, so whichever it did not land on is read.
     /// </remarks>
     public IToken? NameAssignedWithAnEquals
     {
@@ -459,7 +459,7 @@ internal sealed record ParserError(
     /// The keyword the line is trying to use as a name, or null where no name is being written.
     /// </summary>
     /// <remarks>
-    /// The assignment that follows the keyword is what says a name was meant, and the error lands on either side of it: on the keyword in 'div := 3' and on the ':=' in 'star := 3'.
+    /// The assignment that follows the keyword is what says a name was meant, and the error lands on either side of it: on the keyword in <c>div := 3</c> and on the <c>:=</c> in <c>star := 3</c>.
     /// A fact rather than a matcher's own reading, since one matcher says so and another has to keep quiet about it.
     /// </remarks>
     public IToken? KeywordBeingNamed
@@ -480,7 +480,7 @@ internal sealed record ParserError(
 }
 
 /// <summary>
-/// A '#!syntax version' directive this build cannot apply, which the playground reports itself rather than the parser, the directive being well formed as far as the grammar is concerned.
+/// A <c>#!syntax version</c> directive this build cannot apply, which the playground reports itself rather than the parser, the directive being well formed as far as the grammar is concerned.
 /// </summary>
 /// <param name="Position">Where the directive is.</param>
 /// <param name="DirectiveText">The directive as it is written.</param>
@@ -508,7 +508,7 @@ internal sealed record UnusableVersionDirectiveError(
 internal static class TokenFacts
 {
     /// <summary>
-    /// True if <paramref name="token"/> is a keyword spelled the way a name is, i.e. one that a user can mean as a variable: 'div' and 'star' are, ':=' and '(' are not.
+    /// True if <paramref name="token"/> is a keyword spelled the way a name is, i.e. one that a user can mean as a variable: <c>div</c> and <c>star</c> are, <c>:=</c> and <c>(</c> are not.
     /// </summary>
     public static bool IsKeywordSpelledLikeAName(IToken? token)
         => token is not null

@@ -96,7 +96,7 @@ internal readonly record struct MppgParse(
 )
 {
     /// <summary>
-    /// The version declared by a '#!syntax version' directive, or the default if there is none.
+    /// The version declared by a <c>#!syntax version</c> directive, or the default if there is none.
     /// Reads as the default until the input is parsed.
     /// </summary>
     public SyntaxVersion DeclaredSyntaxVersion

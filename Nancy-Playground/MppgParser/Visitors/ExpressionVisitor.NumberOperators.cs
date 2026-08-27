@@ -89,13 +89,13 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
-    /// Builds the expression of 'floor' applied to a number.
+    /// Builds the expression of <c>floor</c> applied to a number.
     /// </summary>
     public override IExpression VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>
         Floor(context.numberExpression().Accept(this), context);
 
     /// <summary>
-    /// Builds the expression of 'ceil' applied to a number.
+    /// Builds the expression of <c>ceil</c> applied to a number.
     /// </summary>
     public override IExpression VisitEncNumberCeil(Unipi.MppgParser.Grammar.MppgParser.EncNumberCeilContext context) =>
         Ceil(context.numberExpression().Accept(this), context);
@@ -111,19 +111,19 @@ public partial class ExpressionVisitor
             : throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
 
     /// <summary>
-    /// Builds the expression of 'abs', the absolute value of a number.
+    /// Builds the expression of <c>abs</c>, the absolute value of a number.
     /// </summary>
     public override IExpression VisitEncNumberAbs(Unipi.MppgParser.Grammar.MppgParser.EncNumberAbsContext context) =>
         Expressions.Expressions.AbsoluteValue(Operand(context.numberExpression(), context));
 
     /// <summary>
-    /// Builds the expression of 'pow', a number raised to a power.
+    /// Builds the expression of <c>pow</c>, a number raised to a power.
     /// </summary>
     public override IExpression VisitEncNumberPow(Unipi.MppgParser.Grammar.MppgParser.EncNumberPowContext context) =>
         Pow(context.numberExpression(), context);
 
     /// <summary>
-    /// Builds the expression of 'gcd', the greatest common divisor of two numbers.
+    /// Builds the expression of <c>gcd</c>, the greatest common divisor of two numbers.
     /// </summary>
     public override IExpression VisitEncNumberGcd(Unipi.MppgParser.Grammar.MppgParser.EncNumberGcdContext context) =>
         Expressions.Expressions.GreatestCommonDivisor(
@@ -131,7 +131,7 @@ public partial class ExpressionVisitor
             Operand(context.numberExpression(1), context));
 
     /// <summary>
-    /// Builds the expression of 'lcm', the least common multiple of two numbers.
+    /// Builds the expression of <c>lcm</c>, the least common multiple of two numbers.
     /// </summary>
     public override IExpression VisitEncNumberLcm(Unipi.MppgParser.Grammar.MppgParser.EncNumberLcmContext context) =>
         Expressions.Expressions.LeastCommonMultiple(
