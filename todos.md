@@ -5,17 +5,14 @@
 - [ ] Add the print commands for the notations an expression can take, i.e. the Unicode and LaTeX forms
 - [ ] Point a failing call at the token the message names, rather than at where the parse stopped
 - [ ] Cover `--on-error Continue` with a golden case
-- [ ] Raise the 60 second timeout of `ConvertCommandExpressionPlotTests`, which runs the converted program with `dotnet program.cs` and so pays for its restore and build
 - [ ] Reflow the comments that wrap a sentence over several lines
 - [ ] Share the plot formatter construction between `run` and `interactive`
 - [ ] Bump `Unipi.Nancy` and `Unipi.Nancy.Expressions` when the coming releases land
-- [ ] Spell rationals the same way everywhere: `printExpression` writes `1 / 2` where the echo of the same statement writes `1/2`, and the fix belongs upstream
 
 ## Documentation
 
 - [ ] Describe the CLI itself: the commands, the run modes, the output modes, and what `convert` produces
 - [ ] Say where a contributor starts, a line of the readme being the only way in today
-- [ ] Write MPPG operators in code formatting wherever the docs mention them
 - [ ] Cite the papers behind the operations of the syntax in `syntax.md`
 - [ ] Describe `bucket` as rate then burst, rather than as slope and constant
 
