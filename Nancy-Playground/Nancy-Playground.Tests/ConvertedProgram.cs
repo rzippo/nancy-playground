@@ -13,7 +13,4 @@ static class ConvertedProgram
 
     public static string[] BuildArguments(string programPath, string buildDir) =>
         ["build", programPath, "-o", buildDir, OutsideCentralPackageManagement];
-
-    public static string[] RunArguments(string programPath) =>
-        [programPath, OutsideCentralPackageManagement];
 }
