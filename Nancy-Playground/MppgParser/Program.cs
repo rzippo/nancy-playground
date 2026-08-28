@@ -1,8 +1,10 @@
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Unipi.MppgParser.Grammar;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Statements.Formatters;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 using Unipi.Nancy.Playground.MppgParser.Visitors;
+using Unipi.Nancy.Playground.MppgParser.Visitors.CodeGeneration;
 
 namespace Unipi.Nancy.Playground.MppgParser;
 
@@ -216,14 +218,31 @@ public record class Program
     /// Converts the MPPG program to Nancy code.
     /// </summary>
     /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <param name="useCodeTrees">True to emit through the provisional Roslyn syntax-tree generator.</param>
     /// <returns>The lines of the generated program.</returns>
     /// <exception cref="InvalidOperationException">The program was built from a parse tree, so it has no source text to convert.</exception>
-    public List<string> ToNancyCode(bool useNancyExpressions = false)
+    public List<string> ToNancyCode(
+        bool useNancyExpressions = false,
+        bool useCodeTrees = false)
     {
         if (Text.IsNullOrWhiteSpace())
             throw new InvalidOperationException("Program text not available!");
 
-        return ToNancyCode(Text,  useNancyExpressions);
+        return ToNancyCode(Text, useNancyExpressions, useCodeTrees);
+    }
+
+    /// <summary>
+    /// Converts this MPPG program to a Roslyn syntax tree for the corresponding Nancy code.
+    /// </summary>
+    /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <returns>The generated C# program as a Roslyn compilation unit.</returns>
+    /// <exception cref="InvalidOperationException">The program was built from a parse tree, so it has no source text to convert.</exception>
+    public CompilationUnitSyntax ToNancyCodeTree(bool useNancyExpressions = false)
+    {
+        if (Text.IsNullOrWhiteSpace())
+            throw new InvalidOperationException("Program text not available!");
+
+        return ToNancyCodeTree(Text, useNancyExpressions);
     }
 
     /// <summary>
@@ -231,13 +250,18 @@ public record class Program
     /// </summary>
     /// <param name="text">The program to convert.</param>
     /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <param name="useCodeTrees">True to emit through the provisional Roslyn syntax-tree generator.</param>
     /// <returns>The lines of the generated program.</returns>
     /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
     public static List<string> ToNancyCode(
         string text,
-        bool useNancyExpressions = false
+        bool useNancyExpressions = false,
+        bool useCodeTrees = false
     )
     {
+        if (useCodeTrees)
+            return NancyCodeTreeRenderer.RenderLines(ToNancyCodeTree(text, useNancyExpressions));
+
         var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
 
         var programContext = parse.ParseOrThrow(static parser => parser.program());
@@ -247,5 +271,24 @@ public record class Program
         var code = programContext.Accept(visitor);
 
         return code;
+    }
+
+    /// <summary>
+    /// Converts MPPG program text to a Roslyn syntax tree for the corresponding Nancy code.
+    /// </summary>
+    /// <param name="text">The program to convert.</param>
+    /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <returns>The generated C# program as a Roslyn compilation unit.</returns>
+    /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
+    public static CompilationUnitSyntax ToNancyCodeTree(
+        string text,
+        bool useNancyExpressions = false
+    )
+    {
+        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
+        var programContext = parse.ParseOrThrow(static parser => parser.program());
+        return useNancyExpressions
+            ? new ToNancyExpressionsCodeTreeVisitor(parse.DeclaredSyntaxVersion).ToCompilationUnit(programContext)
+            : new ToNancyCodeTreeVisitor(parse.DeclaredSyntaxVersion).ToCompilationUnit(programContext);
     }
 }

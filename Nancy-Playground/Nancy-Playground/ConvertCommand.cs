@@ -48,6 +48,13 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         public bool UseNancyExpressions { get; init; } = false;
 
         /// <summary>
+        /// True to generate code through the provisional Roslyn syntax-tree generator.
+        /// </summary>
+        [Description("If true, the Nancy program will be generated through the provisional Roslyn syntax-tree generator.")]
+        [CommandOption("--use-code-trees")]
+        public bool UseCodeTrees { get; init; } = false;
+
+        /// <summary>
         /// True to overwrite the output file where it exists.
         /// </summary>
         [Description("If true, the Nancy program will be overwritten if already exists.")]
@@ -108,7 +115,10 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         List<string> code;
         try
         {
-            code = MppgParser.Program.ToNancyCode(programText, settings.UseNancyExpressions);
+            code = MppgParser.Program.ToNancyCode(
+                programText,
+                settings.UseNancyExpressions,
+                settings.UseCodeTrees);
         }
         catch (SyntaxErrorException ex) when (ex.Error is { } error)
         {
