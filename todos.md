@@ -7,7 +7,13 @@
 - [ ] Cover `--on-error Continue` with a golden case
 - [ ] Reflow the comments that wrap a sentence over several lines
 - [ ] Share the plot formatter construction between `run` and `interactive`
-- [ ] Bump `Unipi.Nancy` and `Unipi.Nancy.Expressions` when the coming releases land
+- [ ] Cover `plot`'s ScottPlot image output with some test, since nothing compares it today and a
+  rendering change can land silently
+- [ ] Document that `xlim`/`ylim` no longer frame the plot exactly: the frame now adds a margin past
+  the given limit
+- [ ] Restore `plotTikz`'s equal aspect ratio and curated breakpoint ticks if still wanted, lost to
+  `Unipi.Nancy.Plots.Tikz`'s new defaults
+- [ ] Add `run` options to set the syntax version without editing the file: a default to assume when the script declares none, and a force that overrides any `#!syntax version` directive it states, both useful to run a script unchanged (`RunCommand.cs`)
 
 ## Documentation
 
@@ -26,10 +32,10 @@ The two string building visitors would become a single visitor emitting a `Compi
 
 ## Operators of Nancy still missing from the syntax
 
-Compared against `Unipi.Nancy` 1.3.6 and `Unipi.Nancy.Expressions` 1.0.7, and due again against the versions in use.
+Compared against `Unipi.Nancy` 1.3.6 and `Unipi.Nancy.Expressions` 1.0.7, redone against `Unipi.Nancy` 1.4.2 and `Unipi.Nancy.Expressions` 1.0.10 on 2026-08-27.
 
 - [ ] Curve predicates, to be used with `assert`: `Dominance`, `EquivalentAfter`,
-  `EquivalentExceptOrigin`, the `IsContinuousAt` and `IsNonDecreasingOverInterval` family, and the curve properties (`IsSubAdditive`, `IsConcave`, ...), none of which can be queried today.
+  `EquivalentExceptOrigin`, the `IsContinuousAt` and `IsNonDecreasingOverInterval` family, the curve properties (`IsSubAdditive`, `IsConcave`, ...), and the newer `IntersectsWith`/`CrossesWith`, none of which can be queried today.
   Needs design first: `assert` compares two expressions, so a predicate is a new kind of assertion.
 
 Considered and left out:
