@@ -11,6 +11,14 @@ using static Unipi.Nancy.Playground.Cli.Tests.ConvertedProgram;
 namespace Unipi.Nancy.Playground.Cli.Tests;
 
 using CliMarker = Cli.Program;
+
+[CollectionDefinition(ConvertCommandOutputCollection.Name, DisableParallelization = true)]
+public sealed class ConvertCommandOutputCollection
+{
+    public const string Name = nameof(ConvertCommandOutputCollection);
+}
+
+[Collection(ConvertCommandOutputCollection.Name)]
 public class ConvertCommandOutputTests
 {
     #pragma warning disable xUnit1051 // recommends xUnit cancellation token
@@ -38,6 +46,13 @@ public class ConvertCommandOutputTests
 
     public static IEnumerable<object[]> TestCases() 
         => TestDirs().Select(dir => (object[])[dir]);
+
+    public static IEnumerable<object[]> TestCasesByExpressionMode() =>
+        TestDirs().SelectMany(static dir => new[]
+        {
+            new object[] { dir, false },
+            new object[] { dir, true }
+        });
 
     private static bool IsCaseDirectory(string dir) =>
         File.Exists(Path.Combine(dir, "script.mppg"));
@@ -707,6 +722,119 @@ public class ConvertCommandOutputTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AppTesterUseCodeTreesBuildsRunsAndProducesExpectedOutput(bool useNancyExpressions)
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
+        var outputDir = Path.Combine(Path.GetTempPath(), $"nancy-code-trees-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        try
+        {
+            var scriptPath = Path.Combine(outputDir, "script.mppg");
+            await File.WriteAllTextAsync(
+                scriptPath,
+                """
+                r := 1
+                f := ratency(r, 2)
+                x := r + 1
+                x
+                """);
+
+            var programPath = Path.Combine(outputDir, "program.cs");
+            List<string> convertCommandArgs =
+            [
+                "convert",
+                scriptPath,
+                "--output-file", programPath,
+                "--overwrite",
+                "--use-code-trees"
+            ];
+            if (useNancyExpressions)
+                convertCommandArgs.Add("--use-expressions");
+
+            var convertConsole = new TestConsole();
+            convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            convertConsole.Profile.Capabilities.Ansi = false;
+            convertConsole.Profile.Width = int.MaxValue;
+
+            var convertApp = new CommandAppTester(console: convertConsole);
+            convertApp.Configure(config =>
+            {
+                config.AddCommand<ConvertCommand>("convert");
+            });
+
+            var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+            await File.WriteAllTextAsync(Path.Combine(outputDir, "convert.stdout.txt"), convertCommandResult.Output);
+
+            Assert.True(File.Exists(programPath));
+            Assert.Equal(0, convertCommandResult.ExitCode);
+
+            var buildPersistPath = Path.Combine(outputDir, "build-output");
+            await using var buildScope = new BuildOutputScope(buildPersistPath);
+            var buildDir = buildScope.Path;
+            var buildResult = await CliWrap.Cli.Wrap("dotnet")
+                .WithArguments(BuildArguments(programPath, buildDir))
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
+            Assert.True(
+                buildResult.ExitCode == 0,
+                BuildFailureMessage(buildResult));
+
+            var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
+            Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
+
+            try
+            {
+                var programResult = await CliWrap.Cli.Wrap("dotnet")
+                    .WithArguments([dllPath])
+                    .WithValidation(CommandResultValidation.None)
+                    .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, "program.stdout.txt"), programResult.StandardOutput);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, "program.stderr.txt"), programResult.StandardError);
+
+                Assert.Equal(0, programResult.ExitCode);
+                Assert.Equal("2", LastNonEmptyLine(programResult.StandardOutput));
+            }
+            catch
+            {
+                buildScope.MarkFailed();
+                throw;
+            }
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(outputDir, true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TestCasesByExpressionMode))]
+    public Task AppTesterSameLastResultCodeTrees(string caseDir, bool useNancyExpressions) =>
+        AppTesterSameOutputCodeTrees(
+            caseDir,
+            useNancyExpressions,
+            compareExplicitPrints: false);
+
+    [Theory]
+    [MemberData(nameof(TestCasesByExpressionMode))]
+    public Task AppTesterSameExplicitPrintsCodeTrees(string caseDir, bool useNancyExpressions) =>
+        AppTesterSameOutputCodeTrees(
+            caseDir,
+            useNancyExpressions,
+            compareExplicitPrints: true);
+
     /// <summary>
     /// Builds and launches the actual app: first in run mode, then convert.
     /// Then builds and launches the converted script to test that all explicit prints match, using step-by-step computations. 
@@ -1301,6 +1429,141 @@ public class ConvertCommandOutputTests
 
             // Finally: check that both results are the same
             AssertSameTextOutput(runCommandExplicitPrints, programExplicitPrints);
+        }
+        catch
+        {
+            buildScope.MarkFailed();
+            throw;
+        }
+    }
+
+    private async Task AppTesterSameOutputCodeTrees(
+        string caseDir,
+        bool useNancyExpressions,
+        bool compareExplicitPrints)
+    {
+        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+
+        var cliDllPath = typeof(CliMarker).Assembly.Location;
+        var tfm = GetCurrentTfmFromPath(cliDllPath);
+        var modeName = useNancyExpressions ? "expressions" : "direct";
+        var assertionName = compareExplicitPrints ? "explicit-prints" : "last-result";
+
+        _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
+
+        var outputDir = Path.Combine(caseDir, $"{assertionName}-code-trees-test", modeName, "app-tester");
+        Directory.CreateDirectory(outputDir);
+        _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
+
+        var scriptPath = Path.Combine(caseDir, "script.mppg");
+        List<string> runCommandArgs =
+        [
+            "run",
+            scriptPath
+        ];
+        if (compareExplicitPrints)
+            runCommandArgs.AddRange(["--output-mode", "ConvertReferencePrints"]);
+        runCommandArgs.AddRange([
+            "--run-mode", useNancyExpressions ? "ExpressionsBased" : "PerStatement",
+            "--deterministic",
+            "--no-welcome"
+        ]);
+
+        var runConsole = new TestConsole();
+        runConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        runConsole.Profile.Capabilities.Ansi = false;
+        runConsole.Profile.Width = int.MaxValue;
+
+        var runApp = new CommandAppTester(console: runConsole);
+        runApp.Configure(config =>
+        {
+            config.AddCommand<RunCommand>("run");
+        });
+
+        var runCommandResult = runApp.Run(runCommandArgs.ToArray());
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.stdout.txt"), runCommandResult.Output);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"run.{tfm}.exitcode.txt"), runCommandResult.ExitCode.ToString());
+
+        Assert.Equal(0, runCommandResult.ExitCode);
+        var runReferenceOutput = compareExplicitPrints
+            ? Normalize(runCommandResult.Output)
+            : LastNonEmptyLine(runCommandResult.Output) ??
+                throw new InvalidOperationException("No result from the run command!");
+
+        var programPath = Path.Combine(outputDir, "program.cs");
+        List<string> convertCommandArgs =
+        [
+            "convert",
+            scriptPath,
+            "--output-file", programPath,
+            "--overwrite",
+            "--use-code-trees"
+        ];
+        if (useNancyExpressions)
+            convertCommandArgs.Add("--use-expressions");
+
+        var convertConsole = new TestConsole();
+        convertConsole.Profile.Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        convertConsole.Profile.Capabilities.Ansi = false;
+        convertConsole.Profile.Width = int.MaxValue;
+
+        var convertApp = new CommandAppTester(console: convertConsole);
+        convertApp.Configure(config =>
+        {
+            config.AddCommand<ConvertCommand>("convert");
+        });
+
+        var convertCommandResult = convertApp.Run(convertCommandArgs.ToArray());
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.stdout.txt"), convertCommandResult.Output);
+        await File.WriteAllTextAsync(Path.Combine(outputDir, $"convert.{tfm}.exitcode.txt"), convertCommandResult.ExitCode.ToString());
+
+        Assert.True(File.Exists(programPath));
+        Assert.Equal(0, convertCommandResult.ExitCode);
+
+        var buildPersistPath = Path.Combine(outputDir, "build-output");
+        await using var buildScope = new BuildOutputScope(buildPersistPath);
+        var buildDir = buildScope.Path;
+        var buildResult = await CliWrap.Cli.Wrap("dotnet")
+            .WithArguments(BuildArguments(programPath, buildDir))
+            .WithValidation(CommandResultValidation.None)
+            .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8);
+        Assert.True(
+            buildResult.ExitCode == 0,
+            BuildFailureMessage(buildResult));
+        var dllPath = Path.Combine(buildDir, $"{Path.GetFileNameWithoutExtension(programPath)}.dll");
+        Assert.True(File.Exists(dllPath), $"Built assembly not found at: {dllPath}");
+
+        try
+        {
+            string programOutput;
+            int convertedProgramTimeoutSeconds = 60;
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(convertedProgramTimeoutSeconds)))
+            {
+                BufferedCommandResult programResult;
+                try
+                {
+                    programResult = await CliWrap.Cli.Wrap("dotnet")
+                        .WithArguments([dllPath])
+                        .WithValidation(CommandResultValidation.None)
+                        .ExecuteBufferedAsync(Encoding.UTF8, Encoding.UTF8, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw new TimeoutException($"Program run did not exit within {convertedProgramTimeoutSeconds} seconds (TFM={tfm}, case={caseDir}).");
+                }
+
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stdout.txt"), programResult.StandardOutput, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.stderr.txt"), programResult.StandardError, cts.Token);
+                await File.WriteAllTextAsync(Path.Combine(outputDir, $"program.{tfm}.exitcode.txt"), programResult.ExitCode.ToString(), cts.Token);
+
+                Assert.Equal(0, programResult.ExitCode);
+                programOutput = compareExplicitPrints
+                    ? Normalize(programResult.StandardOutput)
+                    : LastNonEmptyLine(programResult.StandardOutput) ??
+                        throw new InvalidOperationException("No result from the program!");
+            }
+
+            AssertSameTextOutput(runReferenceOutput, programOutput);
         }
         catch
         {

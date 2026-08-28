@@ -434,6 +434,34 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
+    public void ConvertUseCodeTreesWritesOutput()
+    {
+        using var dir = TemporaryDirectory.Create();
+        var scriptPath = Path.Combine(dir.Path, "source.mppg");
+        File.WriteAllText(
+            scriptPath,
+            """
+            // heading
+            x := 1
+            x := x + 1
+            """,
+            Encoding.UTF8);
+        var outputPath = Path.Combine(dir.Path, "program.cs");
+
+        var (exitCode, _) = ConvertCommand([
+            "convert",
+            scriptPath,
+            "--output-file", outputPath,
+            "--use-code-trees",
+            "--overwrite",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.True(File.Exists(outputPath), $"Program not converted to: {outputPath}");
+    }
+
+    [Fact]
     public void ConvertRefusesExistingOutputWithoutOverwrite()
     {
         using var dir = TemporaryDirectory.Create();

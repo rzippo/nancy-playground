@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Unipi.Nancy.Playground.MppgParser.Utility;
+using Unipi.Nancy.Playground.MppgParser.Visitors.CodeGeneration;
 
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
@@ -433,5 +435,86 @@ public class CodeConversion
 
         Assert.Contains("((Rational)(new Rational(7) / new Rational(2)).Floor())", fullCode);
         Assert.DoesNotContain("NOT IMPLEMENTED", fullCode);
+    }
+
+    [Theory]
+    [InlineData(false, "Rational")]
+    [InlineData(true, "RationalExpression")]
+    public void CodeTreeConversionEmitsScalarDeclarationsAndAssignments(
+        bool useNancyExpressions,
+        string expectedType)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 1
+            x := x + 1
+            """,
+            useNancyExpressions);
+
+        var statements = tree.Members
+            .OfType<GlobalStatementSyntax>()
+            .Select(member => member.Statement)
+            .ToList();
+        var declaration = Assert.IsType<LocalDeclarationStatementSyntax>(statements[1]);
+        var assignment = Assert.IsType<ExpressionStatementSyntax>(statements[2]);
+        var assignmentExpression = Assert.IsType<AssignmentExpressionSyntax>(assignment.Expression);
+
+        Assert.Equal(expectedType, declaration.Declaration.Type.ToString());
+        Assert.IsType<BinaryExpressionSyntax>(assignmentExpression.Right);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionEmitsScalarUnaryOperators(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            a := floor(7/2)
+            b := ceil(7/2)
+            c := abs(-3)
+            d := pow(2, 5)
+            e := gcd(12, 18)
+            g := lcm(4, 6)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains("Floor()", code);
+        Assert.Contains("Ceil()", code);
+        Assert.Contains("GreatestCommonDivisor(", code);
+        Assert.Contains("LeastCommonMultiple(", code);
+        Assert.Contains(useNancyExpressions ? "AbsoluteValue()" : "Rational.Abs(", code);
+        Assert.Contains(useNancyExpressions ? ".Pow(" : "Rational.Pow(", code);
+    }
+
+    /// <summary>
+    /// A construct with no dedicated code-tree visitor override must not abort the whole conversion:
+    /// only the statement it appears in is reported as NOT IMPLEMENTED, while statements before and
+    /// after it, which are implemented, still convert to real code.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionIsolatesUnimplementedStatements(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            #!unknown-directive
+            x := 3 + 4
+            x
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Single(Regex.Matches(code, "NOT IMPLEMENTED"));
+        Assert.Contains("RateLatencyServiceCurve", code);
+        Assert.Contains("new Rational(3)", code);
+        Assert.Contains("new Rational(4)", code);
+        Assert.Contains("Console.WriteLine", code);
     }
 }
