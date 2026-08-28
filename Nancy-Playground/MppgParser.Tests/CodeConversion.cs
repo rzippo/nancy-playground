@@ -517,4 +517,75 @@ public class CodeConversion
         Assert.Contains("new Rational(4)", code);
         Assert.Contains("Console.WriteLine", code);
     }
+
+    [Fact]
+    public void CodeTreeConversionRemovesRedundantParenthesesFromInvocationArguments()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            C := affine(1, 0)
+            A1 := stair(0, 60, 35)
+            D1 := C + (A1 - C) * zero
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Curve.Convolution(A1 - C, Curve.Zero())", code);
+        Assert.DoesNotContain("Curve.Convolution((A1 - C), Curve.Zero())", code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionRemovesRedundantParenthesesFromPrimaryReceivers(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := bucket(5, 2) * delay(1)
+            g := up_inv(f)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("g = f.UpperPseudoInverse();", code);
+        Assert.DoesNotContain("(f).UpperPseudoInverse()", code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionKeepsRequiredParenthesesForBinaryReceivers(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := affine(1, 0)
+            g := nnupclosure(f - f)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("(f - f).ToNonNegative().ToUpperNonDecreasing()", code);
+    }
+
+    /// <summary>
+    /// Regression test: a cast built defensively double-wrapped (once by the cast's own builder,
+    /// once by the negation wrapping its operand) must still fully unwrap once the two collapse
+    /// into one during cleanup, rather than stopping at the first, now-stale, removability check.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionRemovesParenthesesAroundNegatedCast()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            m := - floor(7/2)
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational m = -(Rational)(new Rational(7) / new Rational(2)).Floor();", code);
+    }
 }
