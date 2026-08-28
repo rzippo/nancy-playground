@@ -287,8 +287,9 @@ public record class Program
     {
         var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
         var programContext = parse.ParseOrThrow(static parser => parser.program());
-        return useNancyExpressions
+        var compilationUnit = useNancyExpressions
             ? new ToNancyExpressionsCodeTreeVisitor(parse.DeclaredSyntaxVersion).ToCompilationUnit(programContext)
             : new ToNancyCodeTreeVisitor(parse.DeclaredSyntaxVersion).ToCompilationUnit(programContext);
+        return NancyCodeTreeCleanup.RemoveRedundantParentheses(compilationUnit);
     }
 }
