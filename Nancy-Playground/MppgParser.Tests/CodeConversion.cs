@@ -630,7 +630,7 @@ public class CodeConversion
         var tree = Program.ToNancyCodeTree(
             """
             f := ratency(1, 2)
-            plotTikz(f)
+            plotTikz(f, xlim = [0, 10])
             """,
             useNancyExpressions: false);
 
@@ -638,6 +638,27 @@ public class CodeConversion
 
         Assert.Contains("new TikzPlotSettings {", code);
         Assert.DoesNotContain("new TikzPlotSettings() {", code);
+    }
+
+    /// <summary>
+    /// "settings" is an optional parameter on both plotting APIs; a plot with no options at all
+    /// (only possible for plotTikz, since plot's image defaults are never empty) should omit the
+    /// argument entirely rather than pass an empty initializer.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionOmitsEmptyPlotSettingsArgument()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            plotTikz(f)
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("settings:", code);
+        Assert.DoesNotContain("TikzPlotSettings", code);
     }
 
     [Theory]
@@ -679,6 +700,45 @@ public class CodeConversion
         Assert.DoesNotContain("NOT IMPLEMENTED", code);
         Assert.Contains("// #!syntax version 1.2", code);
         Assert.Contains("Console.WriteLine(x);", code);
+    }
+
+    [Fact]
+    public void CodeTreeConversionOmitsPlotPackagesAndUsingsWhenScriptDoesNotPlot()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 1
+            x
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("Plots.ScottPlot", code);
+        Assert.DoesNotContain("Plots.Tikz", code);
+        Assert.DoesNotContain("System.IO", code);
+    }
+
+    /// <summary>
+    /// Regression test: a script that only calls plotTikz must not pull in the ScottPlot package,
+    /// even though both plot commands share the same "does this program plot at all" check for
+    /// System.IO. Only ScottPlots.ToScottPlotImage needs that package, and only plot calls it.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionOmitsScottPlotPackageForTikzOnlyScript()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            plotTikz(f)
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Plots.Tikz", code);
+        Assert.DoesNotContain("Plots.ScottPlot", code);
+        Assert.Contains("System.IO", code);
     }
 
     [Fact]
