@@ -488,6 +488,11 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
     private static IEnumerable<string> GetPackageDirectives(bool usesImagePlots, bool usesTikzPlots)
     {
         yield return $"#:package Unipi.Nancy@{PackageVersions.Nancy}";
+        // Unipi.Nancy.Expressions already depends on Unipi.Nancy.Analyzers, so the --use-expressions
+        // profile gets NANCY0005 (int/decimal division may lose precision) for free; this profile
+        // does not, since Unipi.Nancy itself does not depend on it. Pinned explicitly here instead.
+        // TODO: if Unipi.Nancy ever takes that dependency, drop this explicit pin.
+        yield return $"#:package Unipi.Nancy.Analyzers@{PackageVersions.Analyzers}";
         if (usesImagePlots)
             yield return $"#:package Unipi.Nancy.Plots.ScottPlot@{PackageVersions.ScottPlot}";
         if (usesTikzPlots)

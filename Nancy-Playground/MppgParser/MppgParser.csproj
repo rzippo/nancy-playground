@@ -45,6 +45,7 @@
             <Code Type="Fragment" Language="cs"><![CDATA[
 var constantByPackage = new Dictionary<string, string>();
 constantByPackage.Add("Unipi.Nancy", "Nancy");
+constantByPackage.Add("Unipi.Nancy.Analyzers", "Analyzers");
 constantByPackage.Add("Unipi.Nancy.Expressions", "NancyExpressions");
 constantByPackage.Add("Unipi.Nancy.Plots.ScottPlot", "ScottPlot");
 constantByPackage.Add("Unipi.Nancy.Plots.Tikz", "Tikz");
