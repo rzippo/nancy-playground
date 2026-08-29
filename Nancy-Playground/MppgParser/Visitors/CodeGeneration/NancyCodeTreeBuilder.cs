@@ -204,11 +204,19 @@ internal static class NancyCodeTreeBuilder
         var (functionsToPlot, settings, outPath) = ParsePlotArgs(args, outputKind);
         var plottedFunctions = functionsToPlot.Select(name => materialize(IdentifierName(name))).ToArray();
 
-        var settingsInitializer = InitializerExpression(
-            SyntaxKind.ObjectInitializerExpression,
-            SeparatedList<ExpressionSyntax>(settings.Select(static setting =>
-                (ExpressionSyntax)AssignmentExpression(
-                    SyntaxKind.SimpleAssignmentExpression, IdentifierName(setting.Property), setting.Value))));
+        // Omitted rather than passed as an empty initializer when there is nothing to set:
+        // "settings" is an optional parameter on both plotting APIs, and a plot with no options
+        // given (only ever possible for plotTikz, since plot's image defaults are never empty)
+        // should read as "no settings", not as "an empty settings object".
+        ArgumentSyntax? settingsArgument = settings.Count == 0
+            ? null
+            : NamedArgument("settings", ObjectCreateWithInitializer(
+                outputKind == PlotOutputKind.Image ? "ScottPlotSettings" : "TikzPlotSettings",
+                InitializerExpression(
+                    SyntaxKind.ObjectInitializerExpression,
+                    SeparatedList<ExpressionSyntax>(settings.Select(static setting =>
+                        (ExpressionSyntax)AssignmentExpression(
+                            SyntaxKind.SimpleAssignmentExpression, IdentifierName(setting.Property), setting.Value))))));
 
         var statements = new List<StatementSyntax>();
 
@@ -216,8 +224,7 @@ internal static class NancyCodeTreeBuilder
         {
             statements.Add(DeclareOrAssign("plotBytes", Invoke(
                 Member(IdentifierName("ScottPlots"), "ToScottPlotImage"),
-                Argument(CollectionOf(plottedFunctions)),
-                NamedArgument("settings", ObjectCreateWithInitializer("ScottPlotSettings", settingsInitializer))),
+                PlotArguments(Argument(CollectionOf(plottedFunctions)), settingsArgument)),
                 declaredVariables));
 
             if (!string.IsNullOrWhiteSpace(outPath))
@@ -245,9 +252,10 @@ internal static class NancyCodeTreeBuilder
             var functionNameLiterals = functionsToPlot.Select(name => (ExpressionSyntax)StringLiteral(name)).ToArray();
             statements.Add(DeclareOrAssign("plotTikzCode", Invoke(
                 Member(IdentifierName("TikzPlots"), "ToTikzPlotCode"),
-                Argument(CollectionOf(plottedFunctions)),
-                Argument(CollectionOf(functionNameLiterals)),
-                NamedArgument("settings", ObjectCreateWithInitializer("TikzPlotSettings", settingsInitializer))),
+                PlotArguments(
+                    Argument(CollectionOf(plottedFunctions)),
+                    Argument(CollectionOf(functionNameLiterals)),
+                    settingsArgument)),
                 declaredVariables));
 
             if (!string.IsNullOrWhiteSpace(outPath))
@@ -280,6 +288,9 @@ internal static class NancyCodeTreeBuilder
     // over the equivalent but needlessly verbose "new Type() { ... }".
     private static ObjectCreationExpressionSyntax ObjectCreateWithInitializer(string typeName, InitializerExpressionSyntax initializer) =>
         ObjectCreationExpression(IdentifierName(typeName)).WithInitializer(initializer);
+
+    private static ArgumentSyntax[] PlotArguments(params ArgumentSyntax?[] arguments) =>
+        arguments.OfType<ArgumentSyntax>().ToArray();
 
     private static LocalDeclarationStatementSyntax VariableDeclarationStatement(string name, ExpressionSyntax value) =>
         LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))
@@ -505,7 +516,7 @@ internal static class NancyCodeTreeBuilder
     private static StatementSyntax PrintToLowerString(ExpressionSyntax expression)
     {
         var toStringCall = Invoke(Member(expression, "ToString"));
-        var toLowerCall = Invoke(Member(toStringCall, "ToLower"));
+        var toLowerCall = Invoke(Member(toStringCall, "ToLowerInvariant"));
         return ExpressionStatement(Invoke(Member(IdentifierName("Console"), "WriteLine"), toLowerCall));
     }
 

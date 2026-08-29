@@ -49,4 +49,34 @@ public static class IParseTreeExtensions
             .Where(statement => statement is not null)
             .Any(statement => statement.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext>(0) is not null);
     }
+
+    /// <summary>
+    /// True if any of the given statement lines is a <c>plot</c> command,
+    /// i.e. the program needs Nancy.Plots.ScottPlot.
+    /// </summary>
+    public static bool UsesImagePlots(
+        this IEnumerable<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext> statementLineContexts
+    )
+    {
+        return statementLineContexts
+            .Select(line => line.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0))
+            .Where(statement => statement is not null)
+            .Any(statement => statement.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext>(0) is not null);
+    }
+
+    /// <summary>
+    /// True if any of the given statement lines is a <c>plot</c> or <c>plotTikz</c> command,
+    /// i.e. the program writes plot output and needs file I/O.
+    /// </summary>
+    public static bool UsesPlots(
+        this IEnumerable<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext> statementLineContexts
+    )
+    {
+        return statementLineContexts
+            .Select(line => line.GetChild<Unipi.MppgParser.Grammar.MppgParser.StatementContext>(0))
+            .Where(statement => statement is not null)
+            .Any(statement =>
+                statement.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext>(0) is not null ||
+                statement.GetChild<Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext>(0) is not null);
+    }
 }

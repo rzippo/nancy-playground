@@ -38,12 +38,18 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
         throw new NotImplementedCodeGenerationException("<no code>");
 
     public CompilationUnitSyntax ToCompilationUnit(
-        Unipi.MppgParser.Grammar.MppgParser.ProgramContext context) =>
-        NancyCodeTreeBuilder.ToCompilationUnit(
+        Unipi.MppgParser.Grammar.MppgParser.ProgramContext context)
+    {
+        var statementLines = context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>();
+        var usesPlots = statementLines.UsesPlots();
+        var usesImagePlots = statementLines.UsesImagePlots();
+        var usesTikzPlots = statementLines.UsesTikzPlots();
+        return NancyCodeTreeBuilder.ToCompilationUnit(
             context,
             this,
-            GetPackageDirectives(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>().UsesTikzPlots()),
-            GetUsingNames(context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.StatementLineContext>().UsesTikzPlots()));
+            GetPackageDirectives(usesImagePlots, usesTikzPlots),
+            GetUsingNames(usesPlots, usesImagePlots, usesTikzPlots));
+    }
 
     public override GeneratedCode VisitExpression(Unipi.MppgParser.Grammar.MppgParser.ExpressionContext context) =>
         context.GetChild(0).Accept(this);
@@ -479,22 +485,25 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
     public override GeneratedCode VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
         NancyCodeTreeBuilder.VisitPlotTikzCommand(context, materialize: static value => value, _declaredVariables);
 
-    private static IEnumerable<string> GetPackageDirectives(bool usesTikzPlots)
+    private static IEnumerable<string> GetPackageDirectives(bool usesImagePlots, bool usesTikzPlots)
     {
         yield return $"#:package Unipi.Nancy@{PackageVersions.Nancy}";
-        yield return $"#:package Unipi.Nancy.Plots.ScottPlot@{PackageVersions.ScottPlot}";
+        if (usesImagePlots)
+            yield return $"#:package Unipi.Nancy.Plots.ScottPlot@{PackageVersions.ScottPlot}";
         if (usesTikzPlots)
             yield return $"#:package Unipi.Nancy.Plots.Tikz@{PackageVersions.Tikz}";
     }
 
-    private static IEnumerable<string> GetUsingNames(bool usesTikzPlots)
+    private static IEnumerable<string> GetUsingNames(bool usesPlots, bool usesImagePlots, bool usesTikzPlots)
     {
         yield return "System.Globalization";
-        yield return "System.IO";
-        yield return "Unipi.Nancy.NetworkCalculus";
+        if (usesPlots)
+            yield return "System.IO";
         yield return "Unipi.Nancy.MinPlusAlgebra";
+        yield return "Unipi.Nancy.NetworkCalculus";
         yield return "Unipi.Nancy.Numerics";
-        yield return "Unipi.Nancy.Plots.ScottPlot";
+        if (usesImagePlots)
+            yield return "Unipi.Nancy.Plots.ScottPlot";
         if (usesTikzPlots)
             yield return "Unipi.Nancy.Plots.Tikz";
     }
