@@ -177,23 +177,28 @@ internal static class NancyCodeTreeBuilder
     /// </summary>
     public static GeneratedCode VisitPlotCommand(
         Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context,
-        Func<ExpressionSyntax, ExpressionSyntax> materialize) =>
+        Func<ExpressionSyntax, ExpressionSyntax> materialize,
+        HashSet<string> declaredVariables) =>
         BuildPlotStatements(
             context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
             materialize,
+            declaredVariables,
             PlotOutputKind.Image);
 
     public static GeneratedCode VisitPlotTikzCommand(
         Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context,
-        Func<ExpressionSyntax, ExpressionSyntax> materialize) =>
+        Func<ExpressionSyntax, ExpressionSyntax> materialize,
+        HashSet<string> declaredVariables) =>
         BuildPlotStatements(
             context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
             materialize,
+            declaredVariables,
             PlotOutputKind.Tikz);
 
     private static GeneratedCode BuildPlotStatements(
         Unipi.MppgParser.Grammar.MppgParser.PlotArgContext[] args,
         Func<ExpressionSyntax, ExpressionSyntax> materialize,
+        HashSet<string> declaredVariables,
         PlotOutputKind outputKind)
     {
         var (functionsToPlot, settings, outPath) = ParsePlotArgs(args, outputKind);
@@ -209,10 +214,11 @@ internal static class NancyCodeTreeBuilder
 
         if (outputKind == PlotOutputKind.Image)
         {
-            statements.Add(VariableDeclarationStatement("plotBytes", Invoke(
+            statements.Add(DeclareOrAssign("plotBytes", Invoke(
                 Member(IdentifierName("ScottPlots"), "ToScottPlotImage"),
                 Argument(CollectionOf(plottedFunctions)),
-                NamedArgument("settings", ObjectCreate("ScottPlotSettings").WithInitializer(settingsInitializer)))));
+                NamedArgument("settings", ObjectCreateWithInitializer("ScottPlotSettings", settingsInitializer))),
+                declaredVariables));
 
             if (!string.IsNullOrWhiteSpace(outPath))
             {
@@ -223,11 +229,12 @@ internal static class NancyCodeTreeBuilder
             }
             else
             {
-                statements.Add(VariableDeclarationStatement("plotTmpPath", BinaryExpression(SyntaxKind.AddExpression,
+                statements.Add(DeclareOrAssign("plotTmpPath", BinaryExpression(SyntaxKind.AddExpression,
                     BinaryExpression(SyntaxKind.AddExpression,
                         Invoke(Member(IdentifierName("Path"), "GetTempPath")),
                         CallMember(Invoke(Member(IdentifierName("Guid"), "NewGuid")), "ToString")),
-                    StringLiteral(".png"))));
+                    StringLiteral(".png")),
+                    declaredVariables));
                 statements.Add(ExpressionStatement(Invoke(Member(IdentifierName("Console"), "WriteLine"), IdentifierName("plotTmpPath"))));
                 statements.Add(ExpressionStatement(Invoke(Member(IdentifierName("File"), "WriteAllBytes"),
                     IdentifierName("plotTmpPath"), IdentifierName("plotBytes"))));
@@ -236,11 +243,12 @@ internal static class NancyCodeTreeBuilder
         else
         {
             var functionNameLiterals = functionsToPlot.Select(name => (ExpressionSyntax)StringLiteral(name)).ToArray();
-            statements.Add(VariableDeclarationStatement("plotTikzCode", Invoke(
+            statements.Add(DeclareOrAssign("plotTikzCode", Invoke(
                 Member(IdentifierName("TikzPlots"), "ToTikzPlotCode"),
                 Argument(CollectionOf(plottedFunctions)),
                 Argument(CollectionOf(functionNameLiterals)),
-                NamedArgument("settings", ObjectCreate("TikzPlotSettings").WithInitializer(settingsInitializer)))));
+                NamedArgument("settings", ObjectCreateWithInitializer("TikzPlotSettings", settingsInitializer))),
+                declaredVariables));
 
             if (!string.IsNullOrWhiteSpace(outPath))
             {
@@ -257,6 +265,21 @@ internal static class NancyCodeTreeBuilder
 
         return GeneratedCode.Entries(statements.Select(static s => (GeneratedCodeEntry)new GeneratedStatementEntry(s)).ToList());
     }
+
+    /// <summary>
+    /// A plot temporary (plotBytes, plotTmpPath, plotTikzCode) is declared once per program: a later
+    /// plot command reusing the same name assigns instead, since C# top-level statements share one
+    /// flat scope and a second "var name = ..." would be a duplicate-declaration compile error.
+    /// </summary>
+    private static StatementSyntax DeclareOrAssign(string name, ExpressionSyntax value, HashSet<string> declaredVariables) =>
+        declaredVariables.Add(name)
+            ? VariableDeclarationStatement(name, value)
+            : ExpressionStatement(AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, IdentifierName(name), value));
+
+    // No argument list: with only an initializer, "new Type { ... }" is the idiomatic C# form,
+    // over the equivalent but needlessly verbose "new Type() { ... }".
+    private static ObjectCreationExpressionSyntax ObjectCreateWithInitializer(string typeName, InitializerExpressionSyntax initializer) =>
+        ObjectCreationExpression(IdentifierName(typeName)).WithInitializer(initializer);
 
     private static LocalDeclarationStatementSyntax VariableDeclarationStatement(string name, ExpressionSyntax value) =>
         LocalDeclarationStatement(VariableDeclaration(IdentifierName("var"))

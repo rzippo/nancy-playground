@@ -462,10 +462,10 @@ internal sealed class ToNancyExpressionsCodeTreeVisitor : MppgBaseVisitor<Genera
         NancyCodeTreeBuilder.VisitStringExpression(context);
 
     public override GeneratedCode VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context) =>
-        NancyCodeTreeBuilder.VisitPlotCommand(context, materialize: ComputeNumber);
+        NancyCodeTreeBuilder.VisitPlotCommand(context, materialize: ComputeNumber, _declaredVariables);
 
     public override GeneratedCode VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
-        NancyCodeTreeBuilder.VisitPlotTikzCommand(context, materialize: ComputeNumber);
+        NancyCodeTreeBuilder.VisitPlotTikzCommand(context, materialize: ComputeNumber, _declaredVariables);
 
     private static ExpressionSyntax ComputeNumber(ExpressionSyntax expression) =>
         CallMember(expression, "Compute");
