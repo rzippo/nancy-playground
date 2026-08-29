@@ -513,8 +513,11 @@ public class CodeConversion
 
         Assert.Single(Regex.Matches(code, "NOT IMPLEMENTED"));
         Assert.Contains("RateLatencyServiceCurve", code);
-        Assert.Contains("new Rational(3)", code);
-        Assert.Contains("new Rational(4)", code);
+        Assert.Contains(
+            useNancyExpressions
+                ? "Expressions.FromRational(3) + Expressions.FromRational(4)"
+                : "Rational x = 3 + 4;",
+            code);
         Assert.Contains("Console.WriteLine", code);
     }
 
@@ -586,7 +589,7 @@ public class CodeConversion
 
         var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
 
-        Assert.Contains("Rational m = -(Rational)(new Rational(7) / new Rational(2)).Floor();", code);
+        Assert.Contains("Rational m = -(Rational)((Rational)7 / 2).Floor();", code);
     }
 
     /// <summary>
@@ -781,5 +784,117 @@ public class CodeConversion
             Assert.Contains("#:package Unipi.Nancy.Analyzers@", code);
         else
             Assert.DoesNotContain("Unipi.Nancy.Analyzers", code);
+    }
+
+    [Fact]
+    public void CodeTreeConversionEmitsBareIntLiteralsInDirectApiMode()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 5
+            f := ratency(1, 2)
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational x = 5;", code);
+        Assert.Contains("new RateLatencyServiceCurve(1, 2)", code);
+        Assert.DoesNotContain("new Rational", code);
+    }
+
+    /// <summary>
+    /// Regression test for the reason new Rational(n) could not simply become a bare literal
+    /// everywhere: two bare ints divided by C#'s native / resolve to int division and truncate,
+    /// where Rational division does not. 7 / 2 must come out as 7/2, never as the truncated 3.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionCastsBareDivisionToAvoidIntegerTruncation()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 7 / 2
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational x = (Rational)7 / 2;", code);
+    }
+
+    /// <summary>
+    /// The cast is needed only when neither side of a division is already Rational-typed: once one
+    /// side is (a variable, here), the other's implicit conversion is enough and no cast is added.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionOmitsDivisionCastWhenOneSideIsAlreadyRational()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 5
+            y := x / 2
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational y = x / 2;", code);
+        Assert.DoesNotContain("(Rational)", code);
+    }
+
+    /// <summary>
+    /// Addition, subtraction and multiplication of two bare ints give the same value as the
+    /// equivalent Rational arithmetic, so unlike division they need no protecting cast.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionDoesNotCastSafeBareArithmetic()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 3 + 4 * 2 - 1
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational x = 3 + 4 * 2 - 1;", code);
+    }
+
+    [Fact]
+    public void CodeTreeConversionKeepsFractionsExplicitInDirectApiMode()
+    {
+        // A decimal literal is the one numberLiteral token that is itself a genuine fraction
+        // (Denominator != 1): unlike n/d, written with a slash, which the grammar parses as a
+        // division of two integers, not as one literal.
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 0.25
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Rational x = new Rational(1, 4);", code);
+    }
+
+    /// <summary>
+    /// Unlike Unipi.Nancy.Numerics.Rational, RationalExpression has no implicit conversion from int,
+    /// so the reduction stops at Expressions.FromRational's own argument: everything past it stays
+    /// built from RationalExpression values, exactly as before.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionSimplifiesFromRationalArgumentInExpressionsMode()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 5
+            y := 0.25
+            """,
+            useNancyExpressions: true);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("Expressions.FromRational(5)", code);
+        Assert.Contains("Expressions.FromRational(new Rational(1, 4))", code);
     }
 }
