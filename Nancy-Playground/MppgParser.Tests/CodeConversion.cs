@@ -588,4 +588,116 @@ public class CodeConversion
 
         Assert.Contains("Rational m = -(Rational)(new Rational(7) / new Rational(2)).Floor();", code);
     }
+
+    /// <summary>
+    /// Regression test: a second plot command must not redeclare the plotBytes/plotTikzCode/plotTmpPath
+    /// local a first one already declared. C# top-level statements share one flat scope, so repeating
+    /// "var name = ..." is a duplicate-declaration compile error; a later plot must assign instead.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionReusesPlotTemporaryAcrossRepeatedPlots(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            g := bucket(2, 1)
+            plot(f)
+            plot(g)
+            """,
+            useNancyExpressions);
+
+        var statements = tree.Members
+            .OfType<GlobalStatementSyntax>()
+            .Select(member => member.Statement)
+            .ToList();
+        var plotByteDeclarations = statements.OfType<LocalDeclarationStatementSyntax>()
+            .Count(declaration => declaration.Declaration.Variables.Any(v => v.Identifier.Text == "plotBytes"));
+        var plotByteAssignments = statements.OfType<ExpressionStatementSyntax>()
+            .Count(statement => statement.Expression is AssignmentExpressionSyntax
+            {
+                Left: IdentifierNameSyntax { Identifier.Text: "plotBytes" }
+            });
+
+        Assert.Equal(1, plotByteDeclarations);
+        Assert.Equal(1, plotByteAssignments);
+    }
+
+    [Fact]
+    public void CodeTreeConversionFormatsPlotSettingsWithoutEmptyParentheses()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            plotTikz(f)
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains("new TikzPlotSettings {", code);
+        Assert.DoesNotContain("new TikzPlotSettings() {", code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionEmitsPrintExpressionCommand(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 1
+            printExpression(x)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains("Console.WriteLine(x);", code);
+    }
+
+    /// <summary>
+    /// A syntax version directive is only meaningful in the preamble, at the top of the program, but
+    /// the grammar also accepts it as an ordinary statement anywhere else; the convert path (unlike
+    /// run) does not flag that as an error, so it must still convert instead of throwing.
+    /// </summary>
+    [Fact]
+    public void CodeTreeConversionEmitsMidProgramVersionDirectiveAsComment()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            x := 1
+            #!syntax version 1.2
+            x
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains("// #!syntax version 1.2", code);
+        Assert.Contains("Console.WriteLine(x);", code);
+    }
+
+    [Fact]
+    public void CodeTreeConversionCombinesPlotLimitsAndOutPath()
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            plot(f, out = "out.png", xlim = [0, 10], ylim = [0, 20])
+            plotTikz(f, out = "out.tex")
+            """,
+            useNancyExpressions: false);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains("XLimit = new Interval(0, 10)", code);
+        Assert.Contains("YLimit = new Interval(0, 20)", code);
+        Assert.Contains("File.WriteAllBytes(\"out.png\", plotBytes);", code);
+        Assert.Contains("File.WriteAllText(\"out.tex\", plotTikzCode);", code);
+    }
 }
