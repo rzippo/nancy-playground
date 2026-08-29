@@ -760,4 +760,26 @@ public class CodeConversion
         Assert.Contains("File.WriteAllBytes(\"out.png\", plotBytes);", code);
         Assert.Contains("File.WriteAllText(\"out.tex\", plotTikzCode);", code);
     }
+
+    /// <summary>
+    /// The direct-API profile pins Unipi.Nancy.Analyzers explicitly, since Unipi.Nancy itself does not
+    /// depend on it (unlike Unipi.Nancy.Expressions, which does, so --use-expressions gets the same
+    /// analyzer transitively and does not need its own explicit pin).
+    /// </summary>
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public void CodeTreeConversionPinsAnalyzersOnlyWhereNotAlreadyTransitive(
+        bool useNancyExpressions,
+        bool expectsExplicitPin)
+    {
+        var tree = Program.ToNancyCodeTree("x := 1", useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        if (expectsExplicitPin)
+            Assert.Contains("#:package Unipi.Nancy.Analyzers@", code);
+        else
+            Assert.DoesNotContain("Unipi.Nancy.Analyzers", code);
+    }
 }
