@@ -22,13 +22,9 @@ public static class RationalExtensions
         if (r.IsMinusInfinite)
             return "Rational.MinusInfinity";
 
-        var numerator = r.Numerator;
-        if (r.Sign < 0 && numerator > 0)
-            numerator = -numerator;
-
         var sb = new StringBuilder();
         sb.Append("new Rational(");
-        sb.Append(numerator.ToString());
+        sb.Append(SignedNumerator(r).ToString());
         if (r.Denominator != 1)
         {
             sb.Append(", ");
@@ -37,6 +33,23 @@ public static class RationalExtensions
         sb.Append(")");
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// The bare integer code for the given Rational, e.g. "7" or "-7", when it is a whole number:
+    /// safe wherever Rational's own implicit int conversion applies (an argument, an assignment
+    /// target, an operand of +, -, or * against something already Rational). Null for a fraction or
+    /// an infinity, which have no such bare form and keep their explicit one.
+    /// </summary>
+    public static string? ToBareIntCodeStringOrNull(this Rational r) =>
+        r.IsFinite && r.Denominator == 1
+            ? SignedNumerator(r).ToString()
+            : null;
+
+    private static System.Numerics.BigInteger SignedNumerator(Rational r)
+    {
+        var numerator = r.Numerator;
+        return r.Sign < 0 && numerator > 0 ? -numerator : numerator;
     }
 
     /// <summary>

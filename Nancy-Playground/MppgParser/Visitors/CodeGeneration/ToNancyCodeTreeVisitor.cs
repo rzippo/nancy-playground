@@ -103,22 +103,32 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
-        return GeneratedCode.Expression(ParseExpression(number.ToExplicitCodeString()));
+        var bareCode = number.ToBareIntCodeStringOrNull();
+        return bareCode is not null
+            ? GeneratedCode.Expression(ParseExpression(bareCode), isBareIntLiteral: true)
+            : GeneratedCode.Expression(ParseExpression(number.ToExplicitCodeString()));
     }
 
     public override GeneratedCode VisitEncNumberBrackets(
-        Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context) =>
-        GeneratedCode.Expression(ParenthesizedExpression(context.numberExpression().Accept(this).SingleExpression()));
+        Unipi.MppgParser.Grammar.MppgParser.EncNumberBracketsContext context)
+    {
+        var inner = context.numberExpression().Accept(this);
+        return GeneratedCode.Expression(ParenthesizedExpression(inner.SingleExpression()), inner.IsBareIntLiteral);
+    }
 
     public override GeneratedCode VisitNumberPositive(
         Unipi.MppgParser.Grammar.MppgParser.NumberPositiveContext context) =>
         context.numberUnaryExpression().Accept(this);
 
     public override GeneratedCode VisitNumberNegative(
-        Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context) =>
-        GeneratedCode.Expression(PrefixUnaryExpression(
+        Unipi.MppgParser.Grammar.MppgParser.NumberNegativeContext context)
+    {
+        var operand = context.numberUnaryExpression().Accept(this);
+        var negated = PrefixUnaryExpression(
             SyntaxKind.UnaryMinusExpression,
-            ParenthesizedExpression(context.numberUnaryExpression().Accept(this).SingleExpression())));
+            ParenthesizedExpression(operand.SingleExpression()));
+        return GeneratedCode.Expression(negated, operand.IsBareIntLiteral);
+    }
 
     public override GeneratedCode VisitNumberSumAtom(
         Unipi.MppgParser.Grammar.MppgParser.NumberSumAtomContext context) =>
@@ -135,37 +145,55 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
     public override GeneratedCode VisitNumberProductMulDiv(
         Unipi.MppgParser.Grammar.MppgParser.NumberProductMulDivContext context)
     {
-        var left = context.numberProductExpression().Accept(this).SingleExpression();
-        var right = context.numberUnaryExpression().Accept(this).SingleExpression();
-        return GeneratedCode.Expression(context.op.Type switch
+        var leftCode = context.numberProductExpression().Accept(this);
+        var rightCode = context.numberUnaryExpression().Accept(this);
+        var left = leftCode.SingleExpression();
+        var right = rightCode.SingleExpression();
+        var bothBare = leftCode.IsBareIntLiteral && rightCode.IsBareIntLiteral;
+
+        switch (context.op.Type)
         {
-            Unipi.MppgParser.Grammar.MppgParser.PROD_SIGN =>
-                BinaryExpression(SyntaxKind.MultiplyExpression, left, right),
-            Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN or Unipi.MppgParser.Grammar.MppgParser.DIV_OP =>
-                BinaryExpression(SyntaxKind.DivideExpression, left, right),
-            Unipi.MppgParser.Grammar.MppgParser.MOD_OP =>
-                Invoke(Member(IdentifierName("Rational"), "Remainder"), left, right),
-            _ => throw new InvalidOperationException($"Unexpected operation: {context.op.Text}")
-        });
+            case Unipi.MppgParser.Grammar.MppgParser.PROD_SIGN:
+                return GeneratedCode.Expression(BinaryExpression(SyntaxKind.MultiplyExpression, left, right), bothBare);
+            case Unipi.MppgParser.Grammar.MppgParser.DIV_SIGN:
+            case Unipi.MppgParser.Grammar.MppgParser.DIV_OP:
+                // Two bare ints would resolve to C#'s int division, truncating instead of computing
+                // the exact Rational value: cast the left operand to Rational whenever neither side
+                // is already Rational-typed on its own.
+                if (bothBare)
+                    left = CastToRational(left);
+                return GeneratedCode.Expression(BinaryExpression(SyntaxKind.DivideExpression, left, right));
+            case Unipi.MppgParser.Grammar.MppgParser.MOD_OP:
+                return GeneratedCode.Expression(Invoke(Member(IdentifierName("Rational"), "Remainder"), left, right));
+            default:
+                throw new InvalidOperationException($"Unexpected operation: {context.op.Text}");
+        }
     }
+
+    private static ExpressionSyntax CastToRational(ExpressionSyntax value) =>
+        CastExpression(IdentifierName("Rational"), ParenthesizedExpression(value));
 
     public override GeneratedCode VisitNumberSumSubMinMax(
         Unipi.MppgParser.Grammar.MppgParser.NumberSumSubMinMaxContext context)
     {
-        var left = context.GetChild(0).Accept(this).SingleExpression();
-        var right = context.GetChild(2).Accept(this).SingleExpression();
-        return GeneratedCode.Expression(context.op.Type switch
+        var leftCode = context.GetChild(0).Accept(this);
+        var rightCode = context.GetChild(2).Accept(this);
+        var left = leftCode.SingleExpression();
+        var right = rightCode.SingleExpression();
+        var bothBare = leftCode.IsBareIntLiteral && rightCode.IsBareIntLiteral;
+
+        return context.op.Type switch
         {
             Unipi.MppgParser.Grammar.MppgParser.PLUS =>
-                BinaryExpression(SyntaxKind.AddExpression, left, right),
+                GeneratedCode.Expression(BinaryExpression(SyntaxKind.AddExpression, left, right), bothBare),
             Unipi.MppgParser.Grammar.MppgParser.MINUS =>
-                BinaryExpression(SyntaxKind.SubtractExpression, left, right),
+                GeneratedCode.Expression(BinaryExpression(SyntaxKind.SubtractExpression, left, right), bothBare),
             Unipi.MppgParser.Grammar.MppgParser.WEDGE =>
-                Invoke(Member(IdentifierName("Rational"), "Min"), left, right),
+                GeneratedCode.Expression(Invoke(Member(IdentifierName("Rational"), "Min"), left, right)),
             Unipi.MppgParser.Grammar.MppgParser.VEE =>
-                Invoke(Member(IdentifierName("Rational"), "Max"), left, right),
+                GeneratedCode.Expression(Invoke(Member(IdentifierName("Rational"), "Max"), left, right)),
             _ => throw new InvalidOperationException($"Unexpected operation: {context.op.Text}")
-        });
+        };
     }
 
     public override GeneratedCode VisitEncNumberFloor(Unipi.MppgParser.Grammar.MppgParser.EncNumberFloorContext context) =>

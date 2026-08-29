@@ -103,9 +103,13 @@ internal sealed class ToNancyExpressionsCodeTreeVisitor : MppgBaseVisitor<Genera
     {
         var visitor = new NumberLiteralVisitor();
         var number = context.Accept(visitor);
+        // Expressions.FromRational takes a Rational, so a whole number converts implicitly as a bare
+        // argument. RationalExpression itself has no such conversion, so unlike the direct API profile
+        // this stays scoped to the one FromRational argument: nothing past it is ever bare.
+        var argument = number.ToBareIntCodeStringOrNull() ?? number.ToExplicitCodeString();
         return GeneratedCode.Expression(Invoke(
             Member(IdentifierName("Expressions"), "FromRational"),
-            ParseExpression(number.ToExplicitCodeString())));
+            ParseExpression(argument)));
     }
 
     public override GeneratedCode VisitEncNumberBrackets(
