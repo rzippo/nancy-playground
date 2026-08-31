@@ -835,6 +835,27 @@ assert(h != zero)
 assert(f < g)
 """,
                         Tags = ["assert", "assertion", "comparison", "constraints", "checks", "relations"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "assert (property)",
+                        Formats = ["assert(f is X)", "assert(f is not X)"],
+                        Description = "Tests one property of one expression, rather than a relation between two; prints true or an error message.",
+                        LongDescription = """
+Requires syntax version 1.4 or later.
+X is a property name, e.g. subadditive, concave, ultimatelyaffine (or its synonym ua), integer.
+Most properties apply to functions only; a few (finite, zero, plusinfinite, minusinfinite) apply to either a function or a scalar, and integer applies to scalars only.
+Using a property with the wrong kind of operand is an error, not a silent `false`.
+`is not` negates the check.
+
+If the assertion holds, prints `true`, otherwise `false`.
+""",
+                        Examples = """
+assert(f is subadditive)
+assert(f is not concave)
+assert(x is integer)
+""",
+                        Tags = ["assert", "assertion", "property", "is", "subadditive", "concave", "convex", "ultimatelyaffine", "ua", "integer", "syntax"]
                     }
                 ]
             },

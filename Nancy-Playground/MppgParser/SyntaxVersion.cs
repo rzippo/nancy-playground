@@ -22,12 +22,16 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     /// </summary>
     public static readonly SyntaxVersion V1_3 = new(1, 3);
     /// <summary>
+    /// Adds the non-increasing closures and property assertions of version 1.4.
+    /// </summary>
+    public static readonly SyntaxVersion V1_4 = new(1, 4);
+    /// <summary>
     /// The most recent version, which a program is read with unless it declares another.
     /// </summary>
-    public static readonly SyntaxVersion Latest = V1_3;
+    public static readonly SyntaxVersion Latest = V1_4;
 
     /// Every version of the syntax, in order.
-    public static readonly IReadOnlyList<SyntaxVersion> All = [V1_0, V1_1, V1_2, V1_3];
+    public static readonly IReadOnlyList<SyntaxVersion> All = [V1_0, V1_1, V1_2, V1_3, V1_4];
 
     /// The version that precedes this one, or null if this is the first.
     public SyntaxVersion? Previous()

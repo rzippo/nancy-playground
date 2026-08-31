@@ -346,6 +346,20 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionNonNegativeLowNonDecreasingClosure([NotNull] MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionUpNonIncreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionUpNonIncreasingClosure([NotNull] MppgParser.FunctionUpNonIncreasingClosureContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionLowNonIncreasingClosure</c>
+	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionLowNonIncreasingClosure([NotNull] MppgParser.FunctionLowNonIncreasingClosureContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionLeftExt</c>
 	/// labeled alternative in <see cref="MppgParser.functionEnclosedExpression"/>.
 	/// </summary>
@@ -765,11 +779,35 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssertion([NotNull] MppgParser.AssertionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.assertionTail"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssertionTail([NotNull] MppgParser.AssertionTailContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.assertionOperator"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitAssertionOperator([NotNull] MppgParser.AssertionOperatorContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.isKeyword"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIsKeyword([NotNull] MppgParser.IsKeywordContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.notKeyword"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitNotKeyword([NotNull] MppgParser.NotKeywordContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="MppgParser.propertyName"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPropertyName([NotNull] MppgParser.PropertyNameContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.printExpressionCommand"/>.
 	/// </summary>

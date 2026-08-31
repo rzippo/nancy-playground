@@ -107,10 +107,21 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
 
     // An assertion is call-shaped around a comparison: assert(f * g = g * f).
     /// <summary>
-    /// Writes an <c>assert</c> command.
+    /// Writes an <c>assert</c> command, either the two-sided comparison or the one-sided
+    /// <c>is</c>/<c>is not</c> property form.
     /// </summary>
-    public override string? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context) =>
-        $"assert({Render(context.expression(0))} {context.assertionOperator().GetText()} {Render(context.expression(1))})";
+    public override string? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
+    {
+        var tail = context.assertionTail();
+
+        if (tail.propertyName() is { } propertyName)
+        {
+            var not = tail.notKeyword() is not null ? "not " : "";
+            return $"assert({Render(context.expression())} is {not}{propertyName.GetText()})";
+        }
+
+        return $"assert({Render(context.expression())} {tail.assertionOperator().GetText()} {Render(tail.expression())})";
+    }
 
     // The commands are call-shaped too: printExpression(f), plot(f, out="p.png").
     /// <summary>

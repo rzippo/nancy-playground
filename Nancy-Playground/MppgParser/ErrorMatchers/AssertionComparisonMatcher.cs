@@ -19,6 +19,6 @@ internal sealed class AssertionComparisonMatcher : IErrorMatcher<ParserError>
 
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)
-        => new("'assert' takes a comparison between two expressions",
-            "The operators it compares with are '=', '!=', '<', '<=', '>' and '>='.");
+        => new("'assert' takes a comparison between two expressions, or a property check with 'is'",
+            "The comparison operators are '=', '!=', '<', '<=', '>' and '>='; the property form is 'is' or 'is not' followed by a property name.");
 }

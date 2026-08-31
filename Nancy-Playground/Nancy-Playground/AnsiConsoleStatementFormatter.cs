@@ -149,6 +149,13 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
                 break;
             }
 
+            case PropertyAssertion propertyAssertion:
+            {
+                var propertyAssertionOutput = (PropertyAssertionOutput) output;
+                Console.MarkupLineInterpolated(FormatStatementTime(propertyAssertionOutput.Time).Concat($"[magenta]{output.OutputText}[/]"));
+                break;
+            }
+
             case Comment comment:
             {
                 Console.MarkupLineInterpolated($"[green]{comment.Text}[/]");

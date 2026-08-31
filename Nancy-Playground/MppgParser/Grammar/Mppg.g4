@@ -63,6 +63,8 @@ grammar Mppg;
     private bool IsVersion1_2OrLater() => IsVersionOrLater(1, 2);
 
     private bool IsVersion1_3OrLater() => IsVersionOrLater(1, 3);
+
+    private bool IsVersion1_4OrLater() => IsVersionOrLater(1, 4);
 }
 
 @parser::members {
@@ -102,6 +104,18 @@ grammar Mppg;
         "nnupclosure",
         "lowclosure",
         "nnlowclosure",
+        "upnoninc",
+        "upnonincclosure",
+        "lownoninc",
+        "lownonincclosure",
+        "upnondec",
+        "upnondecclosure",
+        "lownondec",
+        "lownondecclosure",
+        "nnupnondec",
+        "nnupnondecclosure",
+        "nnlownondec",
+        "nnlownondecclosure",
         "left-ext",
         "right-ext"
     };
@@ -200,6 +214,13 @@ grammar Mppg;
 
     private bool IsVersion1_1OrLater() =>
         CurrentSyntaxVersion >= Unipi.Nancy.Playground.MppgParser.SyntaxVersion.V1_1;
+
+    private bool IsVersion1_4OrLater() =>
+        CurrentSyntaxVersion >= Unipi.Nancy.Playground.MppgParser.SyntaxVersion.V1_4;
+
+    private bool IsIsKeyword(string name) => name == "is";
+
+    private bool IsNotKeyword(string name) => name == "not";
 
     private bool IsFunctionSampleStart() =>
             IsFunctionVariable(CurrentToken.Text) && TokenStream.LT(2).Text == "(";
@@ -561,6 +582,18 @@ POW : 'pow' {IsVersion1_3OrLater()}?;
 MOD_OP : 'mod' {IsVersion1_3OrLater()}?;
 GCD : 'gcd' {IsVersion1_3OrLater()}?;
 LCM : 'lcm' {IsVersion1_3OrLater()}?;
+UPNONINC : 'upnoninc' {IsVersion1_4OrLater()}?;
+UPNONINCCLOSURE : 'upnonincclosure' {IsVersion1_4OrLater()}?;
+LOWNONINC : 'lownoninc' {IsVersion1_4OrLater()}?;
+LOWNONINCCLOSURE : 'lownonincclosure' {IsVersion1_4OrLater()}?;
+UPNONDEC : 'upnondec' {IsVersion1_4OrLater()}?;
+UPNONDECCLOSURE : 'upnondecclosure' {IsVersion1_4OrLater()}?;
+LOWNONDEC : 'lownondec' {IsVersion1_4OrLater()}?;
+LOWNONDECCLOSURE : 'lownondecclosure' {IsVersion1_4OrLater()}?;
+NNUPNONDEC : 'nnupnondec' {IsVersion1_4OrLater()}?;
+NNUPNONDECCLOSURE : 'nnupnondecclosure' {IsVersion1_4OrLater()}?;
+NNLOWNONDEC : 'nnlownondec' {IsVersion1_4OrLater()}?;
+NNLOWNONDECCLOSURE : 'nnlownondecclosure' {IsVersion1_4OrLater()}?;
 
 IDENTIFIER : [a-zA-Z_][a-zA-Z_0-9]*;
 
@@ -665,10 +698,12 @@ functionEnclosedExpression
     | ('vShift'|'vshift') '(' functionExpression ',' numberExpression ')' #functionVShift
     | ('inv'|'low_inv') '(' functionExpression ')' #functionLowerPseudoInverse
     | 'up_inv' '(' functionExpression ')' #functionUpperPseudoInverse
-    | 'upclosure' '(' functionExpression ')' #functionUpNonDecreasingClosure
-    | 'nnupclosure' '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
-    | LOWCLOSURE '(' functionExpression ')' #functionLowNonDecreasingClosure
-    | NNLOWCLOSURE '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
+    | ('upclosure' | UPNONDEC | UPNONDECCLOSURE) '(' functionExpression ')' #functionUpNonDecreasingClosure
+    | ('nnupclosure' | NNUPNONDEC | NNUPNONDECCLOSURE) '(' functionExpression ')' #functionNonNegativeUpNonDecreasingClosure
+    | (LOWCLOSURE | LOWNONDEC | LOWNONDECCLOSURE) '(' functionExpression ')' #functionLowNonDecreasingClosure
+    | (NNLOWCLOSURE | NNLOWNONDEC | NNLOWNONDECCLOSURE) '(' functionExpression ')' #functionNonNegativeLowNonDecreasingClosure
+    | (UPNONINC | UPNONINCCLOSURE) '(' functionExpression ')' #functionUpNonIncreasingClosure
+    | (LOWNONINC | LOWNONINCCLOSURE) '(' functionExpression ')' #functionLowNonIncreasingClosure
     | 'left-ext' '(' functionExpression ')' #functionLeftExt
     | 'right-ext' '(' functionExpression ')' #functionRightExt
     // floor and ceil return the kind of their argument: these take a curve, and the scalar forms are alternatives of numberExpression.
@@ -810,7 +845,14 @@ interval: '[' rationalLiteral ',' rationalLiteral ']';
 
 // Assertions
 assertion
-    : 'assert' '(' expression assertionOperator expression ')' ;
+    : 'assert' '(' expression assertionTail ')'
+    ;
+// The shared prefix is factored out so a mistake after it is reported against one decision, between
+// a comparison and 'is', rather than against the two full alternatives of assertion.
+assertionTail
+    : assertionOperator expression
+    | {IsVersion1_4OrLater()}? isKeyword notKeyword? propertyName
+    ;
 // '=', '!=', '<=' and '>=' are RTaW's own.
 // '<' and '>' are a nancy-playground addition, gated to 1.1 like plotTikz and printExpression.
 assertionOperator
@@ -820,6 +862,16 @@ assertionOperator
     | '<='
     | {IsVersion1_1OrLater()}? '>'
     | '>='
+    ;
+// 'is' and 'not' are contextual keywords too, matched by text like propertyName below.
+isKeyword: {IsIsKeyword(CurrentToken.Text)}? IDENTIFIER;
+notKeyword: {IsNotKeyword(CurrentToken.Text)}? IDENTIFIER;
+// A property is a contextual keyword, like a plotArg option name: it must stay usable as a variable
+// name outside this position, so it is never a reserved token, only recognised here by its text.
+propertyName
+    : {Unipi.Nancy.Playground.MppgParser.AssertProperties.IsPropertyName(CurrentToken.Text)}? IDENTIFIER
+    // 'zero' is also the constant-zero curve constructor, so it never lexes as IDENTIFIER: matched here directly.
+    | 'zero'
     ;
 
 printExpressionCommand

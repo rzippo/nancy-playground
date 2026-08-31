@@ -339,17 +339,31 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
     }
 
     /// <summary>
-    /// Builds the statement of an <c>assert</c> command.
+    /// Builds the statement of an <c>assert</c> command, either the two-sided comparison or the
+    /// one-sided <c>is</c>/<c>is not</c> property form.
     /// </summary>
     public override Statement? VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {
-        var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
-        var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
-        var operatorContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.AssertionOperatorContext>(0);
-        
+        var text = MppgReformatVisitor.Reformat(context);
+        var tail = context.assertionTail();
+
+        if (tail.propertyName() is { } propertyNameContext)
+        {
+            var operandContext = context.expression();
+            var operand = new Expression(operandContext);
+            var property = AssertProperties.Resolve(propertyNameContext.GetText(), operandContext.GetExpressionType());
+            var negated = tail.notKeyword() is not null;
+
+            return new PropertyAssertion(operand, property, negated) { Text = text };
+        }
+
+        var leftExpressionContext = context.expression();
+        var rightExpressionContext = tail.expression();
+        var operatorContext = tail.assertionOperator();
+
         var leftExpression = new Expression(leftExpressionContext);
         var rightExpression = new Expression(rightExpressionContext);
-        var operatorText = operatorContext.GetJoinedText(); 
+        var operatorText = operatorContext.GetJoinedText();
         var @operator = operatorText switch
         {
             "=" => Assertion.AssertionOperator.Equal,
@@ -360,8 +374,6 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
             ">=" => Assertion.AssertionOperator.GreaterOrEqual,
             _ => throw new ArgumentException($"Operator '{operatorText}' not recognized")
         };
-
-        var text = MppgReformatVisitor.Reformat(context);
 
         return new Assertion(leftExpression, rightExpression, @operator){ Text = text };
     }

@@ -77,6 +77,13 @@ public class OutputOnlyFormatter : IStatementFormatter
                 break;
             }
 
+            case PropertyAssertion:
+            {
+                var propertyAssertionOutput = (PropertyAssertionOutput)output;
+                Console.WriteLine(propertyAssertionOutput.Result.ToString().ToLower());
+                break;
+            }
+
             // all other outputs are suppressed
             default:
                 break;

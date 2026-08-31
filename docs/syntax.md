@@ -413,6 +413,44 @@ Between two numbers, `<` and `>` are the ordinary comparison, with no such cavea
 
 > Note: some of the above restrictions may not be matched by `nancy-playground`, as detecting "too complex" expressions may be harder than just computing them.
 
+### Property assertions
+
+`assert( f is subadditive )` tests one property of one expression, rather than a relation between two.
+`assert( f is not subadditive )` tests its negation.
+Requires `#!syntax version 1.4` or later.
+
+`is`, `not` and a property name are not reserved keywords: all three stay usable as variable names outside this position, like a `plot` option name does.
+
+Most properties are function-only:
+
+| Property | Meaning |
+| ---- | ---- |
+| `subadditive` | $f(t+s) \le f(t) + f(s)$ |
+| `superadditive` | $f(t+s) \ge f(t) + f(s)$ |
+| `concave` | continuous (or continuous except at the origin, with $f(0) \le f(0^+)$), made of segments of decreasing slope |
+| `convex` | continuous (or continuous except at the origin, with $f(0) \ge f(0^+)$), made of segments of increasing slope |
+| `nondecreasing` | $t > s \Rightarrow f(t) \ge f(s)$ |
+| `increasing` | $t > s \Rightarrow f(t) > f(s)$ |
+| `plain` | always finite, or always one-signed infinite, or finite up to some $T$ then always one-signed infinite |
+| `ultimatelyplain` | `plain` restricted to $t \ge$ the pseudo-period start |
+| `ultimatelyaffine` (`ua`) | affine from the pseudo-period start on |
+| `ultimatelyconstant` (`uc`) | constant from the pseudo-period start on |
+| `continuous` | no discontinuity anywhere |
+| `leftcontinuous` | no left-discontinuity anywhere |
+| `rightcontinuous` | no right-discontinuity anywhere |
+| `continuousexceptorigin` | `continuous`, the origin excepted |
+| `passingthroughorigin` | $f(0) = 0$ |
+| `nonnegative` | $f(t) \ge 0$ for every $t$ |
+| `ultimatelyfinite` | finite from the pseudo-period start on |
+| `ultimatelyplusinfinite` / `ultimatelyminusinfinite` | one-signed-infinite from the pseudo-period start on |
+| `ultimatelyinfinite` (`ui`) | either of the above two |
+
+`finite`, `zero`, `plusinfinite` and `minusinfinite` apply to either a function or a number, under the same keyword: for a function they mean finite/zero/infinite everywhere, for a number they mean not-infinite/equal-to-zero/equal-to-infinity.
+
+`integer` applies to a number only: true where it has no fractional part.
+
+Using a property with the wrong kind of operand, e.g. `subadditive` on a number or `integer` on a function, is an error rather than a silent `false`.
+
 ## New shiny syntax
 
 | Expression | Description | Implemented |
@@ -444,4 +482,5 @@ Scripts that name a variable `floor`, as the ones that spell the `floor` functio
 A program that uses one of these names without declaring a version is told which name it is and which directive keeps it.
 
 Not every version-gated addition is a keyword: an addition can also be an operator symbol, which cannot collide with a variable name and so is gated without a name-collision hint.
+`is`, `not` and a property name are gated the same way, despite reading as words: they are recognised only in the one position `assert`'s property form uses, from 1.4 on, and stay ordinary variable names everywhere else, so they are absent from the table above too.
 The `<` and `>` [assertion operators](#asserts) are the only case so far, gated to `1.1` alongside that version's keywords.

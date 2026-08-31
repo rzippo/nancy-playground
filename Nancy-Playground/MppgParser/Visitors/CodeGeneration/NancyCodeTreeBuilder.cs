@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Unipi.MppgParser.Grammar;
+using Unipi.Nancy.Playground.MppgParser;
 using Unipi.Nancy.Playground.MppgParser.Statements;
 using Unipi.Nancy.Playground.MppgParser.Utility;
 
@@ -460,9 +461,13 @@ internal static class NancyCodeTreeBuilder
         MppgBaseVisitor<GeneratedCode> visitor,
         Func<ExpressionSyntax, ExpressionSyntax> materialize)
     {
-        var leftContext = context.expression(0);
-        var rightContext = context.expression(1);
-        var operatorText = context.assertionOperator().GetText();
+        var tail = context.assertionTail();
+        if (tail.propertyName() is { } propertyNameContext)
+            return VisitPropertyAssertion(context, tail, propertyNameContext, visitor, materialize);
+
+        var leftContext = context.expression();
+        var rightContext = tail.expression();
+        var operatorText = tail.assertionOperator().GetText();
 
         var leftExpr = leftContext.Accept(visitor).SingleExpression();
         var rightExpr = rightContext.Accept(visitor).SingleExpression();
@@ -499,6 +504,28 @@ internal static class NancyCodeTreeBuilder
 
         var comparison = ParenthesizedExpression(BinaryExpression(ComparisonKind(operatorText), leftExpr, rightExpr));
         return GeneratedCode.Entries([new GeneratedStatementEntry(PrintToLowerString(comparison))]);
+    }
+
+    /// <summary>
+    /// The <c>is</c>/<c>is not</c> property form: the operand is materialized, then the property's
+    /// Nancy member is read off it directly, a plain property access rather than a method call.
+    /// </summary>
+    private static GeneratedCode VisitPropertyAssertion(
+        Unipi.MppgParser.Grammar.MppgParser.AssertionContext context,
+        Unipi.MppgParser.Grammar.MppgParser.AssertionTailContext tail,
+        Unipi.MppgParser.Grammar.MppgParser.PropertyNameContext propertyNameContext,
+        MppgBaseVisitor<GeneratedCode> visitor,
+        Func<ExpressionSyntax, ExpressionSyntax> materialize)
+    {
+        var operandContext = context.expression();
+        var operandExpr = materialize(operandContext.Accept(visitor).SingleExpression());
+        var property = AssertProperties.Resolve(propertyNameContext.GetText(), operandContext.GetExpressionType());
+
+        ExpressionSyntax propertyAccess = Member(operandExpr, property.NancyMember);
+        if (tail.notKeyword() is not null)
+            propertyAccess = ParenthesizedExpression(PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, propertyAccess));
+
+        return GeneratedCode.Entries([new GeneratedStatementEntry(PrintToLowerString(propertyAccess))]);
     }
 
     private static SyntaxKind ComparisonKind(string operatorText) =>

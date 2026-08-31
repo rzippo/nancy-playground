@@ -362,9 +362,23 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
 
     public override List<string> VisitAssertion(Unipi.MppgParser.Grammar.MppgParser.AssertionContext context)
     {
-        var leftExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
-        var rightExpressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
-        var operatorContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.AssertionOperatorContext>(0);
+        var tail = context.assertionTail();
+
+        if (tail.propertyName() is { } propertyNameContext)
+        {
+            var operandContext = context.expression();
+            var operandExpr = operandContext.Accept(this).Single();
+            var property = AssertProperties.Resolve(propertyNameContext.GetText(), operandContext.GetExpressionType());
+            var access = $"({operandExpr}).{property.NancyMember}";
+            if (tail.notKeyword() is not null)
+                access = $"(!{access})";
+
+            return [$"Console.WriteLine(({access}).ToString().ToLower());"];
+        }
+
+        var leftExpressionContext = context.expression();
+        var rightExpressionContext = tail.expression();
+        var operatorContext = tail.assertionOperator();
 
         var leftExpressionCode = leftExpressionContext.Accept(this);
         var rightExpressionCode = rightExpressionContext.Accept(this);
