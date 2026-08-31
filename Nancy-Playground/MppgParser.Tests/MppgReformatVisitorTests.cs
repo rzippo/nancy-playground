@@ -55,6 +55,36 @@ public class MppgReformatVisitorTests
         Assert.Equal($"result := {expected}", program.Statements[^1].Text);
     }
 
+    /// <summary>
+    /// A closure call echoes as written, both the non-increasing forms and every 1.4 alias of an
+    /// existing non-decreasing closure: the parser routes every spelling of a meaning to the same
+    /// labeled alternative, and <c>RenderCall</c> echoes whichever spelling the source actually used.
+    /// </summary>
+    [Theory]
+    [InlineData("upnoninc(f)")]
+    [InlineData("upnonincclosure(f)")]
+    [InlineData("lownoninc(f)")]
+    [InlineData("lownonincclosure(f)")]
+    [InlineData("upclosure(f)")]
+    [InlineData("upnondec(f)")]
+    [InlineData("upnondecclosure(f)")]
+    [InlineData("nnupclosure(f)")]
+    [InlineData("nnupnondec(f)")]
+    [InlineData("nnupnondecclosure(f)")]
+    [InlineData("lowclosure(f)")]
+    [InlineData("lownondec(f)")]
+    [InlineData("lownondecclosure(f)")]
+    [InlineData("nnlowclosure(f)")]
+    [InlineData("nnlownondec(f)")]
+    [InlineData("nnlownondecclosure(f)")]
+    public void ClosureCallEchoesAsWritten(string input)
+    {
+        var program = Program.FromText($"{Declarations}\nresult := {input}");
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+        Assert.Equal($"result := {input}", program.Statements[^1].Text);
+    }
+
     [Fact]
     public void ConstructorEchoesCompact()
     {

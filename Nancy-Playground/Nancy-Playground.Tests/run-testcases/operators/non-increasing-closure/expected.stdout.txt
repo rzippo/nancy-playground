@@ -1,0 +1,12 @@
+// Test the non-increasing closures: upnoninc(f)/upnonincclosure(f) and lownoninc(f)/lownonincclosure(f)
+// Literature precedent: lownoninc(f) is the running infimum, f * zero; upnoninc(f) is its dual, f / zero
+> f := stair(0, 2, 3)
+f = stair(0, 2, 3)
+> lower := lownoninc(f)
+lower = lownonincclosure(f)
+> upper := upnonincclosure(f)
+upper = upnonincclosure(f)
+> assert(lower = f * zero)
+true
+> assert(upper = f / zero)
+true

@@ -376,6 +376,16 @@ public class CodeConversion
             ("upclosure(f)", ".ToUpperNonDecreasing()", ".ToUpperNonDecreasing()"),
             ("lowclosure(f)", ".ToLowerNonDecreasing()", ".ToLowerNonDecreasing()"),
             ("nnlowclosure(f)", ".ToNonNegative().ToLowerNonDecreasing()", ".ToNonNegative().ToLowerNonDecreasing()"),
+            // upnondec/upnondecclosure etc. are the 1.4 aliases of the closures above: same production, same emitted call.
+            ("upnondec(f)", ".ToUpperNonDecreasing()", ".ToUpperNonDecreasing()"),
+            ("upnondecclosure(f)", ".ToUpperNonDecreasing()", ".ToUpperNonDecreasing()"),
+            ("nnupnondecclosure(f)", ".ToNonNegative().ToUpperNonDecreasing()", ".ToNonNegative().ToUpperNonDecreasing()"),
+            ("lownondecclosure(f)", ".ToLowerNonDecreasing()", ".ToLowerNonDecreasing()"),
+            ("nnlownondec(f)", ".ToNonNegative().ToLowerNonDecreasing()", ".ToNonNegative().ToLowerNonDecreasing()"),
+            ("upnoninc(f)", ".ToUpperNonIncreasing()", ".ToUpperNonIncreasing()"),
+            ("upnonincclosure(f)", ".ToUpperNonIncreasing()", ".ToUpperNonIncreasing()"),
+            ("lownoninc(f)", ".ToLowerNonIncreasing()", ".ToLowerNonIncreasing()"),
+            ("lownonincclosure(f)", ".ToLowerNonIncreasing()", ".ToLowerNonIncreasing()"),
             ("left-ext(f)", ".ToLeftContinuous()", ".ToLeftContinuous()"),
             ("subaddclosure(f)", ".SubAdditiveClosure(", ".SubAdditiveClosure()"),
             ("superaddclosure(f)", ".SuperAdditiveClosure(", ".SuperAdditiveClosure()"),
@@ -554,6 +564,30 @@ public class CodeConversion
         Assert.Contains("LeastCommonMultiple(", code);
         Assert.Contains(useNancyExpressions ? "AbsoluteValue()" : "Rational.Abs(", code);
         Assert.Contains(useNancyExpressions ? ".Pow(" : "Rational.Pow(", code);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionEmitsNonIncreasingClosuresAndAliases(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := affine(1, 0)
+            a := upnoninc(f)
+            b := lownonincclosure(f)
+            c := upnondecclosure(f)
+            d := nnlownondec(f)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains(".ToUpperNonIncreasing()", code);
+        Assert.Contains(".ToLowerNonIncreasing()", code);
+        Assert.Contains(".ToUpperNonDecreasing()", code);
+        Assert.Contains(".ToNonNegative().ToLowerNonDecreasing()", code);
     }
 
     /// <summary>

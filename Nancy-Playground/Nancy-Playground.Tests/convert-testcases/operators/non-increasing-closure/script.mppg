@@ -1,0 +1,18 @@
+// upnoninc/lownoninc are the non-increasing closures, and their 1.4 aliases, exercised end to end here
+// since no convert-testcase covered any of the six closures under their explicit 1.4 spelling before.
+f := stair(0, 2, 3)
+a := lownoninc(f)
+b := lownonincclosure(f)
+c := upnoninc(f)
+d := upnonincclosure(f)
+// literature precedent: the lower non-increasing closure is the running infimum, f * zero
+assert( a = f * zero )
+assert( b = f * zero )
+// the upper one is the dual, the running supremum from t on, i.e. the min-plus deconvolution by zero
+assert( c = f / zero )
+assert( d = f / zero )
+// the 1.2 non-decreasing closures under their 1.4 aliases, alongside the non-increasing ones above
+g := upnondecclosure(f)
+h := nnlownondec(f)
+assert( g = upclosure(f) )
+assert( h = nnlowclosure(f) )
