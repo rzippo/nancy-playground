@@ -4,8 +4,8 @@ grammar Mppg;
     // Syntax versioning.
     // Keywords are matched here, before any parser rule is reached. 
     // Keywords are gated since older scripts may use them as variable names.
-    private int _syntaxVersionMajor = 1;
-    private int _syntaxVersionMinor = 3;
+    private int _syntaxVersionMajor = Unipi.Nancy.Playground.MppgParser.SyntaxVersion.Latest.Major;
+    private int _syntaxVersionMinor = Unipi.Nancy.Playground.MppgParser.SyntaxVersion.Latest.Minor;
     private bool _versionDirectiveApplied = false;
 
     public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
@@ -182,6 +182,24 @@ grammar Mppg;
     private bool IsPlotIntervalOption(string name) => IntervalPlotOptionNames.Contains(name);
 
     private bool IsPlotYesNoOption(string name) => YesNoPlotOptionNames.Contains(name);
+
+    // A word keyword is gated in the lexer (see @lexer::members), since it must be told apart from a
+    // variable name before the parser ever sees it.
+    // An operator symbol can never be a variable name, so it is gated here instead, on the alternative
+    // that matches it.
+    // The version is read live off the lexer, since the preamble already set it by the time this
+    // alternative is reached.
+    private Unipi.Nancy.Playground.MppgParser.SyntaxVersion CurrentSyntaxVersion
+    {
+        get
+        {
+            var (major, minor) = ((Unipi.MppgParser.Grammar.MppgLexer)TokenStream.TokenSource).SyntaxVersion;
+            return Unipi.Nancy.Playground.MppgParser.SyntaxVersion.FromParts(major, minor);
+        }
+    }
+
+    private bool IsVersion1_1OrLater() =>
+        CurrentSyntaxVersion >= Unipi.Nancy.Playground.MppgParser.SyntaxVersion.V1_1;
 
     private bool IsFunctionSampleStart() =>
             IsFunctionVariable(CurrentToken.Text) && TokenStream.LT(2).Text == "(";
@@ -793,12 +811,14 @@ interval: '[' rationalLiteral ',' rationalLiteral ']';
 // Assertions
 assertion
     : 'assert' '(' expression assertionOperator expression ')' ;
+// '=', '!=', '<=' and '>=' are RTaW's own.
+// '<' and '>' are a nancy-playground addition, gated to 1.1 like plotTikz and printExpression.
 assertionOperator
     : '='
     | '!='
-    | '<'
+    | {IsVersion1_1OrLater()}? '<'
     | '<='
-    | '>'
+    | {IsVersion1_1OrLater()}? '>'
     | '>='
     ;
 

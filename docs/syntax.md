@@ -400,6 +400,7 @@ The operators supported are `=`, `!=`, `<=`, and `>=`.
 There seems _not_ to be any support for complex logic like `and`, `or` and `not`, or strict inequalities `<` and `>`.
 
 `nancy-playground` accepts the strict inequalities `<` and `>` as well, so its operators are `=`, `!=`, `<`, `<=`, `>` and `>=`.
+`<` and `>` require `#!syntax version 1.1` or later; the rest are available from `1.0`.
 
 > Note: some of the above restrictions may not be matched by `nancy-playground`, as detecting "too complex" expressions may be harder than just computing them.
 
@@ -432,3 +433,6 @@ Declaring a version therefore keeps a program working as later versions add keyw
 
 Scripts that name a variable `floor`, as the ones that spell the `floor` function `right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.
 A program that uses one of these names without declaring a version is told which name it is and which directive keeps it.
+
+Not every version-gated addition is a keyword: an addition can also be an operator symbol, which cannot collide with a variable name and so is gated without a name-collision hint.
+The `<` and `>` [assertion operators](#asserts) are the only case so far, gated to `1.1` alongside that version's keywords.

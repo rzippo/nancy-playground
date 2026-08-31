@@ -74,8 +74,8 @@ public partial class MppgLexer : Lexer {
 	    // Syntax versioning.
 	    // Keywords are matched here, before any parser rule is reached. 
 	    // Keywords are gated since older scripts may use them as variable names.
-	    private int _syntaxVersionMajor = 1;
-	    private int _syntaxVersionMinor = 3;
+	    private int _syntaxVersionMajor = Unipi.Nancy.Playground.MppgParser.SyntaxVersion.Latest.Major;
+	    private int _syntaxVersionMinor = Unipi.Nancy.Playground.MppgParser.SyntaxVersion.Latest.Minor;
 	    private bool _versionDirectiveApplied = false;
 
 	    public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);

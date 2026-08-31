@@ -28,6 +28,13 @@ The syntax is versioned for exactly these cases.
 A script can declare what it was written against with `#!syntax version 1.2` on its first line, and the lexer decides from that declaration whether a word is a keyword or a name.
 When one or more new keywords are added, a contributor will also have to adds a version to `SyntaxVersion`, gates the lexer rule behind a predicate for that version, and records in `VersionedKeywords` when the name became reserved.
 
+### An operator symbol is versioned differently than a keyword
+
+Not every addition is a word that could otherwise be a variable name: an operator symbol like `<` never collides with one, so it has nothing for `VersionedKeywords` to record and no name-collision hint to give.
+It is gated instead with a semantic predicate directly on the parser alternative that matches it (see `assertionOperator` in `Mppg.g4`, and `IsVersion1_1OrLater` in `@parser::members`), read live off the lexer's declared `SyntaxVersion` rather than resolved during lexing.
+This also matters when the same symbol is reused elsewhere in the grammar for something unrelated, as `>` is for both the strict-inequality operator and the line-comment marker: the predicate gates only the one alternative, leaving the other available at every version.
+Because this path bypasses `VersionedKeywords`, it also bypasses the version tests it drives: a contributor gating an operator this way has to write its version tests directly, the way `SyntaxVersioning.cs` does for `<` and `>`.
+
 ### Typing is embedded in the grammar
 
 The MPPG grammar is defined to have non-ambiguous parsing, where the produced AST can be trusted to accurately reflect the computations to be performed.
@@ -90,5 +97,6 @@ Each layer of the tool can fail independently, so each has its own kind of test:
 - that both conversions emit code, which catches the missing visitor override;
 - that a script using it runs end to end, and that a converted program compiles and runs.
 
-Version gating needs no test of its own:
+Version gating needs no test of its own for a keyword:
 the version tests are driven by what `VersionedKeywords` lists, so listing the keyword there is what covers it.
+An operator symbol gated the way [above](#an-operator-symbol-is-versioned-differently-than-a-keyword) is outside that list, so it does need its own tests.

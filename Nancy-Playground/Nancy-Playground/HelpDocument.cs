@@ -826,12 +826,14 @@ f and g can be variable names or expressions, and can evaluate to either functio
 For two functions, the relation must hold for all t: f(t) OP g(t).
 For function vs scalar c, the relation must hold for all t: f(t) OP c.
 Supported operators are =, !=, <=, and >=.
+< and > are also supported, from syntax version 1.1 on.
 
 If the assertion holds, prints `true`, otherwise `false`.
 """,
                         Examples = """
 assert(f <= g)
 assert(h != zero)
+assert(f < g)
 """,
                         Tags = ["assert", "assertion", "comparison", "constraints", "checks", "relations"]
                     }
