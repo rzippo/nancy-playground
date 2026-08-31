@@ -319,6 +319,12 @@ internal sealed class ToNancyExpressionsCodeTreeVisitor : MppgBaseVisitor<Genera
             CallMember(context.GetChild(2).Accept(this).SingleExpression(), "ToNonNegative"),
             "ToLowerNonDecreasing"));
 
+    public override GeneratedCode VisitFunctionUpNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonIncreasingClosureContext context) =>
+        GeneratedCode.Expression(CallMember(context.GetChild(2).Accept(this).SingleExpression(), "ToUpperNonIncreasing"));
+
+    public override GeneratedCode VisitFunctionLowNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonIncreasingClosureContext context) =>
+        GeneratedCode.Expression(CallMember(context.GetChild(2).Accept(this).SingleExpression(), "ToLowerNonIncreasing"));
+
     public override GeneratedCode VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context) =>
         GeneratedCode.Expression(CallMember(context.GetChild(2).Accept(this).SingleExpression(), "ToLeftContinuous"));
 

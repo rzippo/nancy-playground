@@ -329,6 +329,16 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     public override string? VisitFunctionNonNegativeLowNonDecreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionNonNegativeLowNonDecreasingClosureContext context) => RenderCall(context);
 
     /// <summary>
+    /// Writes an <c>upnoninc</c>/<c>upnonincclosure</c> call.
+    /// </summary>
+    public override string? VisitFunctionUpNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonIncreasingClosureContext context) => RenderCall(context);
+
+    /// <summary>
+    /// Writes a <c>lownoninc</c>/<c>lownonincclosure</c> call.
+    /// </summary>
+    public override string? VisitFunctionLowNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonIncreasingClosureContext context) => RenderCall(context);
+
+    /// <summary>
     /// Writes a <c>left-ext</c> call.
     /// </summary>
     public override string? VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context) => RenderCall(context);

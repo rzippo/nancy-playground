@@ -490,24 +490,52 @@ Both `hShift` and `hshift` are accepted spellings.
                     new HelpItem
                     {
                         Name = "Upper closure",
-                        Formats = ["upclosure(f)", "nnupclosure(f)"],
+                        Formats = ["upclosure(f)", "upnondec(f)", "upnondecclosure(f)", "nnupclosure(f)", "nnupnondec(f)", "nnupnondecclosure(f)"],
                         Description = "Upper non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `upclosure(f)`: upper non-decreasing closure of f.
 - `nnupclosure(f)`: non-negative upper non-decreasing closure of f.
+
+`upnondec(f)`/`upnondecclosure(f)` and `nnupnondec(f)`/`nnupnondecclosure(f)` are the same two operations, under the explicit spelling of syntax version 1.4 or later.
 """,
                         Tags = ["closure", "non-decreasing", "upper", "operation"]
                     },
                     new HelpItem
                     {
                         Name = "Lower closure",
-                        Formats = ["lowclosure(f)", "nnlowclosure(f)"],
+                        Formats = ["lowclosure(f)", "lownondec(f)", "lownondecclosure(f)", "nnlowclosure(f)", "nnlownondec(f)", "nnlownondecclosure(f)"],
                         Description = "Lower non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `lowclosure(f)`: lower non-decreasing closure of f.
 - `nnlowclosure(f)`: non-negative lower non-decreasing closure of f.
+
+`lownondec(f)`/`lownondecclosure(f)` and `nnlownondec(f)`/`nnlownondecclosure(f)` are the same two operations, under the explicit spelling of syntax version 1.4 or later.
 """,
                         Tags = ["closure", "non-decreasing", "lower", "operation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Upper non-increasing closure",
+                        Formats = ["upnoninc(f)", "upnonincclosure(f)"],
+                        Description = "Upper non-increasing closure of f.",
+                        LongDescription = """
+- `upnoninc(f)`/`upnonincclosure(f)`: the least wide-sense non-increasing curve g ≥ f.
+
+Requires syntax version 1.4 or later.
+""",
+                        Tags = ["closure", "non-increasing", "upper", "operation"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Lower non-increasing closure",
+                        Formats = ["lownoninc(f)", "lownonincclosure(f)"],
+                        Description = "Lower non-increasing closure of f.",
+                        LongDescription = """
+- `lownoninc(f)`/`lownonincclosure(f)`: the greatest wide-sense non-increasing curve g ≤ f.
+
+Requires syntax version 1.4 or later.
+""",
+                        Tags = ["closure", "non-increasing", "lower", "operation"]
                     },
                     new HelpItem
                     {

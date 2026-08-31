@@ -188,10 +188,12 @@ These operations return a _function_.
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
-| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. | ✅ |
-| nnupclosure(f) | Compute the non-negative _upper_ non-decreasing closure of $f$. | ✅ |
-| lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. | ✅ |
-| nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. | ✅ |
+| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. Also `upnondec(f)`/`upnondecclosure(f)`, the explicit spelling of syntax version 1.4 or later. | ✅ |
+| nnupclosure(f) | Compute the non-negative _upper_ non-decreasing closure of $f$. Also `nnupnondec(f)`/`nnupnondecclosure(f)` from 1.4 on. | ✅ |
+| lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. Also `lownondec(f)`/`lownondecclosure(f)` from 1.4 on. | ✅ |
+| nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. Also `nnlownondec(f)`/`nnlownondecclosure(f)` from 1.4 on. | ✅ |
+| upnoninc(f) | Compute the _upper_ non-increasing closure of $f$, the least wide-sense non-increasing curve $g \ge f$. Also `upnonincclosure(f)`. Requires syntax version 1.4 or later. | ✅ |
+| lownoninc(f) | Compute the _lower_ non-increasing closure of $f$, the greatest wide-sense non-increasing curve $g \le f$. Also `lownonincclosure(f)`. Requires syntax version 1.4 or later. | ✅ |
 | floor(f) | Compute the function $g$ such that $g(x) = \lfloor f(x) \rfloor$. Requires syntax version 1.3 or later. | ✅ |
 | ceil(f) | Compute the function $g$ such that $g(x) = \lceil f(x) \rceil$. Requires syntax version 1.3 or later. | ✅ |
 | f comp g | Compute the composition of $f$ and $g$, i.e. $f(g(x))$ | ✅ |
@@ -477,6 +479,7 @@ Declaring a version therefore keeps a program working as later versions add keyw
 | 1.1 | `printExpression`, `plotTikz` |
 | 1.2 | `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure` |
 | 1.3 | `floor`, `ceil`, `abs`, `pow`, `mod`, `gcd`, `lcm` |
+| 1.4 | `upnoninc`, `upnonincclosure`, `lownoninc`, `lownonincclosure`, `upnondec`, `upnondecclosure`, `lownondec`, `lownondecclosure`, `nnupnondec`, `nnupnondecclosure`, `nnlownondec`, `nnlownondecclosure` |
 
 Scripts that name a variable `floor`, as the ones that spell the `floor` function `right-ext(stair(1, 1, 1))` do, therefore need `#!syntax version 1.2` from 1.3 on.
 A program that uses one of these names without declaring a version is told which name it is and which directive keeps it.

@@ -377,6 +377,46 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
+    /// Builds the expression of <c>upnoninc</c>/<c>upnonincclosure</c>, the upward non-increasing closure of a curve.
+    /// </summary>
+    public override IExpression VisitFunctionUpNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionUpNonIncreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE.ToUpperNonIncreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    /// <summary>
+    /// Builds the expression of <c>lownoninc</c>/<c>lownonincclosure</c>, the downward non-increasing closure of a curve.
+    /// </summary>
+    public override IExpression VisitFunctionLowNonIncreasingClosure(Unipi.MppgParser.Grammar.MppgParser.FunctionLowNonIncreasingClosureContext context)
+    {
+        if (context.ChildCount != 4)
+            throw new Exception("Expected 4 child expression");
+
+        var ilCE = context.GetChild(2).Accept(this);
+        if (ilCE is CurveExpression lCE)
+        {
+            var curveExp = lCE.ToLowerNonIncreasing();
+            return curveExp;
+        }
+        else
+        {
+            throw new Exception($"Invalid expression \"{context.GetJoinedText()}\"");
+        }
+    }
+
+    /// <summary>
     /// Builds the expression of <c>left-ext</c>, the left extension of a curve.
     /// </summary>
     public override IExpression VisitFunctionLeftExt(Unipi.MppgParser.Grammar.MppgParser.FunctionLeftExtContext context)

@@ -55,6 +55,18 @@ public static class VersionedKeywords
             ["mod"] = SyntaxVersion.V1_3,
             ["gcd"] = SyntaxVersion.V1_3,
             ["lcm"] = SyntaxVersion.V1_3,
+            ["upnoninc"] = SyntaxVersion.V1_4,
+            ["upnonincclosure"] = SyntaxVersion.V1_4,
+            ["lownoninc"] = SyntaxVersion.V1_4,
+            ["lownonincclosure"] = SyntaxVersion.V1_4,
+            ["upnondec"] = SyntaxVersion.V1_4,
+            ["upnondecclosure"] = SyntaxVersion.V1_4,
+            ["lownondec"] = SyntaxVersion.V1_4,
+            ["lownondecclosure"] = SyntaxVersion.V1_4,
+            ["nnupnondec"] = SyntaxVersion.V1_4,
+            ["nnupnondecclosure"] = SyntaxVersion.V1_4,
+            ["nnlownondec"] = SyntaxVersion.V1_4,
+            ["nnlownondecclosure"] = SyntaxVersion.V1_4,
         };
 
     /// <summary>
