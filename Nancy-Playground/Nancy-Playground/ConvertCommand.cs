@@ -48,11 +48,11 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
         public bool UseNancyExpressions { get; init; } = false;
 
         /// <summary>
-        /// True to generate code through the provisional Roslyn syntax-tree generator.
+        /// True to generate code through the legacy string-based visitors, instead of the Roslyn syntax-tree generator.
         /// </summary>
-        [Description("If true, the Nancy program will be generated through the provisional Roslyn syntax-tree generator.")]
-        [CommandOption("--use-code-trees")]
-        public bool UseCodeTrees { get; init; } = false;
+        [Description("If true, the Nancy program will be generated through the legacy string-based visitors, instead of the Roslyn syntax-tree generator.")]
+        [CommandOption("--legacy-string-conversion")]
+        public bool LegacyStringConversion { get; init; } = false;
 
         /// <summary>
         /// True to overwrite the output file where it exists.
@@ -118,7 +118,7 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             code = MppgParser.Program.ToNancyCode(
                 programText,
                 settings.UseNancyExpressions,
-                settings.UseCodeTrees);
+                useCodeTrees: !settings.LegacyStringConversion);
         }
         catch (SyntaxErrorException ex) when (ex.Error is { } error)
         {
