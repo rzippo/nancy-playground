@@ -1,0 +1,11 @@
+// Strict comparison between two functions, i.e. between Curve values, not covered until Curve gained
+// < and > (Unipi.Nancy 1.4.4): f < g is Curve.IsProperLowerBoundOf(f, g), f <= g and not equivalent to g.
+f := bucket(2, 5)
+g := bucket(2, 3)
+h := bucket(2, 5)
+assert( g < f )
+assert( f > g )
+assert( f < g )
+assert( g > f )
+assert( f < h )
+assert( f <= h )
