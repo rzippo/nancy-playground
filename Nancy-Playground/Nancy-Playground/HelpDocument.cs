@@ -823,10 +823,9 @@ plotTikz(f1, main="f1 for J=" +J +"Jitter", xlab="time", ylab="packets", out="pl
                         Description = "Tests a relation between two expressions; prints true or an error message.",
                         LongDescription = """
 f and g can be variable names or expressions, and can evaluate to either functions or scalars.
-For two functions, the relation must hold for all t: f(t) OP g(t).
-For function vs scalar c, the relation must hold for all t: f(t) OP c.
-Supported operators are =, !=, <=, and >=.
+For =, !=, <= and >=, the relation must hold for all t: f(t) OP g(t), or f(t) OP c for function vs scalar c.
 < and > are also supported, from syntax version 1.1 on.
+For functions, a curve's ordering is partial: f < g means f(t) <= g(t) for all t and f is not the same curve as g, not f(t) < g(t) everywhere.
 
 If the assertion holds, prints `true`, otherwise `false`.
 """,

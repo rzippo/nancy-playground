@@ -402,6 +402,15 @@ There seems _not_ to be any support for complex logic like `and`, `or` and `not`
 `nancy-playground` accepts the strict inequalities `<` and `>` as well, so its operators are `=`, `!=`, `<`, `<=`, `>` and `>=`.
 `<` and `>` require `#!syntax version 1.1` or later; the rest are available from `1.0`.
 
+### What `<` and `>` mean between functions
+
+A curve's ordering is partial, so `f < g` is not simply $f(t) < g(t)$ for every $t$, unlike the other operators, whose meaning is the general rule above.
+`f < g` is true when $f(t) \le g(t)$ for every $t$ and $f$ is not the same curve as $g$; the two may still meet at some $t$, just not everywhere.
+$f(t) < g(t)$ strictly at every $t$ is a stronger, different condition that this syntax does not expose.
+Because the ordering is partial, `!(f < g)` does not imply `f >= g`: two curves that cross bound each other in neither direction, so both can be false at once.
+The same holds for `f > g` and for a function compared against a number, which this syntax reads as a constant function of that value.
+Between two numbers, `<` and `>` are the ordinary comparison, with no such caveat.
+
 > Note: some of the above restrictions may not be matched by `nancy-playground`, as detecting "too complex" expressions may be harder than just computing them.
 
 ## New shiny syntax
