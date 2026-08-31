@@ -4,6 +4,6 @@
 > f := affine(-1, 10)
 f = uaf([(0, 10)] ](0, 10) -1 (+inf, -inf)[)
 > result := upclosure(f)
-result = upclosure(f)
+result = upnondecclosure(f)
 > assert(result = 10)
 true
