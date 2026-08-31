@@ -86,6 +86,81 @@ public class SyntaxVersioning
         Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
     }
 
+    [Theory]
+    [InlineData("=")]
+    [InlineData("!=")]
+    [InlineData("<=")]
+    [InlineData(">=")]
+    public void PreambleShebangV1_0_AllowsRTaWAssertionOperators(string op)
+    {
+        var programText = $"""
+        #!syntax version 1.0
+        a := 1
+        assert(a {op} 3)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is Assertion);
+    }
+
+    [Theory]
+    [InlineData("<")]
+    [InlineData(">")]
+    public void PreambleShebangV1_0_RejectsStrictInequalityAssertions(string op)
+    {
+        var programText = $"""
+        #!syntax version 1.0
+        a := 1
+        assert(a {op} 3)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.NotEmpty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.DoesNotContain(program.Statements, s => s is Assertion);
+        Assert.Contains(program.Statements, s => s is SyntaxErrorStatement);
+    }
+
+    [Theory]
+    [InlineData("<")]
+    [InlineData(">")]
+    public void PreambleShebangV1_1_AllowsStrictInequalityAssertions(string op)
+    {
+        var programText = $"""
+        #!syntax version 1.1
+        a := 1
+        assert(a {op} 3)
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 1), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is Assertion);
+    }
+
+    [Fact]
+    public void PreambleShebangV1_0_StillAllowsGreaterThanLineComment()
+    {
+        // '>' is shared between the strict-inequality assertion operator and the line-comment marker,
+        // gated only in the former position: the latter must stay available at every syntax version.
+        const string programText = """
+        #!syntax version 1.0
+        > this is a comment
+        a := 1
+        """;
+
+        var program = Program.FromText(programText);
+
+        Assert.Empty(program.Errors);
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.Contains(program.Statements, s => s is Comment);
+    }
+
     [Fact]
     public void PreambleShebangV1_0_AllowsPlot()
     {
