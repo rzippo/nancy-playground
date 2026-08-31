@@ -434,7 +434,7 @@ public class CliCommandBranchCoverageTests
     }
 
     [Fact]
-    public void ConvertUseCodeTreesWritesOutput()
+    public void ConvertLegacyStringConversionWritesOutput()
     {
         using var dir = TemporaryDirectory.Create();
         var scriptPath = Path.Combine(dir.Path, "source.mppg");
@@ -452,7 +452,7 @@ public class CliCommandBranchCoverageTests
             "convert",
             scriptPath,
             "--output-file", outputPath,
-            "--use-code-trees",
+            "--legacy-string-conversion",
             "--overwrite",
             "--no-welcome"
         ]);

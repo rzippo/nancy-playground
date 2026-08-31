@@ -751,8 +751,7 @@ public class ConvertCommandOutputTests
                 "convert",
                 scriptPath,
                 "--output-file", programPath,
-                "--overwrite",
-                "--use-code-trees"
+                "--overwrite"
             ];
             if (useNancyExpressions)
                 convertCommandArgs.Add("--use-expressions");
@@ -821,16 +820,16 @@ public class ConvertCommandOutputTests
 
     [Theory]
     [MemberData(nameof(TestCasesByExpressionMode))]
-    public Task AppTesterSameLastResultCodeTrees(string caseDir, bool useNancyExpressions) =>
-        AppTesterSameOutputCodeTrees(
+    public Task AppTesterSameLastResultLegacyStringConversion(string caseDir, bool useNancyExpressions) =>
+        AppTesterSameOutputLegacyStringConversion(
             caseDir,
             useNancyExpressions,
             compareExplicitPrints: false);
 
     [Theory]
     [MemberData(nameof(TestCasesByExpressionMode))]
-    public Task AppTesterSameExplicitPrintsCodeTrees(string caseDir, bool useNancyExpressions) =>
-        AppTesterSameOutputCodeTrees(
+    public Task AppTesterSameExplicitPrintsLegacyStringConversion(string caseDir, bool useNancyExpressions) =>
+        AppTesterSameOutputLegacyStringConversion(
             caseDir,
             useNancyExpressions,
             compareExplicitPrints: true);
@@ -1437,7 +1436,7 @@ public class ConvertCommandOutputTests
         }
     }
 
-    private async Task AppTesterSameOutputCodeTrees(
+    private async Task AppTesterSameOutputLegacyStringConversion(
         string caseDir,
         bool useNancyExpressions,
         bool compareExplicitPrints)
@@ -1451,7 +1450,7 @@ public class ConvertCommandOutputTests
 
         _testOutputHelper.WriteLine($"caseDir: {Path.GetFullPath(caseDir)}");
 
-        var outputDir = Path.Combine(caseDir, $"{assertionName}-code-trees-test", modeName, "app-tester");
+        var outputDir = Path.Combine(caseDir, $"{assertionName}-legacy-test", modeName, "app-tester");
         Directory.CreateDirectory(outputDir);
         _testOutputHelper.WriteLine($"outputDir: {Path.GetFullPath(outputDir)}");
 
@@ -1497,7 +1496,7 @@ public class ConvertCommandOutputTests
             scriptPath,
             "--output-file", programPath,
             "--overwrite",
-            "--use-code-trees"
+            "--legacy-string-conversion"
         ];
         if (useNancyExpressions)
             convertCommandArgs.Add("--use-expressions");
