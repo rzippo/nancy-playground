@@ -177,4 +177,20 @@ public class MppgReformatVisitorTests
         Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
         Assert.Equal($"c := {expected}", program.Statements[^1].Text);
     }
+
+    /// <summary>
+    /// A property assertion echoes as written, the comparison form and the negated form alike.
+    /// </summary>
+    [Theory]
+    [InlineData("assert(f is subadditive)")]
+    [InlineData("assert(f is not subadditive)")]
+    [InlineData("assert(x is integer)")]
+    [InlineData("assert(x is not zero)")]
+    public void PropertyAssertionEchoesAsWritten(string input)
+    {
+        var program = Program.FromText($"{Declarations}\nx := 1\n{input}");
+
+        Assert.Empty(program.Errors.Select(error => error.ToString(verbose: true)));
+        Assert.Equal(input, program.Statements[^1].Text);
+    }
 }

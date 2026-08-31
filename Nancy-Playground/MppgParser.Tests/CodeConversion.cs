@@ -420,6 +420,72 @@ public class CodeConversion
         Assert.DoesNotContain("NOT IMPLEMENTED", fullCode);
     }
 
+    // The expected text is the Nancy member name alone: the direct-API profile reads it straight off
+    // the operand ((f).IsX), the Expressions one materializes first (((f).Compute()).IsX), and both
+    // wrap the whole access in a further "(!...)" when negated, so the member name is what is stable
+    // to match across all four combinations this theory covers.
+    public static IEnumerable<object[]> PropertyAssertionConversionTestCases =>
+        new List<(string statement, string expected)>
+        {
+            ("assert(f is subadditive)", "IsSubAdditive"),
+            ("assert(f is not superadditive)", "IsSuperAdditive"),
+            ("assert(f is ua)", "IsUltimatelyAffine"),
+            ("assert(f is ultimatelyaffine)", "IsUltimatelyAffine"),
+        }
+        .SelectMany(
+            testCase => new[]
+            {
+                new object[] { testCase.statement, false, testCase.expected },
+                new object[] { testCase.statement, true, testCase.expected }
+            });
+
+    [Theory]
+    [MemberData(nameof(PropertyAssertionConversionTestCases))]
+    public void PropertyAssertionConversionEmitsExpectedCall(
+        string statement,
+        bool useNancyExpressions,
+        string expected)
+    {
+        var code = Program.ToNancyCode(
+            $"""
+            f := affine(1, 0)
+            {statement}
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains(expected, fullCode);
+        Assert.DoesNotContain("NOT IMPLEMENTED", fullCode);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CodeTreeConversionEmitsPropertyAssertions(bool useNancyExpressions)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := affine(1, 0)
+            x := 7/2
+            assert(f is subadditive)
+            assert(f is not superadditive)
+            assert(x is integer)
+            assert(x is finite)
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        // The Expressions profile materializes first (f.Compute().IsX), the direct-API one reads the
+        // property straight off the value (f.IsX); both are covered by matching the member name alone.
+        Assert.DoesNotContain("NOT IMPLEMENTED", code);
+        Assert.Contains("IsSubAdditive", code);
+        Assert.Contains("!" + (useNancyExpressions ? "f.Compute()" : "f") + ".IsSuperAdditive", code);
+        Assert.Contains("IsInteger", code);
+        Assert.Contains("IsFinite", code);
+    }
+
     // Rational.Floor() and Rational.Ceil() return a BigInteger: emitted without a cast back to
     // Rational, a division between two of them would be an integer division, and print 0 instead of 3/4.
     [Fact]

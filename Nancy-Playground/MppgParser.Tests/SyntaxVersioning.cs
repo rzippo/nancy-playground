@@ -335,7 +335,7 @@ public class SyntaxVersioning
         """
         x := 1
         """,
-        "1.3")]
+        "1.4")]
     public void ProgramSyntaxVersion_MatchesDeclaredVersion(string programText, string expectedVersion)
     {
         var program = Program.FromText(programText);
@@ -389,7 +389,7 @@ public class SyntaxVersioning
     // the version of the directive that opens the program
     [InlineData("#!syntax version 1.0\n#!syntax version 1.1\na := 1", "1.0")]
     // the default, no directive having been applied
-    [InlineData("a := 1\n#!syntax version 1.0", "1.3")]
+    [InlineData("a := 1\n#!syntax version 1.0", "1.4")]
     public void ShebangNotApplied_WarningNamesTheVersionInForce(string programText, string inForce)
     {
         var program = Program.FromText(programText);

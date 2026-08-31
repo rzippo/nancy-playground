@@ -1,0 +1,15 @@
+// Property assertions: assert(f is X), assert(f is not X), negation, a literature synonym, and a
+// property shared between functions and scalars under the same keyword.
+f := bucket(2, 3)
+g := ratency(1, 3)
+x := 7/2
+assert( f is subadditive )
+assert( f is not superadditive )
+assert( g is superadditive )
+assert( f is nonnegative )
+assert( f is ua )
+assert( f is ultimatelyaffine )
+assert( x is integer )
+assert( x is not zero )
+assert( x is finite )
+assert( f is finite )

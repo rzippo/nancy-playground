@@ -219,14 +219,15 @@ public class SyntaxErrorMessagesTests
     [Theory]
     [InlineData("f := bucket(2, 5)\nplot(f, xlim=[1,])", "the interval is missing its right extreme")]
     [InlineData("f := bucket(2, 5)\nplot(f, xlim=[,2])", "the interval is missing its left extreme")]
-    [InlineData("f := bucket(2, 5)\nassert(f)", "'assert' takes a comparison between two expressions")]
+    [InlineData("f := bucket(2, 5)\nassert(f)", "'assert' takes a comparison between two expressions, or a property check with 'is'")]
+    [InlineData("f := bucket(2, 5)\nassert(f is)", "'assert' takes a comparison between two expressions, or a property check with 'is'")]
     [InlineData("x := 1\nplot(x)", "'x' is a number, and 'plot' takes functions")]
     [InlineData("x := 1\ny := x(3)", "'x' is a number, and only a function can be sampled")]
     [InlineData("f := bucket(2, 5)\n)", "a statement cannot start with ')'")]
     [InlineData("f := bucket(2, 5)\nplot(f, out=)", "'out' needs a value")]
     [InlineData("f := bucket(2, 5)\ng := f(3, 4)", "'f' is sampled at one point, so it takes one argument")]
     [InlineData("f := bucket(2, 5)\ng := ((f + 1) (f - 1))", "an operator is missing between the two expressions")]
-    [InlineData("assert(1, 2)", "unexpected ',', a comparison was expected instead")]
+    [InlineData("assert(1, 2)", "unexpected ',', a comparison or 'is' was expected instead")]
     public void WhatTheConstructNeedsIsNamed(string programText, string expected)
     {
         var error = FirstError(programText);
