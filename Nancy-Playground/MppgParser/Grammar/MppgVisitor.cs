@@ -671,12 +671,6 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitNumberLiteral([NotNull] MppgParser.NumberLiteralContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="MppgParser.rationalLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitRationalLiteral([NotNull] MppgParser.RationalLiteralContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="MppgParser.numberReturningfunctionOperation"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

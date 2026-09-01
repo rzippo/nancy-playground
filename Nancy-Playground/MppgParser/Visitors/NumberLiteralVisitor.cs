@@ -10,23 +10,6 @@ namespace Unipi.Nancy.Playground.MppgParser.Visitors;
 public class NumberLiteralVisitor : MppgBaseVisitor<Rational>
 {
     /// <summary>
-    /// Reads a rational literal, i.e. one written as a fraction.
-    /// </summary>
-    public override Rational VisitRationalLiteral(Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext context)
-    {
-        var literals = context.numberLiteral();
-        var numerator = VisitNumberLiteral(literals[0]);
-        if (literals.Length == 1)
-            return numerator;
-
-        var denominator = VisitNumberLiteral(literals[1]);
-        if (denominator.IsZero)
-            throw new Exception($"Invalid rational literal, its denominator is zero: {context.GetText()}");
-
-        return numerator / denominator;
-    }
-
-    /// <summary>
     /// Reads a number literal, whichever of the forms it is written in.
     /// </summary>
     public override Rational VisitNumberLiteral(Unipi.MppgParser.Grammar.MppgParser.NumberLiteralContext context)

@@ -96,15 +96,6 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     public override string? VisitFunctionNegative(Unipi.MppgParser.Grammar.MppgParser.FunctionNegativeContext context) =>
         $"-{Render(context.functionUnaryExpression())}";
 
-    // A rational literal is one value, so its division is tight: 1/2, -3/2.
-    /// <summary>
-    /// Writes a rational literal, i.e. one written as a fraction.
-    /// </summary>
-    public override string? VisitRationalLiteral(Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext context) =>
-        context.ChildCount == 3
-            ? $"{Render(context.GetChild(0))}/{Render(context.GetChild(2))}"
-            : Render(context.GetChild(0));
-
     // An assertion is call-shaped around a comparison: assert(f * g = g * f).
     /// <summary>
     /// Writes an <c>assert</c> command, either the two-sided comparison or the one-sided
@@ -494,10 +485,10 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
         var increment = context.increment();
         if (increment is not null)
         {
-            parts.Add(Render(increment.rationalLiteral()));
+            parts.Add(Render(increment.numberExpression()));
             var length = increment.periodLenght();
             if (length is not null)
-                parts.Add(Render(length.rationalLiteral()));
+                parts.Add(Render(length.numberExpression()));
         }
 
         return $"upp({string.Join(", ", parts)})";

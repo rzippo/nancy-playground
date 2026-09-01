@@ -246,10 +246,8 @@ public partial class ExpressionVisitor
         var incrementContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.IncrementContext>(0);
         if (incrementContext is not null)
         {
-            var incrementLiteralContext = incrementContext.GetChild(1);
-            var numberLiteralVisitor = new NumberLiteralVisitor();
-            var increment = incrementLiteralContext.Accept(numberLiteralVisitor);
-            c = increment;
+            var incrementExpressionContext = incrementContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            c = ResolveNumberExpression(incrementExpressionContext, "increment", uppText);
         }
         else
         {
@@ -260,6 +258,15 @@ public partial class ExpressionVisitor
                     : periodSequence.ValueAt(periodSequence.DefinedFrom);
                 c = periodSequence.LeftLimitAt(periodSequence.DefinedUntil) - periodStartValue;
             }
+        }
+
+        var periodLenghtContext = incrementContext?.periodLenght();
+        if (periodLenghtContext is not null)
+        {
+            var lengthExpressionContext = periodLenghtContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext>(0);
+            var declaredLength = ResolveNumberExpression(lengthExpressionContext, "period length", uppText);
+            if (declaredLength != d)
+                Warnings.Add($"WARNING: the declared period length {declaredLength} does not match the sequence, whose length is {d}");
         }
 
         IEnumerable<Element> allElements;
@@ -294,6 +301,18 @@ public partial class ExpressionVisitor
         );
         return curve
             .ToExpression("");
+    }
+
+    /// <summary>
+    /// Computes the value of a position that takes a number expression, e.g. the fields of <c>upp</c>.
+    /// </summary>
+    private Rational ResolveNumberExpression(
+        Unipi.MppgParser.Grammar.MppgParser.NumberExpressionContext context, string fieldName, string statementText)
+    {
+        var expression = context.Accept(this);
+        if (expression is not RationalExpression rationalExpression)
+            throw new InvalidOperationException($"The {fieldName} takes a number, not a function: {statementText}");
+        return rationalExpression.Compute();
     }
 
     /// <summary>

@@ -131,8 +131,11 @@ upp([SEGMENT*,] period(SEGMENT*) [, incr[,period]])
 giving a height other than the one the periodic part implies produces a different function.
 `period` is informational, and a length other than the one the periodic part implies is ignored.
 
-Unlike the endpoints and slopes of the segments, which are full [number expressions](#number-syntax), `incr` and `period` are literals:
-an integer, a decimal, an infinity, or a fraction of two of these.
+Both `incr` and `period` take a [number expression](#number-syntax), as the endpoints and slopes of the segments do:
+an integer, a decimal, an infinity, a fraction, a variable, or a compound of these.
+A declared `period` that does not match the sequence draws a warning, and is ignored either way:
+the sequence is what the curve uses.
+RTaW takes a variable as the declared `period` but not as `incr`, and refuses a signed numerator (`+1/2`) in both, which `nancy-playground` accepts.
 
 ##### Examples
 

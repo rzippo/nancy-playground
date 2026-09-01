@@ -752,8 +752,10 @@ ultimatelyAffineFunction: 'uaf' '(' sequence ')';
 ultimatelyPseudoPeriodicFunction: 'upp' '(' uppTransientPart?  uppPeriodicPart increment? ')';
 uppTransientPart: sequence ',';
 uppPeriodicPart: 'period' '(' sequence ')';
-increment: ',' rationalLiteral periodLenght?;
-periodLenght: ',' rationalLiteral;
+// The increment and the period length take a number expression, as every constructor argument and endpoint does.
+// The increment is authoritative, the length informational: it is checked against the sequence and a mismatch warns.
+increment: ',' numberExpression periodLenght?;
+periodLenght: ',' numberExpression;
 
 // Segments, the elements uaf and upp are built from.
 sequence: element+;
@@ -812,10 +814,6 @@ numberUnaryExpression
     ;
 
 numberLiteral: (PLUS|MINUS)? NUMBER_ABS_LITERAL;
-
-// A literal-only rational, for the positions that take a constant rather than an expression: the pseudo-period fields of upp, which are informational.
-// It exists so that a fraction, which is how Nancy writes a non-decimal rational, is accepted wherever the same value written as an integer or a decimal is.
-rationalLiteral: numberLiteral (DIV_SIGN numberLiteral)?;
 
 // Number-returning function operations
 numberReturningfunctionOperation
