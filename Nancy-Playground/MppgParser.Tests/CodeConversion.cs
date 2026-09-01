@@ -342,11 +342,35 @@ public class CodeConversion
         Assert.Contains("TikzPlots.ToTikzPlotCode(", fullCode);
         // the names of the functions to plot are passed explicitly, to be used in the legend
         Assert.Contains("[\"f\", \"g\"]", fullCode);
-        Assert.Contains("XLimit = new Interval(0, 10)", fullCode);
+        // a plot interval bound is now emitted through the same literal codegen as everywhere else in this profile, i.e. explicit Rational construction, rather than the bare int its own dedicated rationalLiteral rendering used to produce
+        Assert.Contains("XLimit = new Interval(new Rational(0), new Rational(10))", fullCode);
         // an extensionless out path gets the .tikz extension, and the code is written there
         Assert.Contains("File.WriteAllText(\"coverage.tikz\", plotTikzCode);", fullCode);
         // without out, the TikZ code is printed instead
         Assert.Contains("Console.WriteLine(plotTikzCode);", fullCode);
+    }
+
+    /// <summary>
+    /// A plot interval bound takes a full scalar expression, not only a literal.
+    /// A variable reference is emitted plainly in the direct profile, which already has a Rational local.
+    /// The Expressions profile materializes it with .Compute(), its local still being a RationalExpression.
+    /// </summary>
+    [Theory]
+    [InlineData(false, "new Interval(v, ")]
+    [InlineData(true, "new Interval((v).Compute(), ")]
+    public void PlotIntervalBoundAcceptsAVariable(bool useNancyExpressions, string expectedInterval)
+    {
+        var code = Program.ToNancyCode(
+            """
+            f := ratency(1, 2)
+            v := 1/2
+            plot(f, xlim = [v, 10])
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains(expectedInterval, fullCode);
     }
 
     [Theory]
@@ -862,6 +886,27 @@ public class CodeConversion
         Assert.Contains("YLimit = new Interval(0, 20)", code);
         Assert.Contains("File.WriteAllBytes(\"out.png\", plotBytes);", code);
         Assert.Contains("File.WriteAllText(\"out.tex\", plotTikzCode);", code);
+    }
+
+    /// <summary>
+    /// The code-tree path takes the same variable bound the string path does: plain in the direct profile, materialized with .Compute() in the Expressions profile.
+    /// </summary>
+    [Theory]
+    [InlineData(false, "new Interval(v, ")]
+    [InlineData(true, "new Interval(v.Compute(), ")]
+    public void CodeTreeConversionAcceptsAVariablePlotIntervalBound(bool useNancyExpressions, string expectedInterval)
+    {
+        var tree = Program.ToNancyCodeTree(
+            """
+            f := ratency(1, 2)
+            v := 1/2
+            plot(f, xlim = [v, 10])
+            """,
+            useNancyExpressions);
+
+        var code = string.Join(Environment.NewLine, NancyCodeTreeRenderer.RenderLines(tree));
+
+        Assert.Contains(expectedInterval, code);
     }
 
     /// <summary>

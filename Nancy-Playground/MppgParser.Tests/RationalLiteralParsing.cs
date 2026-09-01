@@ -6,10 +6,12 @@ using Unipi.Nancy.Playground.MppgParser.Statements;
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 /// <summary>
-/// The pseudo-period fields of <c>upp</c> and the plot intervals take a literal, rather than the
-/// number expression that the surrounding constructs take.
+/// The pseudo-period fields of <c>upp</c> take a literal, rather than the number expression that the
+/// surrounding constructs take.
 /// These cover the fraction form of that literal, which is how Nancy writes a rational that is
 /// neither an integer nor a decimal, hence how it comes back in a script printed from a curve.
+/// A plot interval bound also accepts this literal form, though it is not restricted to it any more:
+/// see <c>PlotIntervalExpressionParsing</c> for the general expression it now takes.
 /// </summary>
 public class RationalLiteralParsing
 {
@@ -83,10 +85,12 @@ public class RationalLiteralParsing
     [MemberData(nameof(PlotIntervalTestCases))]
     public void PlotXLimitAcceptsARationalLiteral(string line, (Rational Left, Rational Right) expected)
     {
-        var statement = Statement.FromLine(line, StateWithFunction());
+        var state = StateWithFunction();
+        var statement = Statement.FromLine(line, state);
 
         var plot = Assert.IsAssignableFrom<PlotCommand>(statement);
-        Assert.Equal(expected, plot.Settings.XLimit);
+        var output = Assert.IsType<PlotOutput>(plot.ExecuteToFormattable(state));
+        Assert.Equal(expected, output.XLimit);
     }
 
     [Theory]
@@ -94,10 +98,12 @@ public class RationalLiteralParsing
     [InlineData("plotTikz(f, ylim=[1/2, 10])")]
     public void PlotYLimitAcceptsARationalLiteral(string line)
     {
-        var statement = Statement.FromLine(line, StateWithFunction());
+        var state = StateWithFunction();
+        var statement = Statement.FromLine(line, state);
 
         var plot = Assert.IsAssignableFrom<PlotCommand>(statement);
-        Assert.Equal((new Rational(1, 2), new Rational(10)), plot.Settings.YLimit);
+        var output = Assert.IsType<PlotOutput>(plot.ExecuteToFormattable(state));
+        Assert.Equal((new Rational(1, 2), new Rational(10)), output.YLimit);
     }
 
     [Fact]
@@ -109,12 +115,19 @@ public class RationalLiteralParsing
         Assert.Contains("denominator is zero", exception.Message);
     }
 
+    /// <summary>
+    /// A plot interval bound now takes the general expression grammar, see <c>PlotIntervalExpressionParsing</c>.
+    /// A zero denominator here therefore fails as it does anywhere else a scalar expression is computed, e.g. an assignment.
+    /// The message is "Attempted to divide by zero.", not the "denominator is zero" wording <c>rationalLiteral</c> used to produce.
+    /// </summary>
     [Fact]
     public void APlotIntervalWithZeroDenominatorIsRejected()
     {
-        var exception = Assert.ThrowsAny<Exception>(
-            () => Statement.FromLine("plot(f, xlim=[1/0, 10])", StateWithFunction()));
+        var state = StateWithFunction();
+        var plot = Assert.IsAssignableFrom<PlotCommand>(Statement.FromLine("plot(f, xlim=[1/0, 10])", state));
 
-        Assert.Contains("denominator is zero", exception.Message);
+        var exception = Assert.ThrowsAny<Exception>(() => plot.ExecuteToFormattable(state));
+
+        Assert.Contains("divide by zero", exception.Message);
     }
 }
