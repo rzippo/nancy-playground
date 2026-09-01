@@ -20,6 +20,11 @@ public interface ILineReader
     void SetSessionKeywords(IEnumerable<string> sessionKeywords);
 
     /// <summary>
+    /// Replaces the base keyword list, e.g. when the declared syntax version changes what applies.
+    /// </summary>
+    void SetKeywords(IEnumerable<string> keywords);
+
+    /// <summary>
     /// Adds lines to the history that can be navigated.
     /// </summary>
     void AddToHistory(IEnumerable<string> lines);

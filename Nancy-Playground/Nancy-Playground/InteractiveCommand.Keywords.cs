@@ -1,3 +1,5 @@
+using Unipi.Nancy.Playground.MppgParser;
+
 namespace Unipi.Nancy.Playground.Cli;
 
 public partial class InteractiveCommand
@@ -71,6 +73,15 @@ public partial class InteractiveCommand
         "assert",
         "printExpression"
     ];
+
+    /// <summary>
+    /// <see cref="Keywords"/> restricted to the ones <paramref name="version"/> actually has, so a
+    /// session declaring an older version does not suggest a keyword it would then reject as a name.
+    /// </summary>
+    private static List<string> KeywordsForVersion(SyntaxVersion version) =>
+        Keywords
+            .Where(keyword => !VersionedKeywords.IntroducedIn.TryGetValue(keyword, out var introducedIn) || version >= introducedIn)
+            .ToList();
 
     private static List<ContextualKeywords> ContextualKeywords() =>
     [

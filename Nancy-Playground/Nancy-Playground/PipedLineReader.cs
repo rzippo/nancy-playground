@@ -28,6 +28,11 @@ public class PipedLineReader : ILineReader
     {
     }
 
+    /// <inheritdoc cref="SetSessionKeywords"/>
+    public void SetKeywords(IEnumerable<string> keywords)
+    {
+    }
+
     /// History is navigated with the arrow keys, which needs a terminal.
     public void AddToHistory(IEnumerable<string> lines)
     {

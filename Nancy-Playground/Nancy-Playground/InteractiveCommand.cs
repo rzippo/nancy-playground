@@ -117,7 +117,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
 
         ILineReader lineEditor = useLineInput
             ? new PipedLineReader(LineInputSource)
-            : new LineEditor(Keywords, ContextualKeywords(), Console);
+            : new LineEditor(KeywordsForVersion(programContext.SyntaxVersion), ContextualKeywords(), Console);
         var totalComputationTime = TimeSpan.Zero;
 
         // CLI welcome message
@@ -166,6 +166,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     
                     programContext = new ProgramContext();
                     lineEditor.SetSessionKeywords([]);
+                    lineEditor.SetKeywords(KeywordsForVersion(programContext.SyntaxVersion));
                     
                     if (clearHistory)
                     {
@@ -198,7 +199,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     // Handle version directives in interactive mode
                     if (statement is VersionDirectiveStatement vds)
                     {
-                        ApplyVersionDirective(vds, programContext);
+                        ApplyVersionDirective(vds, programContext, lineEditor);
                         continue;
                     }
 
@@ -232,7 +233,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
     /// <remarks>
     /// The session stays at one version, so that its exported program behaves the same when run again.
     /// </remarks>
-    private void ApplyVersionDirective(VersionDirectiveStatement vds, ProgramContext programContext)
+    private void ApplyVersionDirective(VersionDirectiveStatement vds, ProgramContext programContext, ILineReader lineEditor)
     {
         var activeVersion = Escape(programContext.SyntaxVersion.ToString());
 
@@ -257,6 +258,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
         var version = vds.Version!.Value;
         programContext.SyntaxVersion = version;
         programContext.SyntaxVersionDirectiveApplied = true;
+        lineEditor.SetKeywords(KeywordsForVersion(version));
         Console.MarkupLine($"[green]Syntax version set to {Escape(version.ToString())}.[/]");
     }
 
@@ -424,7 +426,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     // Handle version directives in loaded programs
                     if (statement is VersionDirectiveStatement vds)
                     {
-                        ApplyVersionDirective(vds, programContext);
+                        ApplyVersionDirective(vds, programContext, lineEditor);
                         continue;
                     }
 
