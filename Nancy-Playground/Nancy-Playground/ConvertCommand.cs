@@ -99,6 +99,12 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             return 1;
         }
 
+        if (!settings.TryResolveSyntaxVersion(out var syntaxVersion, out var forceSyntaxVersion, out var syntaxVersionError))
+        {
+            Console.MarkupLineInterpolated($"[red]{syntaxVersionError}[/]");
+            return 1;
+        }
+
         var nancyFilePath = settings.NancyCsFile.IsNullOrWhiteSpace() ?
             Path.Join(mppgFile.Directory!.FullName, $"{mppgFile.Name}.cs") :
             settings.NancyCsFile;
@@ -118,7 +124,9 @@ public class ConvertCommand : Command<ConvertCommand.Settings>
             code = MppgParser.Program.ToNancyCode(
                 programText,
                 settings.UseNancyExpressions,
-                useCodeTrees: !settings.LegacyStringConversion);
+                useCodeTrees: !settings.LegacyStringConversion,
+                syntaxVersion,
+                forceSyntaxVersion);
         }
         catch (SyntaxErrorException ex) when (ex.Error is { } error)
         {

@@ -1,9 +1,6 @@
-- [ ] Filter the interactive autocomplete by the session syntax version: `InteractiveCommand.Keywords.cs`
-  lists every keyword, so a 1.0 session suggests keywords that version does not have
 - [ ] Integrate `plotTikz` with [`tikz-to-pdf`](https://github.com/rzippo/tikz-to-pdf)?
 - [ ] Give `MppgClassic` a message aimed at users where a plot would go, or render plots in it
 - [ ] Add the print commands for the notations an expression can take, i.e. the Unicode and LaTeX forms
-- [ ] Point a failing call at the token the message names, rather than at where the parse stopped
 - [ ] Cover `--on-error Continue` with a golden case
 - [ ] Reflow the comments that wrap a sentence over several lines
 - [ ] Share the plot formatter construction between `run` and `interactive`
@@ -13,7 +10,6 @@
   the given limit
 - [ ] Restore `plotTikz`'s equal aspect ratio and curated breakpoint ticks if still wanted, lost to
   `Unipi.Nancy.Plots.Tikz`'s new defaults
-- [ ] Add `run` options to set the syntax version without editing the file: a default to assume when the script declares none, and a force that overrides any `#!syntax version` directive it states, both useful to run a script unchanged (`RunCommand.cs`)
 
 ## Documentation
 

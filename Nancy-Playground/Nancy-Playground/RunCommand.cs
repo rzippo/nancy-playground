@@ -63,7 +63,6 @@ public class RunCommand : Command<RunCommand.Settings>
         [Description("Explicit directory for saving plot files. If specified, --plots-root-mode is assumed to be Custom.")]
         [CommandOption("--plots-root")]
         public string? PlotsRoot { get; init; }
-
     }
 
     /// <summary>
@@ -103,6 +102,12 @@ public class RunCommand : Command<RunCommand.Settings>
             return 1;
         }
 
+        if (!settings.TryResolveSyntaxVersion(out var syntaxVersion, out var forceSyntaxVersion, out var syntaxVersionError))
+        {
+            Console.MarkupLineInterpolated($"[red]{syntaxVersionError}[/]");
+            return 1;
+        }
+
         // in interactive mode, the default is not to echo each command
         var echoInput = settings.EchoInput ?? true;
 
@@ -118,7 +123,7 @@ public class RunCommand : Command<RunCommand.Settings>
 
         var parsingStopwatch = Stopwatch.StartNew();
         var programText = File.ReadAllText(mppgFile.FullName, Encoding.UTF8);
-        var program = MppgParser.Program.FromText(programText);
+        var program = MppgParser.Program.FromText(programText, syntaxVersion, forceSyntaxVersion);
         parsingStopwatch.Stop();
 
         if (settings.Verbose)

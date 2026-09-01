@@ -72,7 +72,25 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
             foreach (var cliWelcomeLine in Program.CliWelcomeMessage)
                 Console.MarkupLine(cliWelcomeLine);
 
-        var programContext = new ProgramContext();
+        if (!settings.TryResolveSyntaxVersion(out var syntaxVersion, out var forceSyntaxVersion, out var syntaxVersionError))
+        {
+            Console.MarkupLineInterpolated($"[red]{syntaxVersionError}[/]");
+            return 1;
+        }
+
+        // Reused by !clear too, so a session started with --syntax-version or --syntax-version-forced
+        // keeps that policy across a reset rather than falling back to the hardcoded latest.
+        // Forcing is applied the same way a typed directive is (SyntaxVersionDirectiveApplied), so a
+        // forced session that is !export-ed or !save-d writes its own directive back, self-documenting.
+        ProgramContext NewProgramContext()
+        {
+            var context = new ProgramContext { SyntaxVersion = syntaxVersion };
+            if (forceSyntaxVersion)
+                context.SyntaxVersionDirectiveApplied = true;
+            return context;
+        }
+
+        var programContext = NewProgramContext();
 
         // the line editor reads keys, so it cannot be used on piped input
         var useLineInput = settings.LineInput ?? !Console.Profile.Capabilities.Interactive;
@@ -164,7 +182,7 @@ public partial class InteractiveCommand : Command<InteractiveCommand.Settings>
                     var args = line.Split(' ').Skip(1).ToArray();
                     bool clearHistory = args.Any(arg => arg == "-h" || arg == "--history");
                     
-                    programContext = new ProgramContext();
+                    programContext = NewProgramContext();
                     lineEditor.SetSessionKeywords([]);
                     lineEditor.SetKeywords(KeywordsForVersion(programContext.SyntaxVersion));
                     

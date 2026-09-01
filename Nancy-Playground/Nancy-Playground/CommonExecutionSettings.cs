@@ -74,6 +74,41 @@ public class CommonExecutionSettings : CommandSettings
     [Description("If used, the program prints out the version and immediately terminates.")]
     [CommandOption("--version")]
     public bool Version { get; init; } = false;
+
+    /// <summary>
+    /// The syntax version to assume where the input declares none, as "X.Y" or "latest".
+    /// </summary>
+    [Description("The syntax version to assume where the input has no #!syntax version directive of its own, as \"X.Y\" or \"latest\" (default). A directive the input does have still wins over this.")]
+    [CommandOption("--syntax-version")]
+    public string SyntaxVersion { get; init; } = "latest";
+
+    /// <summary>
+    /// The syntax version to use regardless of what the input itself declares, as "X.Y" or "latest".
+    /// Takes over from <see cref="SyntaxVersion"/> where given, rather than combining with it.
+    /// </summary>
+    [Description("The syntax version to use no matter what the input's own #!syntax version directive (if any) declares, as \"X.Y\" or \"latest\". Takes over from --syntax-version where given.")]
+    [CommandOption("--syntax-version-forced")]
+    public string? SyntaxVersionForced { get; init; }
+
+    /// <summary>
+    /// The syntax version to parse with, and whether it overrides a directive the input already has:
+    /// <see cref="SyntaxVersionForced"/> wins outright where given, leaving <see cref="SyntaxVersion"/>
+    /// unused.
+    /// </summary>
+    public bool TryResolveSyntaxVersion(out MppgParser.SyntaxVersion version, out bool force, out string? error)
+    {
+        var text = SyntaxVersionForced ?? SyntaxVersion;
+        force = SyntaxVersionForced is not null;
+
+        if (!MppgParser.SyntaxVersion.TryParse(text, out version))
+        {
+            error = $"'{text}' is not a valid syntax version: use \"X.Y\" or \"latest\".";
+            return false;
+        }
+
+        error = null;
+        return true;
+    }
 }
 
 /// <summary>
