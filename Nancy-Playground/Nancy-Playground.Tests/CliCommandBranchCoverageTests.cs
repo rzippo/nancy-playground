@@ -518,6 +518,203 @@ public class CliCommandBranchCoverageTests
         Assert.Contains("g := f + missing", output);
     }
 
+    /// <summary>
+    /// The same --syntax-version/--syntax-version-forced pair as run, promoted onto
+    /// CommonExecutionSettings: 'printExpression' is a 1.1 keyword, so convert fails to compile it
+    /// under 1.0 and succeeds once a version that has it applies.
+    /// </summary>
+    [Fact]
+    public void ConvertSyntaxVersionFillsInWhereTheFileDeclaresNone()
+    {
+        using var script = TemporaryScript.Create("a := 1\nprintExpression(a)");
+        using var dir = TemporaryDirectory.Create();
+
+        var (exitCode, output) = ConvertCommand([
+            "convert",
+            script.Path,
+            "--output-file", Path.Combine(dir.Path, "program.cs"),
+            "--overwrite",
+            "--no-welcome",
+            "--syntax-version", "1.0"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("Cannot compile program", output);
+    }
+
+    [Fact]
+    public void ConvertSyntaxVersionLosesToTheFilesOwnDirective()
+    {
+        using var script = TemporaryScript.Create("#!syntax version 1.1\na := 1\nprintExpression(a)");
+        using var dir = TemporaryDirectory.Create();
+
+        var (exitCode, output) = ConvertCommand([
+            "convert",
+            script.Path,
+            "--output-file", Path.Combine(dir.Path, "program.cs"),
+            "--overwrite",
+            "--no-welcome",
+            "--syntax-version", "1.0"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("Conversion complete.", output);
+    }
+
+    [Fact]
+    public void ConvertSyntaxVersionForcedWinsOverTheFilesOwnDirective()
+    {
+        using var script = TemporaryScript.Create("#!syntax version 1.1\na := 1\nprintExpression(a)");
+        using var dir = TemporaryDirectory.Create();
+
+        var (exitCode, output) = ConvertCommand([
+            "convert",
+            script.Path,
+            "--output-file", Path.Combine(dir.Path, "program.cs"),
+            "--overwrite",
+            "--no-welcome",
+            "--syntax-version-forced", "1.0"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("Cannot compile program", output);
+    }
+
+    [Theory]
+    [InlineData("--syntax-version")]
+    [InlineData("--syntax-version-forced")]
+    public void ConvertMalformedSyntaxVersionReportsAnError(string option)
+    {
+        using var script = TemporaryScript.Create("a := 1");
+        using var dir = TemporaryDirectory.Create();
+
+        var (exitCode, output) = ConvertCommand([
+            "convert",
+            script.Path,
+            "--output-file", Path.Combine(dir.Path, "program.cs"),
+            "--overwrite",
+            "--no-welcome",
+            option, "not-a-version"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("'not-a-version' is not a valid syntax version", output);
+    }
+
+    /// <summary>
+    /// --syntax-version only fills in where the file declares no version of its own: 'printExpression'
+    /// is a 1.1 keyword, so under 1.0 it fails on the directiveless script and succeeds once the file's
+    /// own 1.1 directive is left free to override the default.
+    /// </summary>
+    [Fact]
+    public void RunSyntaxVersionFillsInWhereTheFileDeclaresNone()
+    {
+        using var script = TemporaryScript.Create("a := 1\nprintExpression(a)");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--syntax-version", "1.0"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("ERROR! Syntax errors, run aborted:", output);
+    }
+
+    [Fact]
+    public void RunSyntaxVersionLosesToTheFilesOwnDirective()
+    {
+        using var script = TemporaryScript.Create("#!syntax version 1.1\na := 1\nprintExpression(a)");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--syntax-version", "1.0"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.DoesNotContain("ERROR!", output);
+    }
+
+    [Fact]
+    public void RunSyntaxVersionForcedWinsOverTheFilesOwnDirective()
+    {
+        using var script = TemporaryScript.Create("#!syntax version 1.1\na := 1\nprintExpression(a)");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--syntax-version-forced", "1.0"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("ERROR! Syntax errors, run aborted:", output);
+    }
+
+    /// <summary>
+    /// Given both, --syntax-version-forced takes over outright rather than being combined or rejected
+    /// as a conflict: --syntax-version has a non-null default ("latest"), so there is no way to tell
+    /// "the user typed it" apart from "it was never touched".
+    /// </summary>
+    [Fact]
+    public void RunSyntaxVersionForcedWinsOverPlainSyntaxVersionWhenBothAreGiven()
+    {
+        using var script = TemporaryScript.Create("a := 1\nprintExpression(a)");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            "--syntax-version", "1.1",
+            "--syntax-version-forced", "1.0"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("ERROR! Syntax errors, run aborted:", output);
+    }
+
+    [Fact]
+    public void RunSyntaxVersionDefaultsToLatest()
+    {
+        using var script = TemporaryScript.Create("a := 1\nprintExpression(a)");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome"
+        ]);
+
+        Assert.Equal(0, exitCode);
+        Assert.DoesNotContain("ERROR!", output);
+    }
+
+    [Theory]
+    [InlineData("--syntax-version")]
+    [InlineData("--syntax-version-forced")]
+    public void RunMalformedSyntaxVersionReportsAnError(string option)
+    {
+        using var script = TemporaryScript.Create("a := 1");
+
+        var (exitCode, output) = RunCommand([
+            "run",
+            script.Path,
+            "--deterministic",
+            "--no-welcome",
+            option, "not-a-version"
+        ]);
+
+        Assert.Equal(1, exitCode);
+        Assert.Contains("'not-a-version' is not a valid syntax version", output);
+    }
+
     private static (int ExitCode, string Output) RunCommand(string[] args)
     {
         var console = CreateTestConsole();

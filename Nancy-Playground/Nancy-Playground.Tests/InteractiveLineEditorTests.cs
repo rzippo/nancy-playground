@@ -221,6 +221,103 @@ public class InteractiveLineEditorTests
     }
 
     /// <summary>
+    /// --syntax-version seeds the session's version but, like a script's own directive, a typed
+    /// '#!syntax version' directive is still free to override it: 'printExpression' is a 1.1 keyword,
+    /// so it fails against the --syntax-version 1.0 default and succeeds once 1.1 is typed.
+    /// </summary>
+    [Fact]
+    public void InteractiveCommand_SyntaxVersionSeedsTheSessionButATypedDirectiveStillWins()
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+        console.Input.PushTypedLine("#!syntax version 1.1");
+        console.Input.PushTypedLine("a := 1");
+        console.Input.PushTypedLine("printExpression(a)");
+        console.Input.PushTypedLine("!quit");
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message", "--syntax-version", "1.0"]);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("Syntax version set to 1.1.", console.Output);
+        Assert.DoesNotContain("Syntax error", console.Output);
+    }
+
+    [Fact]
+    public void InteractiveCommand_SyntaxVersionAppliesWhereNoDirectiveIsTyped()
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+        console.Input.PushTypedLine("a := 1");
+        console.Input.PushTypedLine("printExpression(a)");
+        console.Input.PushTypedLine("!quit");
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message", "--syntax-version", "1.0"]);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("Syntax error", console.Output);
+    }
+
+    /// <summary>
+    /// --syntax-version-forced locks the session the same way a typed directive would (it sets
+    /// SyntaxVersionDirectiveApplied), so a directive the user then types hits the existing "duplicate
+    /// directive" path rather than applying.
+    /// </summary>
+    [Fact]
+    public void InteractiveCommand_SyntaxVersionForcedRejectsATypedDirective()
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+        console.Input.PushTypedLine("#!syntax version 1.1");
+        console.Input.PushTypedLine("a := 1");
+        console.Input.PushTypedLine("printExpression(a)");
+        console.Input.PushTypedLine("!quit");
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message", "--syntax-version-forced", "1.0"]);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("Duplicate syntax version directive", console.Output);
+        Assert.Contains("Syntax error", console.Output);
+    }
+
+    [Theory]
+    [InlineData("--syntax-version")]
+    [InlineData("--syntax-version-forced")]
+    public void InteractiveCommand_MalformedSyntaxVersionReportsAnErrorAndExits(string option)
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message", option, "not-a-version"]);
+
+        Assert.Equal(1, result.ExitCode);
+        Assert.Contains("'not-a-version' is not a valid syntax version", console.Output);
+    }
+
+    /// <summary>
     /// 'upnoninc' is a 1.4 keyword, so a session that declares 1.3 must not suggest it: Tab leaves
     /// the buffer as typed, and the word 'upnoninc' never reaches the echoed output.
     /// </summary>
