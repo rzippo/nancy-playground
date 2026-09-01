@@ -85,9 +85,11 @@ public sealed record SyntaxErrorInfo(
     {
         var rewritten = rewrite ? SyntaxErrorMessages.Rewrite(error) : null;
         var parser = error as ParserError;
+        // the matcher knows which token the message is about, which is not always the one the parser
+        // stopped at, e.g. the name of a call named deep inside its argument list
         return new SyntaxErrorInfo(
-            Line: error.Position.Line,
-            Column: error.Position.Column,
+            Line: rewritten?.Position?.Line ?? error.Position.Line,
+            Column: rewritten?.Position?.Column ?? error.Position.Column,
             Message: rewritten?.Message ?? error.DefaultMessage,
             Type: error switch
             {

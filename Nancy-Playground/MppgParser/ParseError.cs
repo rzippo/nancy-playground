@@ -277,19 +277,19 @@ internal sealed record ParserError(
     /// Under an older version the word is not a keyword, so it lexes as a name and fails as one: at the token itself in <c>abs(x)</c>, and inside the call in <c>pow(x, 2)</c>, which are the two places read here.
     /// A name the program declares is its own, whatever it spells.
     /// </remarks>
-    public (string Keyword, SyntaxVersion IntroducedIn)? KeywordOfALaterVersion
+    public (IToken Token, string Keyword, SyntaxVersion IntroducedIn)? KeywordOfALaterVersion
         => Version is not { } inForce
             ? null
             : OperationOfALaterVersion(Tokens.Offending, inForce)
                 ?? OperationOfALaterVersion(EnclosingCall, inForce);
 
-    private (string Keyword, SyntaxVersion IntroducedIn)? OperationOfALaterVersion(IToken? token, SyntaxVersion inForce)
+    private (IToken Token, string Keyword, SyntaxVersion IntroducedIn)? OperationOfALaterVersion(IToken? token, SyntaxVersion inForce)
         => token is { } named
             && named.Type == Unipi.MppgParser.Grammar.MppgLexer.IDENTIFIER
             && !IsDeclared(named.Text)
             && VersionedKeywords.IntroducedIn.TryGetValue(named.Text, out var introducedIn)
             && introducedIn > inForce
-                ? (named.Text, introducedIn)
+                ? (named, named.Text, introducedIn)
                 : null;
 
     /// <summary>

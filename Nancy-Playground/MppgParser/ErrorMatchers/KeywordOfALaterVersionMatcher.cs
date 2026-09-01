@@ -17,10 +17,11 @@ internal sealed class KeywordOfALaterVersionMatcher : IErrorMatcher<ParserError>
     /// <inheritdoc/>
     public RewrittenMessage Write(ParserError error)
     {
-        var (keyword, introducedIn) = error.KeywordOfALaterVersion!.Value;
+        var (token, keyword, introducedIn) = error.KeywordOfALaterVersion!.Value;
 
         return new(
             $"'{keyword}' is not an operation of syntax version {error.Version}",
-            $"'{keyword}' is an operation from version {introducedIn} on: to use it, declare '#!syntax version {introducedIn}', or later, before any other statement.");
+            $"'{keyword}' is an operation from version {introducedIn} on: to use it, declare '#!syntax version {introducedIn}', or later, before any other statement.",
+            Position: token);
     }
 }
