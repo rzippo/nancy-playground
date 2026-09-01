@@ -181,6 +181,22 @@ public class InteractiveLineEditorTests
     }
 
     [Fact]
+    public void SetKeywords_ReplacesTheBaseKeywordList()
+    {
+        var testConsole = new TestConsole();
+        testConsole.Input.PushTypedText("a");
+        testConsole.Input.PushEditingKey(ConsoleKey.Tab);
+        testConsole.Input.PushEditingKey(ConsoleKey.Enter);
+
+        var editor = new LineEditor(["alpha"], console: testConsole);
+        editor.SetKeywords(["apple"]);
+
+        var result = editor.ReadLine();
+
+        Assert.Equal("apple", result);
+    }
+
+    [Fact]
     public void InteractiveCommand_VersionDirective_IsAppliedToSubsequentLines()
     {
         var console = new TestConsole();
@@ -202,5 +218,58 @@ public class InteractiveLineEditorTests
         Assert.Equal(0, result.ExitCode);
         Assert.Contains("Syntax version set to 1.0.", console.Output);
         Assert.Contains("a = 5", console.Output);
+    }
+
+    /// <summary>
+    /// 'upnoninc' is a 1.4 keyword, so a session that declares 1.3 must not suggest it: Tab leaves
+    /// the buffer as typed, and the word 'upnoninc' never reaches the echoed output.
+    /// </summary>
+    [Fact]
+    public void InteractiveCommand_VersionDirective_NarrowsAutocompleteToThatVersion()
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+        console.Input.PushTypedLine("#!syntax version 1.3");
+        console.Input.PushTypedText("upn");
+        console.Input.PushEditingKey(ConsoleKey.Tab);
+        console.Input.PushEditingKey(ConsoleKey.Enter);
+        console.Input.PushTypedLine("!quit");
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message"]);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.DoesNotContain("upnoninc", console.Output);
+    }
+
+    /// <summary>
+    /// The same prefix, under the default (latest) version, does complete: the narrowing in the test
+    /// above is the declared version excluding the keyword, not Tab failing generally.
+    /// </summary>
+    [Fact]
+    public void InteractiveCommand_LatestVersion_StillAutocompletesA1_4Keyword()
+    {
+        var console = new TestConsole();
+        console.Profile.Capabilities.Interactive = true;
+        console.Input.PushTypedText("upn");
+        console.Input.PushEditingKey(ConsoleKey.Tab);
+        console.Input.PushEditingKey(ConsoleKey.Enter);
+        console.Input.PushTypedLine("!quit");
+
+        var app = new CommandAppTester(console: console);
+        app.Configure(config =>
+        {
+            config.AddCommand<InteractiveCommand>("interactive");
+        });
+
+        var result = app.Run(["interactive", "--mute-welcome-message"]);
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("upnoninc", console.Output);
     }
 }
