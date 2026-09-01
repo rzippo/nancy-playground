@@ -69,13 +69,14 @@ public class SyntaxErrorMessagesTests
 
     [Theory]
     // the word opens the statement, or stands where an expression does
-    [InlineData("#!syntax version 1.0\na := 1\nprintExpression(a)", "printExpression", "1.0", "1.1")]
-    [InlineData("#!syntax version 1.2\nx := abs(2)", "abs", "1.2", "1.3")]
+    [InlineData("#!syntax version 1.0\na := 1\nprintExpression(a)", "printExpression", "1.0", "1.1", 0)]
+    [InlineData("#!syntax version 1.2\nx := abs(2)", "abs", "1.2", "1.3", 5)]
     // an infix operation, which reads as a name after a statement that was read whole
-    [InlineData("#!syntax version 1.2\nx := 5 mod 2", "mod", "1.2", "1.3")]
-    // a call whose arity is right, which is reported inside the argument list
-    [InlineData("#!syntax version 1.2\nx := pow(2, 3)", "pow", "1.2", "1.3")]
-    public void OperationOfALaterVersionIsNamed(string programText, string keyword, string inForce, string introducedIn)
+    [InlineData("#!syntax version 1.2\nx := 5 mod 2", "mod", "1.2", "1.3", 7)]
+    // a call whose arity is right, which is reported inside the argument list: the parser stops at the
+    // comma, but the message names 'pow', so the caret points there instead
+    [InlineData("#!syntax version 1.2\nx := pow(2, 3)", "pow", "1.2", "1.3", 5)]
+    public void OperationOfALaterVersionIsNamed(string programText, string keyword, string inForce, string introducedIn, int column)
     {
         var error = FirstError(programText);
 
@@ -84,6 +85,7 @@ public class SyntaxErrorMessagesTests
             $"'{keyword}' is an operation from version {introducedIn} on: to use it, "
                 + $"declare '#!syntax version {introducedIn}', or later, before any other statement.",
             error.Hint);
+        Assert.Equal(column, error.Column);
     }
 
     /// <summary>
