@@ -813,7 +813,7 @@ numberUnaryExpression
 
 numberLiteral: (PLUS|MINUS)? NUMBER_ABS_LITERAL;
 
-// A literal-only rational, for the positions that take a constant rather than an expression: the pseudo-period fields of upp, which are informational, and the plot intervals.
+// A literal-only rational, for the positions that take a constant rather than an expression: the pseudo-period fields of upp, which are informational.
 // It exists so that a fraction, which is how Nancy writes a non-decimal rational, is accepted wherever the same value written as an integer or a decimal is.
 rationalLiteral: numberLiteral (DIV_SIGN numberLiteral)?;
 
@@ -851,7 +851,8 @@ stringExpression
 stringLiteral: STRING_LITERAL;
 stringVariable: {IsKnownVariable(CurrentToken.Text)}? IDENTIFIER;
 
-interval: '[' rationalLiteral ',' rationalLiteral ']';
+// A bound takes the full scalar expression grammar, not just a literal, as every numeric position does.
+interval: '[' expression ',' expression ']';
 
 // Assertions
 assertion

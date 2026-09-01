@@ -1,4 +1,5 @@
 using Unipi.Nancy.MinPlusAlgebra;
+using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
@@ -23,6 +24,16 @@ public class PlotOutput : StatementOutput
     /// The label of the vertical axis.
     /// </summary>
     public string YLabel { get; init; } = string.Empty;
+    /// <summary>
+    /// Range for the x-axis, resolved to a value.
+    /// Null if the command did not set one.
+    /// </summary>
+    public (Rational Left, Rational Right)? XLimit { get; init; } = null;
+    /// <summary>
+    /// Range for the y-axis, resolved to a value.
+    /// Null if the command did not set one.
+    /// </summary>
+    public (Rational Left, Rational Right)? YLimit { get; init; } = null;
     /// <summary>
     /// The options given to the command, e.g. the range and the output file.
     /// </summary>

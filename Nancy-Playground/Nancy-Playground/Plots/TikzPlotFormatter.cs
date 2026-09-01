@@ -43,11 +43,11 @@ public class TikzPlotFormatter
 
         var plotSettings = new TikzPlotSettings()
         {
-            XLimit = plotOutput.Settings.XLimit.HasValue ?
-                new Interval(plotOutput.Settings.XLimit.Value.Left, plotOutput.Settings.XLimit.Value.Right, true, true) :
+            XLimit = plotOutput.XLimit.HasValue ?
+                new Interval(plotOutput.XLimit.Value.Left, plotOutput.XLimit.Value.Right, true, true) :
                 null,
-            YLimit = plotOutput.Settings.YLimit.HasValue ?
-                new Interval(plotOutput.Settings.YLimit.Value.Left, plotOutput.Settings.YLimit.Value.Right, true, true) :
+            YLimit = plotOutput.YLimit.HasValue ?
+                new Interval(plotOutput.YLimit.Value.Left, plotOutput.YLimit.Value.Right, true, true) :
                 null,
         };
         // Nancy.Plots.Tikz has its own defaults for these, hence they are set only if the user asked for them

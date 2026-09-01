@@ -153,7 +153,7 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     /// Writes the interval a plot is drawn over.
     /// </summary>
     public override string? VisitInterval(Unipi.MppgParser.Grammar.MppgParser.IntervalContext context) =>
-        $"[{Render(context.rationalLiteral(0))}, {Render(context.rationalLiteral(1))}]";
+        $"[{Render(context.expression(0))}, {Render(context.expression(1))}]";
 
     // Grouping brackets are tight like call parentheses: (x + y), not ( x + y ).
     /// <summary>

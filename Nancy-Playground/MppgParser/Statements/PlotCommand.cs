@@ -1,4 +1,5 @@
 using Unipi.Nancy.Expressions;
+using Unipi.Nancy.Numerics;
 
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
@@ -44,6 +45,8 @@ public record class PlotCommand : Statement
         var title = Settings.Title.Compute(state);
         var xLabel = Settings.XLabel.Compute(state);
         var yLabel = Settings.YLabel.Compute(state);
+        var xLimit = ComputeLimit(Settings.XLimit, state, "xlim");
+        var yLimit = ComputeLimit(Settings.YLimit, state, "ylim");
 
         stopwatch.Stop();
 
@@ -53,11 +56,33 @@ public record class PlotCommand : Statement
             Title = title,
             XLabel = xLabel,
             YLabel = yLabel,
+            XLimit = xLimit,
+            YLimit = yLimit,
             Settings = Settings,
             Time = stopwatch.Elapsed,
             StatementText = Text,
             // Plots produce no text; the formatter renders them, or explains that it cannot.
             OutputText = string.Empty
         };
+    }
+
+    /// <summary>
+    /// Resolves a plot interval bound against <paramref name="state"/>: either side can be a variable, not only a literal.
+    /// It is deferred the same way <see cref="ComputableString"/> is.
+    /// </summary>
+    private static (Rational Left, Rational Right)? ComputeLimit(
+        (Expression Left, Expression Right)? limit, State state, string optionName)
+    {
+        if (limit is not { } l)
+            return null;
+
+        l.Left.ParseTree(state);
+        l.Right.ParseTree(state);
+        var (leftFunction, leftNumber) = l.Left.Compute();
+        var (rightFunction, rightNumber) = l.Right.Compute();
+        if (leftFunction is not null || rightFunction is not null || leftNumber is null || rightNumber is null)
+            throw new Exception($"'{optionName}' takes numbers, not functions.");
+
+        return (leftNumber.Value, rightNumber.Value);
     }
 }

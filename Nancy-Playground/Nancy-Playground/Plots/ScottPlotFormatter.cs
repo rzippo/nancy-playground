@@ -51,11 +51,11 @@ public class ScottPlotFormatter : IPlotFormatter
                 Title = plotOutput.Title,
                 XLabel = plotOutput.XLabel,
                 YLabel = plotOutput.YLabel,
-                XLimit = plotOutput.Settings.XLimit.HasValue ?
-                    new Interval(plotOutput.Settings.XLimit.Value.Left, plotOutput.Settings.XLimit.Value.Right, true, true) :
+                XLimit = plotOutput.XLimit.HasValue ?
+                    new Interval(plotOutput.XLimit.Value.Left, plotOutput.XLimit.Value.Right, true, true) :
                     null,
-                YLimit = plotOutput.Settings.YLimit.HasValue ?
-                    new Interval(plotOutput.Settings.YLimit.Value.Left, plotOutput.Settings.YLimit.Value.Right, true, true) :
+                YLimit = plotOutput.YLimit.HasValue ?
+                    new Interval(plotOutput.YLimit.Value.Left, plotOutput.YLimit.Value.Right, true, true) :
                     null,
             };
 

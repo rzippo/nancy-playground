@@ -187,14 +187,11 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
                 case "xlim":
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
-                    var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
-                    var leftLimit = numberVisitor.Visit(leftLimitContext);
-                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    var leftContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
+                    var rightContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
                     settings = settings with
                     {
-                        XLimit = (leftLimit, rightLimit)
+                        XLimit = (new Expression(leftContext), new Expression(rightContext))
                     };
                     break;
                 }
@@ -202,14 +199,11 @@ public class StatementVisitor : MppgBaseVisitor<Statement?>
                 case "ylim":
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
-                    var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
-                    var leftLimit = numberVisitor.Visit(leftLimitContext);
-                    var rightLimit = numberVisitor.Visit(rightLimitContext);
+                    var leftContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
+                    var rightContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(1);
                     settings = settings with
                     {
-                        YLimit = (leftLimit, rightLimit)
+                        YLimit = (new Expression(leftContext), new Expression(rightContext))
                     };
                     break;
                 }

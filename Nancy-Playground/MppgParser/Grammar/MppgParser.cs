@@ -6014,11 +6014,11 @@ public partial class MppgParser : Parser {
 	}
 
 	public partial class IntervalContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public RationalLiteralContext[] rationalLiteral() {
-			return GetRuleContexts<RationalLiteralContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
+			return GetRuleContexts<ExpressionContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public RationalLiteralContext rationalLiteral(int i) {
-			return GetRuleContext<RationalLiteralContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
+			return GetRuleContext<ExpressionContext>(i);
 		}
 		public IntervalContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -6043,11 +6043,11 @@ public partial class MppgParser : Parser {
 			State = 766;
 			Match(T__32);
 			State = 767;
-			rationalLiteral();
+			expression();
 			State = 768;
 			Match(T__11);
 			State = 769;
-			rationalLiteral();
+			expression();
 			State = 770;
 			Match(T__33);
 			}
@@ -6864,8 +6864,8 @@ public partial class MppgParser : Parser {
 		0,752,758,1,0,0,0,753,754,10,4,0,0,754,755,5,58,0,0,755,757,3,132,66,5,
 		756,753,1,0,0,0,757,760,1,0,0,0,758,756,1,0,0,0,758,759,1,0,0,0,759,133,
 		1,0,0,0,760,758,1,0,0,0,761,762,5,65,0,0,762,135,1,0,0,0,763,764,4,68,
-		24,0,764,765,5,94,0,0,765,137,1,0,0,0,766,767,5,33,0,0,767,768,3,106,53,
-		0,768,769,5,12,0,0,769,770,3,106,53,0,770,771,5,34,0,0,771,139,1,0,0,0,
+		24,0,764,765,5,94,0,0,765,137,1,0,0,0,766,767,5,33,0,0,767,768,3,22,11,
+		0,768,769,5,12,0,0,769,770,3,22,11,0,770,771,5,34,0,0,771,139,1,0,0,0,
 		772,773,5,46,0,0,773,774,5,7,0,0,774,775,3,22,11,0,775,776,3,142,71,0,
 		776,777,5,8,0,0,777,141,1,0,0,0,778,779,3,144,72,0,779,780,3,22,11,0,780,
 		789,1,0,0,0,781,782,4,71,25,0,782,784,3,146,73,0,783,785,3,148,74,0,784,

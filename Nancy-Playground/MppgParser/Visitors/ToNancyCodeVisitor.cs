@@ -151,6 +151,19 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
             _ => "var"
         };
 
+    /// <summary>
+    /// The expression of one bound of a plot interval, checked to be a number: <c>xlim</c>/<c>ylim</c>
+    /// take a scalar expression, e.g. a variable, not only a literal.
+    /// </summary>
+    private static Unipi.MppgParser.Grammar.MppgParser.ExpressionContext GetIntervalBound(
+        Unipi.MppgParser.Grammar.MppgParser.IntervalContext intervalContext, int index, string optionName)
+    {
+        var boundContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(index);
+        if (boundContext.GetExpressionType() != ExpressionType.Number)
+            throw new Exception($"'{optionName}' takes numbers, not functions.");
+        return boundContext;
+    }
+
     public override List<string> VisitExpressionCommand(Unipi.MppgParser.Grammar.MppgParser.ExpressionCommandContext context)
     {
         var expressionContext = context.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(0);
@@ -288,24 +301,18 @@ class ToNancyCodeVisitor : MppgBaseVisitor<List<string>>
                 case "xlim":
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
-                    var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
-                    var leftLimit = numberVisitor.Visit(leftLimitContext);
-                    var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    argsDict["XLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
+                    var leftLimit = GetIntervalBound(intervalContext, 0, "xlim").Accept(this).Single();
+                    var rightLimit = GetIntervalBound(intervalContext, 1, "xlim").Accept(this).Single();
+                    argsDict["XLimit"] = $"new Interval({leftLimit}, {rightLimit})";
                     break;
                 }
 
                 case "ylim":
                 {
                     var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
-                    var numberVisitor = new NumberLiteralVisitor();
-                    var leftLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0);
-                    var rightLimitContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1);
-                    var leftLimit = numberVisitor.Visit(leftLimitContext);
-                    var rightLimit = numberVisitor.Visit(rightLimitContext);
-                    argsDict["YLimit"] = $"new Interval({leftLimit.ToCodeString()}, {rightLimit.ToCodeString()})";
+                    var leftLimit = GetIntervalBound(intervalContext, 0, "ylim").Accept(this).Single();
+                    var rightLimit = GetIntervalBound(intervalContext, 1, "ylim").Accept(this).Single();
+                    argsDict["YLimit"] = $"new Interval({leftLimit}, {rightLimit})";
                     break;
                 }
 

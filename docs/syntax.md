@@ -344,9 +344,8 @@ Notes:
 - functions must be variables, they cannot be expressions (e.g., sum of two functions);
 - args can be numbers, intervals, string, or string with sum
 of numbers, variables and strings for labels
-- the bounds of the `xlim` and `ylim` intervals are literals, not expressions: an integer, a decimal, an infinity, or a fraction of two of these.
-  Fractions, as in `xlim=[1/3, 10]`, are a `nancy-playground` addition:
-RTaW takes a variable there but not a fraction
+- the bounds of the `xlim` and `ylim` intervals take a scalar expression, e.g. `xlim=[v, 10]` or `xlim=[1+1, 10]`: an integer, a decimal, an infinity, a fraction of two of these, a variable (optionally signed), or a compound expression of these.
+  RTaW takes a bare or signed variable there, including one carrying a fraction, but not a fraction literal (`xlim=[1/3, 10]`) or a compound expression (`xlim=[1+1, 10]`); `nancy-playground` accepts all of these, a superset of RTaW rather than a divergence from it.
 - *not documented*: args and function names can appear in any order
 - the `gui` option applies per plot, while the `--no-gui` option of the command line applies to the
 whole run, overriding it. The image is written either way, and its path printed. `plotTikz` renders code rather than an image, so neither has any effect there.

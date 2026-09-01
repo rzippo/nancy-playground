@@ -1,5 +1,3 @@
-using Unipi.Nancy.Numerics;
-
 namespace Unipi.Nancy.Playground.MppgParser.Statements;
 
 /// <summary>
@@ -13,14 +11,14 @@ public record PlotSettings
     public ComputableString Title { get; init; } = new();
 
     /// <summary>
-    /// Range for the x-axis.
+    /// Range for the x-axis, resolved against the state when the plot is executed: either bound can be a variable, not only a literal.
     /// </summary>
-    public (Rational Left, Rational Right)? XLimit { get; init; } = null;
+    public (Expression Left, Expression Right)? XLimit { get; init; } = null;
 
     /// <summary>
-    /// Range for the y-axis.
+    /// Range for the y-axis, resolved against the state when the plot is executed: either bound can be a variable, not only a literal.
     /// </summary>
-    public (Rational Left, Rational Right)? YLimit { get; init; } = null;
+    public (Expression Left, Expression Right)? YLimit { get; init; } = null;
 
     /// <summary>
     /// Label for the x-axis.

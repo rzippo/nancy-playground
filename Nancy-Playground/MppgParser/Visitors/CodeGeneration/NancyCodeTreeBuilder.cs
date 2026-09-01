@@ -178,31 +178,36 @@ internal static class NancyCodeTreeBuilder
     /// </summary>
     public static GeneratedCode VisitPlotCommand(
         Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context,
+        MppgBaseVisitor<GeneratedCode> visitor,
         Func<ExpressionSyntax, ExpressionSyntax> materialize,
         HashSet<string> declaredVariables) =>
         BuildPlotStatements(
             context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
+            visitor,
             materialize,
             declaredVariables,
             PlotOutputKind.Image);
 
     public static GeneratedCode VisitPlotTikzCommand(
         Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context,
+        MppgBaseVisitor<GeneratedCode> visitor,
         Func<ExpressionSyntax, ExpressionSyntax> materialize,
         HashSet<string> declaredVariables) =>
         BuildPlotStatements(
             context.GetRuleContexts<Unipi.MppgParser.Grammar.MppgParser.PlotArgContext>(),
+            visitor,
             materialize,
             declaredVariables,
             PlotOutputKind.Tikz);
 
     private static GeneratedCode BuildPlotStatements(
         Unipi.MppgParser.Grammar.MppgParser.PlotArgContext[] args,
+        MppgBaseVisitor<GeneratedCode> visitor,
         Func<ExpressionSyntax, ExpressionSyntax> materialize,
         HashSet<string> declaredVariables,
         PlotOutputKind outputKind)
     {
-        var (functionsToPlot, settings, outPath) = ParsePlotArgs(args, outputKind);
+        var (functionsToPlot, settings, outPath) = ParsePlotArgs(args, visitor, materialize, outputKind);
         var plottedFunctions = functionsToPlot.Select(name => materialize(IdentifierName(name))).ToArray();
 
         // Omitted rather than passed as an empty initializer when there is nothing to set:
@@ -307,6 +312,8 @@ internal static class NancyCodeTreeBuilder
     /// </summary>
     private static (List<string> FunctionsToPlot, List<(string Property, ExpressionSyntax Value)> Settings, string OutPath) ParsePlotArgs(
         Unipi.MppgParser.Grammar.MppgParser.PlotArgContext[] args,
+        MppgBaseVisitor<GeneratedCode> visitor,
+        Func<ExpressionSyntax, ExpressionSyntax> materialize,
         PlotOutputKind outputKind)
     {
         var functionsToPlot = args
@@ -354,11 +361,11 @@ internal static class NancyCodeTreeBuilder
                     break;
 
                 case "xlim":
-                    SetProperty("XLimit", IntervalCode(plotArgContext));
+                    SetProperty("XLimit", IntervalCode(plotArgContext, visitor, materialize, "xlim"));
                     break;
 
                 case "ylim":
-                    SetProperty("YLimit", IntervalCode(plotArgContext));
+                    SetProperty("YLimit", IntervalCode(plotArgContext, visitor, materialize, "ylim"));
                     break;
 
                 case "xlab":
@@ -384,13 +391,29 @@ internal static class NancyCodeTreeBuilder
         return (functionsToPlot, settings, outPath);
     }
 
-    private static ExpressionSyntax IntervalCode(Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext plotArgContext)
+    private static ExpressionSyntax IntervalCode(
+        Unipi.MppgParser.Grammar.MppgParser.PlotOptionContext plotArgContext,
+        MppgBaseVisitor<GeneratedCode> visitor,
+        Func<ExpressionSyntax, ExpressionSyntax> materialize,
+        string optionName)
     {
         var intervalContext = plotArgContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.IntervalContext>(0);
-        var numberVisitor = new NumberLiteralVisitor();
-        var leftLimit = numberVisitor.Visit(intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(0));
-        var rightLimit = numberVisitor.Visit(intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.RationalLiteralContext>(1));
-        return ObjectCreate("Interval", ParseExpression(leftLimit.ToCodeString()), ParseExpression(rightLimit.ToCodeString()));
+        var leftCode = materialize(GetIntervalBound(intervalContext, 0, optionName).Accept(visitor).SingleExpression());
+        var rightCode = materialize(GetIntervalBound(intervalContext, 1, optionName).Accept(visitor).SingleExpression());
+        return ObjectCreate("Interval", leftCode, rightCode);
+    }
+
+    /// <summary>
+    /// The expression of one bound of a plot interval, checked to be a number: <c>xlim</c>/<c>ylim</c>
+    /// take a scalar expression, e.g. a variable, not only a literal.
+    /// </summary>
+    private static Unipi.MppgParser.Grammar.MppgParser.ExpressionContext GetIntervalBound(
+        Unipi.MppgParser.Grammar.MppgParser.IntervalContext intervalContext, int index, string optionName)
+    {
+        var boundContext = intervalContext.GetChild<Unipi.MppgParser.Grammar.MppgParser.ExpressionContext>(index);
+        if (boundContext.GetExpressionType() != ExpressionType.Number)
+            throw new Exception($"'{optionName}' takes numbers, not functions.");
+        return boundContext;
     }
 
     public static GeneratedCode VisitComment(Unipi.MppgParser.Grammar.MppgParser.CommentContext context)

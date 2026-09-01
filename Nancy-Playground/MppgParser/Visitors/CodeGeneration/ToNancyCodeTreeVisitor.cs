@@ -514,10 +514,10 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
         NancyCodeTreeBuilder.VisitStringExpression(context);
 
     public override GeneratedCode VisitPlotCommand(Unipi.MppgParser.Grammar.MppgParser.PlotCommandContext context) =>
-        NancyCodeTreeBuilder.VisitPlotCommand(context, materialize: static value => value, _declaredVariables);
+        NancyCodeTreeBuilder.VisitPlotCommand(context, this, materialize: static value => value, _declaredVariables);
 
     public override GeneratedCode VisitPlotTikzCommand(Unipi.MppgParser.Grammar.MppgParser.PlotTikzCommandContext context) =>
-        NancyCodeTreeBuilder.VisitPlotTikzCommand(context, materialize: static value => value, _declaredVariables);
+        NancyCodeTreeBuilder.VisitPlotTikzCommand(context, this, materialize: static value => value, _declaredVariables);
 
     private static IEnumerable<string> GetPackageDirectives(bool usesImagePlots, bool usesTikzPlots)
     {
