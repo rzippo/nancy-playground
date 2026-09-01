@@ -17,4 +17,9 @@ public class StatementOutput
     /// For statements that do not produce simply text, this should be populated as a fallback.
     /// </remarks>
     public required string OutputText { get; init; }
+
+    /// <summary>
+    /// The warnings raised while the statement ran, as against the ones <see cref="Statement.Warnings"/> holds from when it was parsed.
+    /// </summary>
+    public IReadOnlyList<string> Warnings { get; init; } = [];
 }

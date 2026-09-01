@@ -121,6 +121,7 @@ public record class Assignment : Statement
             AssignedVariable = VariableName,
             Expression = Expression.NancyExpression,
             Time = sw.Elapsed,
+            Warnings = Expression.ExecutionWarnings,
         };
     }
 }

@@ -41,6 +41,8 @@ public class OutputOnlyFormatter : IStatementFormatter
         // A diagnostic is about correctness, so it is printed even in the mode that otherwise prints only what the script explicitly asked for.
         foreach (var warning in statement.Warnings)
             Console.MarkupLineInterpolated($"[yellow]{warning}[/]");
+        foreach (var warning in output.Warnings)
+            Console.MarkupLineInterpolated($"[yellow]{warning}[/]");
 
         switch (statement)
         {

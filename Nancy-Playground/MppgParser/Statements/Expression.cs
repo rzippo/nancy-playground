@@ -42,6 +42,11 @@ public class Expression
     public Unipi.MppgParser.Grammar.MppgParser.ExpressionContext? ExpressionContext { get; private set; }
 
     /// <summary>
+    /// The warnings raised while the expression was resolved, e.g. a mismatch between a declared value and the one the value actually takes.
+    /// </summary>
+    public IReadOnlyList<string> ExecutionWarnings { get; private set; } = [];
+
+    /// <summary>
     /// The name, where the expression is a reference to a variable.
     /// </summary>
     public string? VariableName { get; private set; }
@@ -103,8 +108,9 @@ public class Expression
             {
                 if(ExpressionContext == null)
                     throw new InvalidOperationException("Invalid state: no expression context");
-                var expression = Expression.ParseTree(ExpressionContext, state);
-                NancyExpression = expression;
+                var visitor = new Visitors.ExpressionVisitor(state);
+                NancyExpression = visitor.Visit(ExpressionContext);
+                ExecutionWarnings = visitor.Warnings;
                 break;
             }
             case ExpressionSourceType.NancyExpression:

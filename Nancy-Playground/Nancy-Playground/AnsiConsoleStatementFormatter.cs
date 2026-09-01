@@ -105,6 +105,8 @@ public class AnsiConsoleStatementFormatter : IStatementFormatter
     {
         foreach (var warning in statement.Warnings)
             Console.MarkupLineInterpolated($"[yellow]{warning}[/]");
+        foreach (var warning in output.Warnings)
+            Console.MarkupLineInterpolated($"[yellow]{warning}[/]");
 
         switch (statement)
         {

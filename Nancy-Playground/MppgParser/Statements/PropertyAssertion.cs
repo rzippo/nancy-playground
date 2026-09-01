@@ -73,6 +73,7 @@ public record class PropertyAssertion : Statement
             Result = result,
             Operand = Operand.NancyExpression!,
             Time = sw.Elapsed,
+            Warnings = Operand.ExecutionWarnings,
         };
     }
 }

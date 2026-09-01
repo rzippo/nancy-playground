@@ -63,6 +63,7 @@ public record class ExpressionCommand : Statement
             OutputText = output,
             Expression = Expression.NancyExpression,
             Time = sw.Elapsed,
+            Warnings = Expression.ExecutionWarnings,
         };
     }
 }

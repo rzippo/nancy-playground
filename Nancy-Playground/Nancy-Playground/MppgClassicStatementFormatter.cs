@@ -44,6 +44,8 @@ public class MppgClassicStatementFormatter : IStatementFormatter
     {
         foreach (var warning in statement.Warnings)
             Console.WriteLine(warning);
+        foreach (var warning in output.Warnings)
+            Console.WriteLine(warning);
 
         if (output is PlotOutput)
             Console.WriteLine(">> Plots are not rendered in this output mode.");

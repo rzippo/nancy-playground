@@ -16,6 +16,11 @@ public partial class ExpressionVisitor : MppgBaseVisitor<IExpression>
     public State State { get; init; }
 
     /// <summary>
+    /// The warnings collected while building, for the caller to surface alongside the output.
+    /// </summary>
+    public List<string> Warnings { get; } = [];
+
+    /// <summary>
     /// A visitor resolving names against <paramref name="state"/>, or against nothing where it is null.
     /// </summary>
     public ExpressionVisitor(State? state)

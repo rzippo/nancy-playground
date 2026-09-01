@@ -158,6 +158,7 @@ public record class Assertion : Statement
             LeftExpression = LeftExpression.NancyExpression!,
             RightExpression = RightExpression.NancyExpression!,
             Time = sw.Elapsed,
+            Warnings = LeftExpression.ExecutionWarnings.Concat(RightExpression.ExecutionWarnings).ToList(),
         };
     }
 }
