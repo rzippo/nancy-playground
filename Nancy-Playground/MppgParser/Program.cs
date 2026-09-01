@@ -91,8 +91,16 @@ public record class Program
     /// Parses MPPG program text and returns the corresponding Program object.
     /// </summary>
     public static Program FromText(string text)
+        => FromText(text, syntaxVersion: null);
+
+    /// <summary>
+    /// Parses MPPG program text with <paramref name="syntaxVersion"/> in play, either as what the text
+    /// is read with where it declares no version of its own, or, with <paramref name="force"/>, instead
+    /// of whatever version it does declare.
+    /// </summary>
+    public static Program FromText(string text, SyntaxVersion? syntaxVersion, bool force = false)
     {
-        var parse = MppgParsing.Create(text, ErrorRecovery.CollectAll);
+        var parse = MppgParsing.Create(text, ErrorRecovery.CollectAll, syntaxVersion, force: force);
 
         var context = parse.Parser.program();
         ReportUnusableVersionDirectives(context, text, parse.Errors);
@@ -251,18 +259,22 @@ public record class Program
     /// <param name="text">The program to convert.</param>
     /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
     /// <param name="useCodeTrees">True to emit through the provisional Roslyn syntax-tree generator.</param>
+    /// <param name="syntaxVersion">The version to read the text with, either as what it is read with where it declares none of its own, or, with <paramref name="force"/>, instead of whatever it does declare.</param>
+    /// <param name="force">True to override a '#!syntax version' directive the text has with <paramref name="syntaxVersion"/>, rather than only filling in where it has none.</param>
     /// <returns>The lines of the generated program.</returns>
     /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
     public static List<string> ToNancyCode(
         string text,
         bool useNancyExpressions = false,
-        bool useCodeTrees = false
+        bool useCodeTrees = false,
+        SyntaxVersion? syntaxVersion = null,
+        bool force = false
     )
     {
         if (useCodeTrees)
-            return NancyCodeTreeRenderer.RenderLines(ToNancyCodeTree(text, useNancyExpressions));
+            return NancyCodeTreeRenderer.RenderLines(ToNancyCodeTree(text, useNancyExpressions, syntaxVersion, force));
 
-        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
+        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError, syntaxVersion, force: force);
 
         var programContext = parse.ParseOrThrow(static parser => parser.program());
         MppgBaseVisitor<List<string>> visitor = useNancyExpressions
@@ -278,14 +290,18 @@ public record class Program
     /// </summary>
     /// <param name="text">The program to convert.</param>
     /// <param name="useNancyExpressions">True to emit code that builds expressions with Unipi.Nancy.Expressions, false for the Nancy API, which computes values.</param>
+    /// <param name="syntaxVersion">The version to read the text with, either as what it is read with where it declares none of its own, or, with <paramref name="force"/>, instead of whatever it does declare.</param>
+    /// <param name="force">True to override a '#!syntax version' directive the text has with <paramref name="syntaxVersion"/>, rather than only filling in where it has none.</param>
     /// <returns>The generated C# program as a Roslyn compilation unit.</returns>
     /// <exception cref="Exceptions.SyntaxErrorException">The text does not parse.</exception>
     public static CompilationUnitSyntax ToNancyCodeTree(
         string text,
-        bool useNancyExpressions = false
+        bool useNancyExpressions = false,
+        SyntaxVersion? syntaxVersion = null,
+        bool force = false
     )
     {
-        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError);
+        var parse = MppgParsing.Create(text, ErrorRecovery.FirstError, syntaxVersion, force: force);
         var programContext = parse.ParseOrThrow(static parser => parser.program());
         var compilationUnit = useNancyExpressions
             ? new ToNancyExpressionsCodeTreeVisitor(parse.DeclaredSyntaxVersion).ToCompilationUnit(programContext)

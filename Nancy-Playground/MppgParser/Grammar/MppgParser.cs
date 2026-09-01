@@ -290,9 +290,6 @@ public partial class MppgParser : Parser {
 	    // variable name before the parser ever sees it.
 	    // An operator symbol can never be a variable name, so it is gated here instead, on the alternative
 	    // that matches it.
-	    // A word keyword that must stay usable as a variable name outside its one position (a contextual
-	    // keyword, like a plotArg option name or a propertyName) is also gated here, on an IDENTIFIER
-	    // matched by text rather than by a dedicated lexer token: 'is' and 'not' are gated this way.
 	    // The version is read live off the lexer, since the preamble already set it by the time this
 	    // alternative is reached.
 	    private Unipi.Nancy.Playground.MppgParser.SyntaxVersion CurrentSyntaxVersion

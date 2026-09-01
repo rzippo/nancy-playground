@@ -78,7 +78,7 @@ public class ProgramVisitor : MppgBaseVisitor<Program>
      /// </summary>
      /// <remarks>
      /// Only the directive the program opens with is applied, so a second one on the next line is as ineffective as one written after a statement, and is told so the same way.
-     /// A directive declaring a version this build cannot apply is left out, being reported as an error by <see cref="Program.FromText"/>.
+     /// A directive declaring a version this build cannot apply is left out, being reported as an error by <see cref="Program.FromText(string)"/>.
      /// </remarks>
      private IEnumerable<Statement> DirectivesNotApplied(Unipi.MppgParser.Grammar.MppgParser.PreambleContext preamble)
      {

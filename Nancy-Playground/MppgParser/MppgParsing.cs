@@ -147,11 +147,18 @@ internal static class MppgParsing
     /// <param name="recovery">What to do at the first error.</param>
     /// <param name="syntaxVersion">The version to lex with, or null to take the one the input declares.</param>
     /// <param name="state">The variables whose types seed the parser, when parsing against a session.</param>
+    /// <param name="force">
+    /// True to lock <paramref name="syntaxVersion"/> in regardless of a '#!syntax version' directive the
+    /// input has, false to let it only fill in where the input declares none. Defaults to true, which is
+    /// what every caller before this parameter existed relied on: interactive mode's already-decided,
+    /// per-line session version must not be re-opened by a stray directive.
+    /// </param>
     public static MppgParse Create(
         string text,
         ErrorRecovery recovery,
         SyntaxVersion? syntaxVersion = null,
-        State? state = null
+        State? state = null,
+        bool force = true
     )
     {
         var errors = new List<SyntaxErrorInfo>();
@@ -159,7 +166,12 @@ internal static class MppgParsing
         var inputStream = CharStreams.fromString(text);
         var lexer = new Unipi.MppgParser.Grammar.MppgLexer(inputStream);
         if (syntaxVersion is { } version)
-            lexer.SetSyntaxVersion(version.Major, version.Minor);
+        {
+            if (force)
+                lexer.SetSyntaxVersion(version.Major, version.Minor);
+            else
+                lexer.SetDefaultSyntaxVersion(version.Major, version.Minor);
+        }
         lexer.RemoveErrorListeners();
         lexer.AddErrorListener(new DiagnosticLexerErrorListener(errors, inputStream));
 

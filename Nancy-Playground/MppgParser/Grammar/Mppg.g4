@@ -10,12 +10,22 @@ grammar Mppg;
 
     public (int Major, int Minor) SyntaxVersion => (_syntaxVersionMajor, _syntaxVersionMinor);
 
-    /// Programmatically sets the syntax version.
+    /// Programmatically sets the syntax version, locking out any '#!syntax version' directive the
+    /// input has: interactive mode uses this for the version already decided for the session, and a
+    /// forced CLI version uses it to override whatever the script itself declares.
     public void SetSyntaxVersion(int major, int minor)
     {
         _syntaxVersionMajor = major;
         _syntaxVersionMinor = minor;
         _versionDirectiveApplied = true;
+    }
+
+    /// Sets the syntax version to assume where the input declares none, leaving a
+    /// '#!syntax version' directive of its own free to still apply and override it.
+    public void SetDefaultSyntaxVersion(int major, int minor)
+    {
+        _syntaxVersionMajor = major;
+        _syntaxVersionMinor = minor;
     }
 
     /// Applies a '#!syntax version X.Y' directive as it is lexed.

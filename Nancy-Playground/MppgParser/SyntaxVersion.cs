@@ -52,6 +52,33 @@ public readonly record struct SyntaxVersion(int Major, int Minor) : IComparable<
     public static SyntaxVersion FromParts(int major, int minor) => new(major, minor);
 
     /// <summary>
+    /// Reads a bare <c>major.minor</c> version, or the word <c>latest</c> for <see cref="Latest"/>, as a
+    /// CLI option value takes it; a script's own <c>#!syntax version</c> directive does not accept
+    /// <c>latest</c>, and is read by <see cref="TryParseShebang"/> instead.
+    /// </summary>
+    public static bool TryParse(string text, out SyntaxVersion version)
+    {
+        version = default;
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        if (string.Equals(text, "latest", StringComparison.OrdinalIgnoreCase))
+        {
+            version = Latest;
+            return true;
+        }
+
+        var parts = text.Split('.');
+        if (parts.Length != 2
+            || !int.TryParse(parts[0], out var major)
+            || !int.TryParse(parts[1], out var minor))
+            return false;
+
+        version = new SyntaxVersion(major, minor);
+        return true;
+    }
+
+    /// <summary>
     /// Reads the version a <c>#!syntax version X.Y</c> line declares, returning false where the line does not declare one.
     /// </summary>
     public static bool TryParseShebang(string shebang, out SyntaxVersion version)
