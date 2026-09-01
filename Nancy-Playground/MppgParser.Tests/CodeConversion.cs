@@ -997,4 +997,47 @@ public class CodeConversion
         Assert.Contains("Expressions.FromRational(5)", code);
         Assert.Contains("Expressions.FromRational(new Rational(1, 4))", code);
     }
+
+    // ToNancyCode's syntaxVersion/force pair, what convert's --syntax-version/--syntax-version-forced
+    // resolve to; Program.FromText's own pair is covered in SyntaxVersioning.cs.
+    // pow (1.3) is the probe, rather than printExpression: the legacy string visitor does not implement
+    // printExpression at all, in any version, which would make a "did it convert" assertion meaningless.
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ToNancyCodeSyntaxVersionFillsInWhereTheTextDeclaresNone(bool useCodeTrees)
+    {
+        Assert.Throws<Exceptions.SyntaxErrorException>(() =>
+            Program.ToNancyCode(
+                "x := pow(2, 3)",
+                useCodeTrees: useCodeTrees,
+                syntaxVersion: new SyntaxVersion(1, 2)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ToNancyCodeSyntaxVersionLosesToTheTextsOwnDirective(bool useCodeTrees)
+    {
+        var code = Program.ToNancyCode(
+            "#!syntax version 1.3\nx := pow(2, 3)",
+            useCodeTrees: useCodeTrees,
+            syntaxVersion: new SyntaxVersion(1, 2));
+
+        Assert.Contains(code, line => line.Contains(".Pow("));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ToNancyCodeForcedSyntaxVersionWinsOverTheTextsOwnDirective(bool useCodeTrees)
+    {
+        Assert.Throws<Exceptions.SyntaxErrorException>(() =>
+            Program.ToNancyCode(
+                "#!syntax version 1.3\nx := pow(2, 3)",
+                useCodeTrees: useCodeTrees,
+                syntaxVersion: new SyntaxVersion(1, 2),
+                force: true));
+    }
 }

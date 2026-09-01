@@ -325,6 +325,38 @@ public class SyntaxVersioning
     }
 
     [Theory]
+    [InlineData("1.0", 1, 0)]
+    [InlineData("2.5", 2, 5)]
+    [InlineData("latest", 1, 4)]
+    [InlineData("Latest", 1, 4)]
+    [InlineData("LATEST", 1, 4)]
+    public void TryParse_ValidFormats(string text, int major, int minor)
+    {
+        Assert.True(SyntaxVersion.TryParse(text, out var version));
+        Assert.Equal(new SyntaxVersion(major, minor), version);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("1")]
+    [InlineData("1.0.0")]
+    [InlineData("a.b")]
+    [InlineData("#!syntax version 1.0")]
+    public void TryParse_InvalidFormats(string text)
+    {
+        Assert.False(SyntaxVersion.TryParse(text, out _));
+    }
+
+    /// <summary>
+    /// 'latest' is a CLI option value, not a directive: a script cannot declare itself as it.
+    /// </summary>
+    [Fact]
+    public void TryParseShebang_DoesNotAcceptLatest()
+    {
+        Assert.False(SyntaxVersion.TryParseShebang("#!syntax version latest", out _));
+    }
+
+    [Theory]
     [InlineData(
         """
         #!syntax version 1.0
@@ -1093,5 +1125,56 @@ public class SyntaxVersioning
 
         Assert.Null(statement.Version);
         Assert.NotNull(statement.Error);
+    }
+
+    // Program.FromText(text, syntaxVersion, force), what a --syntax-version/--syntax-version-forced
+    // CLI option resolves to, without editing the file.
+
+    [Fact]
+    public void PassedVersion_FillsInWhereTheFileDeclaresNone()
+    {
+        var program = Program.FromText("a := 1\nprintExpression(a)", new SyntaxVersion(1, 0));
+
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.NotEmpty(program.Errors);
+    }
+
+    [Fact]
+    public void PassedVersion_LosesToTheFilesOwnDirectiveWhenNotForced()
+    {
+        const string programText = """
+            #!syntax version 1.1
+            a := 1
+            printExpression(a)
+            """;
+
+        var program = Program.FromText(programText, new SyntaxVersion(1, 0));
+
+        Assert.Equal(new SyntaxVersion(1, 1), program.SyntaxVersion);
+        Assert.Empty(program.Errors);
+    }
+
+    [Fact]
+    public void ForcedVersion_WinsOverTheFilesOwnDirective()
+    {
+        const string programText = """
+            #!syntax version 1.1
+            a := 1
+            printExpression(a)
+            """;
+
+        var program = Program.FromText(programText, new SyntaxVersion(1, 0), force: true);
+
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.NotEmpty(program.Errors);
+    }
+
+    [Fact]
+    public void ForcedVersion_AppliesJustAsWellWhereTheFileDeclaresNone()
+    {
+        var program = Program.FromText("a := 1\nprintExpression(a)", new SyntaxVersion(1, 0), force: true);
+
+        Assert.Equal(new SyntaxVersion(1, 0), program.SyntaxVersion);
+        Assert.NotEmpty(program.Errors);
     }
 }
