@@ -6,12 +6,9 @@ using Unipi.Nancy.Playground.MppgParser.Statements;
 namespace Unipi.Nancy.Playground.MppgParser.Tests;
 
 /// <summary>
-/// The pseudo-period fields of <c>upp</c> take a literal, rather than the number expression that the
-/// surrounding constructs take.
-/// These cover the fraction form of that literal, which is how Nancy writes a rational that is
-/// neither an integer nor a decimal, hence how it comes back in a script printed from a curve.
-/// A plot interval bound also accepts this literal form, though it is not restricted to it any more:
-/// see <c>PlotIntervalExpressionParsing</c> for the general expression it now takes.
+/// The fraction forms the <c>upp</c> fields and the plot interval bounds accept.
+/// They are how Nancy writes a rational that is neither an integer nor a decimal, hence how it comes back in a script printed from a curve.
+/// Both positions now take the general number expression grammar: see <c>UppFieldsParsing</c> for the fields and <c>PlotIntervalExpressionParsing</c> for the bounds.
 /// </summary>
 public class RationalLiteralParsing
 {
@@ -112,7 +109,7 @@ public class RationalLiteralParsing
         var exception = Assert.ThrowsAny<Exception>(
             () => ExpressionParsing.Parse($"upp({Period}, 1/0)", new State()));
 
-        Assert.Contains("denominator is zero", exception.Message);
+        Assert.Contains("divide by zero", exception.Message);
     }
 
     /// <summary>
