@@ -497,6 +497,55 @@ public class SyntaxVersioning
         Assert.ThrowsAny<Exception>(() => Statement.FromLine("printExpression(x)", state, SyntaxVersion.V1_0));
     }
 
+    // div is a legacy RTaW operator, which their 1.5.0 removed.
+    // It is kept, but from 1.1 on, so a 1.0 session reads it as a name and the error names the version that has it.
+    [Fact]
+    public void InteractiveMode_VersionV1_1_AllowsDiv()
+    {
+        var statement = Statement.FromLine("x := 4 div 2", new State(), SyntaxVersion.V1_1);
+
+        Assert.IsAssignableFrom<Assignment>(statement);
+    }
+
+    [Fact]
+    public void InteractiveMode_VersionV1_0_RejectsDiv()
+    {
+        var exception = Assert.ThrowsAny<Exception>(
+            () => Statement.FromLine("x := 4 div 2", new State(), SyntaxVersion.V1_0));
+
+        Assert.Contains("'div' is not an operation of syntax version 1.0", exception.Message);
+    }
+
+    // zDev is ours, from 1.2 like the other additions of that version.
+    [Fact]
+    public void InteractiveMode_VersionV1_2_AllowsZDev()
+    {
+        var state = new State();
+        state.Add("f", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "f"));
+        state.Add("g", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "g"));
+
+        Assert.IsAssignableFrom<ExpressionCommand>(
+            Statement.FromLine("zDev(f, g)", state, SyntaxVersion.V1_2));
+    }
+
+    [Theory]
+    [InlineData("zDev(f, g)", "'zDev' is not an operation of syntax version 1.0")]
+    [InlineData("zdev(f, g)", "'zdev' is not an operation of syntax version 1.0")]
+    public void InteractiveMode_VersionV1_0_RejectsZDev(string line, string expectedMessage)
+    {
+        var state = new State();
+        state.Add("f", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "f"));
+        state.Add("g", Unipi.Nancy.Expressions.Expressions.FromCurve(
+            new Unipi.Nancy.NetworkCalculus.RateLatencyServiceCurve(1, 3), "g"));
+
+        var exception = Assert.ThrowsAny<Exception>(() => Statement.FromLine(line, state, SyntaxVersion.V1_0));
+
+        Assert.Contains(expectedMessage, exception.Message);
+    }
+
     [Fact]
     public void NoShebang_AllowsSubaddClosure()
     {
