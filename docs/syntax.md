@@ -191,10 +191,10 @@ These operations return a _function_.
 | inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | low_inv(f) | Compute the _lower_ pseudo-inverse of $f$. | ✅ |
 | up_inv(f) | Compute the _upper_ pseudo-inverse of $f$. | ✅ |
-| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. Also `upnondec(f)`/`upnondecclosure(f)`, the explicit spelling of syntax version 1.4 or later. | ✅ |
-| nnupclosure(f) | Compute the non-negative _upper_ non-decreasing closure of $f$. Also `nnupnondec(f)`/`nnupnondecclosure(f)` from 1.4 on. | ✅ |
-| lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. Also `lownondec(f)`/`lownondecclosure(f)` from 1.4 on. | ✅ |
-| nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. Also `nnlownondec(f)`/`nnlownondecclosure(f)` from 1.4 on. | ✅ |
+| upclosure(f) | Compute the _upper_ non-decreasing closure of $f$. From version 1.4 on, also `upnondec(f)`/`upnondecclosure(f)`. | ✅ |
+| nnupclosure(f) | Compute the non-negative _upper_ non-decreasing closure of $f$. From version 1.4 on, also `nnupnondec(f)`/`nnupnondecclosure(f)`. | ✅ |
+| lowclosure(f) | Compute the _lower_ non-decreasing closure of $f$. Requires syntax version 1.2 or later. From version 1.4 on, also `lownondec(f)`/`lownondecclosure(f)`. | ✅ |
+| nnlowclosure(f) | Compute the non-negative _lower_ non-decreasing closure of $f$. Requires syntax version 1.2 or later. From version 1.4 on, also `nnlownondec(f)`/`nnlownondecclosure(f)`. | ✅ |
 | upnoninc(f) | Compute the _upper_ non-increasing closure of $f$, the least wide-sense non-increasing curve $g \ge f$. Also `upnonincclosure(f)`. Requires syntax version 1.4 or later. | ✅ |
 | lownoninc(f) | Compute the _lower_ non-increasing closure of $f$, the greatest wide-sense non-increasing curve $g \le f$. Also `lownonincclosure(f)`. Requires syntax version 1.4 or later. | ✅ |
 | floor(f) | Compute the function $g$ such that $g(x) = \lfloor f(x) \rfloor$. Requires syntax version 1.3 or later. | ✅ |
@@ -260,7 +260,7 @@ These operations work on functions, but return scalars.
 | hdev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | vDev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | vdev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
-| zDev(f, g) | Z-deviation between $f$ and $g$, for delay bounds with negative service curves. Requires syntax version 1.2 or later, like the other additions of that version: it is a nancy-playground addition, not an RTaW operator. | ✅ |
+| zDev(f, g) | Z-deviation between $f$ and $g$, for delay bounds with negative service curves. Also `zdev(f, g)`. Requires syntax version 1.2. | ✅ |
 | maxBacklogPeriod(f, g) | Max backlog period length between $f$ and $g$. | ❌ |
 
 > The [syntax quick reference](https://www.realtimeatwork.com/minplus-quickref-syntax/), 
@@ -317,8 +317,10 @@ Any operation that does not assign to a variable, prints its value to the consol
 An assignment operation prints the name of the assigned variable to the console.
 
 By typing the name of a variable, one can have its content printed to the console.
-
 The value of a _function_ variable is its definition as `uaf` or `upp`, regardless of the constructor used.
+
+`printExpression(f)` prints the _expression_ of `f`, instead. 
+Requires syntax version 1.1 or later.
 
 ## Plots 🟨
 
@@ -455,14 +457,7 @@ Most properties are function-only:
 
 Using a property with the wrong kind of operand, e.g. `subadditive` on a number or `integer` on a function, is an error rather than a silent `false`.
 
-## New shiny syntax
-
-| Expression | Description | Implemented |
-| ---- | ---- | ---- |
-| printExpression(f) | Prints out the _expression_ of f. | ✅ |
-| plotTikz(f1, ..., args) | Plots the functions as TikZ code, see [TikZ plots](#tikz-plots-). | ✅ |
-
-### Syntax version
+## Syntax version
 
 `#!syntax version X.Y`
 
@@ -473,13 +468,13 @@ any other directive is ignored, and says so where it stands.
 In interactive mode the same rule holds for the session, so that an exported session behaves the same when run again.
 Use `!clear` to start a new session, and with it select a new version.
 
-A keyword only acts as one from the version that introduced it: `lowclosure := 3` is an assignment under `#!syntax version 1.0`, and the closure operator from 1.2 on.
+A keyword only acts as one from the version that introduced it: `floor := 3` is an assignment under `#!syntax version 1.2`, and the floor operator from 1.3 on.
 Declaring a version therefore keeps a program working as later versions add keywords.
 
 | Version | Keywords introduced |
 | ---- | ---- |
-| 1.1 | `printExpression`, `plotTikz` |
-| 1.2 | `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure` |
+| 1.1 | `printExpression`, `plotTikz`, `div` |
+| 1.2 | `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure`, `zDev`, `zdev` |
 | 1.3 | `floor`, `ceil`, `abs`, `pow`, `mod`, `gcd`, `lcm` |
 | 1.4 | `upnoninc`, `upnonincclosure`, `lownoninc`, `lownonincclosure`, `upnondec`, `upnondecclosure`, `lownondec`, `lownondecclosure`, `nnupnondec`, `nnupnondecclosure`, `nnlownondec`, `nnlownondecclosure` |
 
