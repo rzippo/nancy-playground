@@ -4,7 +4,7 @@ Here are the supported constructs by the _MPPG_ syntax.
 
 I aim to support as many constructs as possible, to run all existing code, but also extend it when useful.
 
-> The extensions should be made optional, if possible.
+> The extensions are optional, through the syntax version directives.
 
 This syntax is re-organized, compared to the source material [[1]](https://www.realtimeatwork.com/minplus-quickref-syntax/)[[2]](https://www.realtimeatwork.com/minplus-console/RTaW-MinplusConsole-UserManual.pdf), to better guide implementation.
 To add to the syntax, see [Extending the syntax](/docs/extending-the-syntax.md).
