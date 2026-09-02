@@ -1,0 +1,20 @@
+// Computing WCD bounds on a contended node, using residual service curves. 
+// Does *not* require the service curve to be *strict*, but requires the flow of interest to have a *minimal* arrival curve. 
+// See https://doi.org/10.1109/RTAS61025.2024.00016.
+
+// *maximal* arrival curves for two traffic streams on the same node 
+a1 := bucket(2, 2)
+a2 := bucket(2, 2)
+// *minimal* arrival curve for the flow of interest
+a1_min := ratency(1, 1) 
+// *(min,+)* service curve offered by the node to the aggregate traffic
+sc := ratency(5, 1)
+// residual service curve: in this case it is negative
+rsc_1 := sc - a2
+// plot(a1, a1_min, a2, sc, rsc_1)
+// per Thm. 19 of the paper, the (possibly negative) residual service curve
+// must first be replaced by its lower non-decreasing closure
+rsc_1_lc := lowclosure(rsc_1)
+// to compute the delay bound, we must use the z-deviation
+wcd_1 := zDev(a1_min, rsc_1_lc) \/  hdev(a1, rsc_1_lc)
+wcd_1
