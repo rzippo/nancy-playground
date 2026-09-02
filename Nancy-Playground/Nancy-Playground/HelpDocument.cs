@@ -489,7 +489,7 @@ Both `hShift` and `hshift` are accepted spellings.
                     },
                     new HelpItem
                     {
-                        Name = "Upper closure",
+                        Name = "Upper non-decreasing closure",
                         Formats = ["upclosure(f)", "upnondec(f)", "upnondecclosure(f)", "nnupclosure(f)", "nnupnondec(f)", "nnupnondecclosure(f)"],
                         Description = "Upper non-decreasing closure (optionally non-negative).",
                         LongDescription = """
@@ -502,13 +502,14 @@ Both `hShift` and `hshift` are accepted spellings.
                     },
                     new HelpItem
                     {
-                        Name = "Lower closure",
+                        Name = "Lower non-decreasing closure",
                         Formats = ["lowclosure(f)", "lownondec(f)", "lownondecclosure(f)", "nnlowclosure(f)", "nnlownondec(f)", "nnlownondecclosure(f)"],
                         Description = "Lower non-decreasing closure (optionally non-negative).",
                         LongDescription = """
 - `lowclosure(f)`: lower non-decreasing closure of f.
 - `nnlowclosure(f)`: non-negative lower non-decreasing closure of f.
 
+`lowclosure` and `nnlowclosure` require syntax version 1.2 or later.
 `lownondec(f)`/`lownondecclosure(f)` and `nnlownondec(f)`/`nnlownondecclosure(f)` are the same two operations, under the explicit spelling of syntax version 1.4 or later.
 """,
                         Tags = ["closure", "non-decreasing", "lower", "operation"]
@@ -621,6 +622,8 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
                         Description = "Z-deviation between f and g. Used for delay bounds with negative service curves.",
                         LongDescription = """
 - `zDev(f, g)` and `zdev(f, g)`: computes $z(f, g) = \inf\{t \ge 0 \mid f \otimes g (t) \ge 0\}$.
+
+Requires syntax version 1.2 or later.
 """,
                         Tags = ["functions", "deviation", "z", "zDev", "metrics", "operation"]
                     },
@@ -662,7 +665,9 @@ Both `f(x+)`/`f(x-)` and `f(x~+)`/`f(x~-)` are supported.
 - `v1 - v2`: subtraction
 - `v1 * v2`: multiplication
 - `v1 / v2`: division
-- `v1 div v2`: division (same semantics for this syntax)
+- `v1 div v2`: division (same semantics for this syntax).
+  It requires syntax version 1.1 or later.
+  It is a legacy RTaW operator, which RTaW's own 1.5.0 removed: kept so older scripts run.
 - `v1 mod v2`: remainder of the division, which takes the sign of v1, e.g. `-7/2 mod 3` is -1/2.
   It binds like the other product operators, so `1 + x mod y` is `1 + (x mod y)`.
   It requires syntax version 1.3 or later.
@@ -753,6 +758,17 @@ They require syntax version 1.3 or later.
 - If the variable holds a scalar, the scalar value is printed.
 """,
                         Tags = ["output", "variables", "printing", "console"]
+                    },
+                    new HelpItem
+                    {
+                        Name = "Printing the expression of a variable",
+                        Formats = ["printExpression(f)"],
+                        Description = "Prints the expression of f, rather than its canonical uaf/upp form.",
+                        LongDescription = """
+Useful to inspect the original expression a variable was defined with, instead of its normalized representation.
+It requires syntax version 1.1 or later.
+""",
+                        Tags = ["printExpression", "expression", "debugging", "output", "syntax"]
                     },
                     new HelpItem
                     {
@@ -866,15 +882,30 @@ assert(f < g)
                     },
                     new HelpItem
                     {
-                        Name = "assert (property)",
+                        Name = "Property asserts",
                         Formats = ["assert(f is X)", "assert(f is not X)"],
                         Description = "Tests one property of one expression, rather than a relation between two; prints true or an error message.",
                         LongDescription = """
 Requires syntax version 1.4 or later.
-X is a property name, e.g. subadditive, concave, ultimatelyaffine (or its synonym ua), integer.
-Most properties apply to functions only; a few (finite, zero, plusinfinite, minusinfinite) apply to either a function or a scalar, and integer applies to scalars only.
+X is one of the property names below, and `is not` negates the check.
+
+These apply to a function only:
+- `subadditive`, `superadditive`
+- `concave`, `convex`
+- `nondecreasing`, `increasing`
+- `plain`, `ultimatelyplain`
+- `ultimatelyaffine` (`ua`), `ultimatelyconstant` (`uc`)
+- `continuous`, `continuousexceptorigin`
+- `leftcontinuous`, `rightcontinuous`
+- `passingthroughorigin`, `nonnegative`
+- `ultimatelyfinite`, `ultimatelyinfinite` (`ui`), `ultimatelyplusinfinite`, `ultimatelyminusinfinite`
+
+These apply to either a function or a scalar: `finite`, `zero`, `plusinfinite`, `minusinfinite`.
+For a function they mean finite/zero/infinite everywhere, for a scalar not-infinite, zero, or infinite.
+
+`integer` applies to a scalar only: true where it has no fractional part.
+
 Using a property with the wrong kind of operand is an error, not a silent `false`.
-`is not` negates the check.
 
 If the assertion holds, prints `true`, otherwise `false`.
 """,
@@ -883,27 +914,47 @@ assert(f is subadditive)
 assert(f is not concave)
 assert(x is integer)
 """,
-                        Tags = ["assert", "assertion", "property", "is", "subadditive", "concave", "convex", "ultimatelyaffine", "ua", "integer", "syntax"]
+                        Tags = ["assert", "assertion", "property", "predicate", "is", "subadditive", "concave", "convex", "ultimatelyaffine", "ua", "integer", "syntax"]
                     }
                 ]
             },
 
             new HelpSection
             {
-                Name = "New shiny syntax",
-                Description = "Extra helper constructs beyond the original syntax.",
-                Tags = ["syntax", "extras", "helpers", "extensions", "printExpression"],
+                Name = "Syntax version",
+                Description = "The #!syntax version directive, and what each version gates.",
+                Tags = ["syntax version", "versioning", "directive", "gating", "compatibility"],
                 Items =
                 [
                     new HelpItem
                     {
-                        Name = "printExpression",
-                        Formats = ["printExpression(f)"],
-                        Description = "Prints out the expression of f, rather than its canonical uaf/upp form.",
+                        Name = "Syntax version",
+                        Formats = ["#!syntax version X.Y"],
+                        Description = "Selects the syntax version used for the program, defaulting to the latest.",
                         LongDescription = """
-Useful to inspect the original expression used to define a function variable, instead of its normalized representation.
+The directive is applied only as the first line of the program, and only once.
+
+In interactive mode the same rule holds for the session.
+Use `!clear` to start a new session, and with it select a new version.
+
+A keyword only acts as one from the version that introduced it.
+Declaring a version keeps a program working as later versions add keywords:
+`floor := 3` is an assignment under version 1.2, and the floor operator from 1.3 on.
+A program that uses one of these names without declaring a version is told which name it is, and which directive keeps it.
+
+The `<` and `>` operators of `assert` are version-gated too, from 1.1 on.
+
+Versions and the keywords they introduce:
+- 1.1: `printExpression`, `plotTikz`, `div`, `<` and `>` as `assert` operators
+- 1.2: `subaddclosure`, `superaddclosure`, `lowclosure`, `nnlowclosure`, `zDev`, `zdev`
+- 1.3: `floor`, `ceil`, `abs`, `pow`, `mod`, `gcd`, `lcm`
+- 1.4: `upnoninc`, `upnonincclosure`, `lownoninc`, `lownonincclosure`, `upnondec`, `upnondecclosure`, `lownondec`, `lownondecclosure`, `nnupnondec`, `nnupnondecclosure`, `nnlownondec`, `nnlownondecclosure`, property asserts
 """,
-                        Tags = ["printExpression", "expression", "debugging", "output", "syntax"]
+                        Examples = """
+#!syntax version 1.2
+floor := 3
+""",
+                        Tags = ["syntax version", "version", "directive", "gating", "compatibility", "keywords"]
                     }
                 ]
             }
