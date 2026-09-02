@@ -27,6 +27,10 @@ divThenProduct := f / 1 * y
 divThenProductOurs := (f / 1) * y
 divThenProductRTaW := f / (1 * y)
 
+divDecimalDenominator := f / 2/0.25
+divDecimalDenominatorOurs := (f / 2) / 0.25
+divDecimalDenominatorRTaW := f / (2 / 0.25)
+
 // Block 2: divisor starts with a variable or a sample, both tools fold left, no warning.
 divVariables := f / x / y
 divVariablesBoth := (f / x) / y
@@ -40,6 +44,13 @@ divSampleBoth := (f / g(2)) / 2
 // Multiplication first: the groupings agree by associativity, no warning.
 mulFraction := f * 1/2
 mulFractionBoth := (f * 1) / 2
+
+// Sum boundaries: the sum's operand is the whole product chain after it, no warning.
+sampleDivisionSum := f + g(2)/2
+sampleDivisionSumBoth := f + (g(2) / 2)
+
+signedProductSum := f + -x * y
+signedProductSumBoth := f + ((0 - x) * y)
 
 divFraction(10)
 divFractionOurs(10)
@@ -56,6 +67,9 @@ divLiteralOverVariableRTaW(10)
 divThenProduct(10)
 divThenProductOurs(10)
 divThenProductRTaW(10)
+divDecimalDenominator(10)
+divDecimalDenominatorOurs(10)
+divDecimalDenominatorRTaW(10)
 divVariables(10)
 divVariablesBoth(10)
 divVariableOverLiteral(10)
@@ -64,3 +78,7 @@ divSample(10)
 divSampleBoth(10)
 mulFraction(10)
 mulFractionBoth(10)
+sampleDivisionSum(10)
+sampleDivisionSumBoth(10)
+signedProductSum(10)
+signedProductSumBoth(10)
