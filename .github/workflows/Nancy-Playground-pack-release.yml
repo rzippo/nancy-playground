@@ -10,10 +10,12 @@ on:
 
 jobs:
   Nancy-Playground-pack-release:
-    # only release what is on master: a pull request, or a manual run on another branch, must not publish
-    if: github.ref == 'refs/heads/master'
+    # a pull request, or a manual run on another branch, must not publish: this allows dispatching
+    # from a release tag too, but the ancestry check below still enforces that only a commit that is
+    # actually on master gets released, regardless of what a tag is named or where it points
+    if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-        
+
     env:
       BUILD_CONFIG: "Release"
       SOLUTION: "Nancy-Playground/Nancy-Playground.sln"
@@ -24,7 +26,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+
+      - name: Refuse to release a commit that is not on master
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor ${{ github.sha }} origin/master || {
+            echo "::error::${{ github.sha }} is not an ancestor of master; refusing to release."
+            exit 1
+          }
+
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
