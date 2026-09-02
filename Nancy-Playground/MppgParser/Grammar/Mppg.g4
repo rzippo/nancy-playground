@@ -344,7 +344,7 @@ grammar Mppg;
     private bool IsNumberProductOperator(IToken token) =>
         token.Text == "*"
         || token.Text == "/"
-        || token.Text == "div"
+        || (token.Type != IDENTIFIER && token.Text == "div")
         || (token.Type != IDENTIFIER && token.Text == "mod");
 
     private bool IsNumberEnclosedExpressionStart(int lookaheadIndex)
@@ -515,7 +515,7 @@ grammar Mppg;
         || token.Text == "/"
         || token.Text == "/_"
         || token.Text == "/^"
-        || token.Text == "div"
+        || (token.Type != IDENTIFIER && token.Text == "div")
         || (token.Type != IDENTIFIER && token.Text == "mod")
         || IsSumExpressionDelimiter(token);
 
@@ -570,7 +570,8 @@ WEDGE : '/\\';
 VEE : '\\/';
 PROD_SIGN: '*';
 DIV_SIGN: '/';
-DIV_OP: 'div';
+// A legacy RTaW operator, which their 1.5.0 removed: kept for older scripts, but not part of the 1.0 baseline.
+DIV_OP: 'div' {IsVersion1_1OrLater()}?;
 STRING_LITERAL : '"' ~([\r\n"])*? '"';
 VERSION_DIRECTIVE_START: '#!syntax' [\p{L}\p{Nd}\p{P}\p{S} \t]* { TryApplyVersionDirective(Text); };
 DIRECTIVE_START: '#!' [\p{L}\p{Nd}\p{P}\p{S} \t]*;
@@ -585,6 +586,8 @@ SUBADD_CLOSURE : 'subaddclosure' {IsVersion1_2OrLater()}?;
 SUPERADD_CLOSURE : 'superaddclosure' {IsVersion1_2OrLater()}?;
 LOWCLOSURE : 'lowclosure' {IsVersion1_2OrLater()}?;
 NNLOWCLOSURE : 'nnlowclosure' {IsVersion1_2OrLater()}?;
+Z_DEV : 'zDev' {IsVersion1_2OrLater()}?;
+Z_DEV_LOWER : 'zdev' {IsVersion1_2OrLater()}?;
 FLOOR : 'floor' {IsVersion1_3OrLater()}?;
 CEIL : 'ceil' {IsVersion1_3OrLater()}?;
 ABS : 'abs' {IsVersion1_3OrLater()}?;
@@ -828,7 +831,7 @@ functionLeftLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpressio
 functionRightLimitAt: {IsFunctionSampleStart()}? functionName '(' numberExpression '~'? PLUS ')';
 functionHorizontalDeviation : ('hDev'|'hdev') '(' functionExpression ',' functionExpression ')';
 functionVerticalDeviation : ('vDev'|'vdev') '(' functionExpression ',' functionExpression ')';
-functionZDeviation : ('zDev'|'zdev') '(' functionExpression ',' functionExpression ')';
+functionZDeviation : (Z_DEV|Z_DEV_LOWER) '(' functionExpression ',' functionExpression ')';
 
 // Plots
 plotCommand: 'plot' '(' plotArg (',' plotArg)* ')';

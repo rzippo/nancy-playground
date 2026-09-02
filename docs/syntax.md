@@ -252,15 +252,15 @@ These operations work on functions, but return scalars.
 | Expression | Description | Implemented |
 |----|----|----|
 | f(x) | Value of f at x | ✅ |
-| f(x+) | Value of f at the right of x | ✅ |
-| f(x-) | Value of f at the left of x | ✅ |
+| f(x+) | Value of f at the right of x. A nancy-playground short form of `f(x~+)`. | ✅ |
+| f(x-) | Value of f at the left of x. A nancy-playground short form of `f(x~-)`. | ✅ |
 | f(x~+) | Value of f at the right of x | ✅ |
 | f(x~-) | Value of f at the left of x | ✅ |
 | hDev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | hdev(f, g) | Horizontal deviation between $f$ and $g$. | ✅ |
 | vDev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
 | vdev(f, g) | Vertical deviation between $f$ and $g$. | ✅ |
-| zDev(f, g) | Z-deviation between $f$ and $g$, for delay bounds with negative service curves. | ✅ |
+| zDev(f, g) | Z-deviation between $f$ and $g$, for delay bounds with negative service curves. Requires syntax version 1.2 or later, like the other additions of that version: it is a nancy-playground addition, not an RTaW operator. | ✅ |
 | maxBacklogPeriod(f, g) | Max backlog period length between $f$ and $g$. | ❌ |
 
 > The [syntax quick reference](https://www.realtimeatwork.com/minplus-quickref-syntax/), 
@@ -283,7 +283,7 @@ These operations work between scalars, and return scalars.
 | v1 - v2 | Substraction of v1 and v2. | ✅ |
 | v1 * v2 | Multiplication of v1 and v2. | ✅ |
 | v1 / v2 | Division of v1 and v2. | ✅ |
-| v1 div v2 | Division of v1 by v2. | ✅ |
+| v1 div v2 | Division of v1 by v2. Requires syntax version 1.1 or later. A legacy RTaW operator, which RTaW's own 1.5.0 removed: kept so older scripts run, but not part of the 1.0 baseline. | ✅ |
 | v1 mod v2 | Remainder of v1 divided by v2, which takes the sign of v1. Requires syntax version 1.3 or later. | ✅ |
 | floor(v) | Largest integer not above $v$, i.e. $\lfloor v \rfloor$. Requires syntax version 1.3 or later. | ✅ |
 | ceil(v) | Smallest integer not below $v$, i.e. $\lceil v \rceil$. Requires syntax version 1.3 or later. | ✅ |

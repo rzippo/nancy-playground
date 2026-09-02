@@ -44,10 +44,13 @@ public static class VersionedKeywords
         {
             ["plotTikz"] = SyntaxVersion.V1_1,
             ["printExpression"] = SyntaxVersion.V1_1,
+            ["div"] = SyntaxVersion.V1_1,
             ["subaddclosure"] = SyntaxVersion.V1_2,
             ["superaddclosure"] = SyntaxVersion.V1_2,
             ["lowclosure"] = SyntaxVersion.V1_2,
             ["nnlowclosure"] = SyntaxVersion.V1_2,
+            ["zDev"] = SyntaxVersion.V1_2,
+            ["zdev"] = SyntaxVersion.V1_2,
             ["floor"] = SyntaxVersion.V1_3,
             ["ceil"] = SyntaxVersion.V1_3,
             ["abs"] = SyntaxVersion.V1_3,
