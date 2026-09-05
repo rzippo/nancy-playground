@@ -82,7 +82,7 @@ public partial class ExpressionVisitor
     public override IExpression VisitFunctionShiftMinMaxRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var scalar = (RationalExpression)context.numberProductExpression().Accept(this);
+        var scalar = (RationalExpression)context.numberExpression().Accept(this);
         var curve = (CurveExpression)context.functionProductExpression().Accept(this);
 
         return ApplyNumberFunctionSum(scalar, context.op.Type, curve);

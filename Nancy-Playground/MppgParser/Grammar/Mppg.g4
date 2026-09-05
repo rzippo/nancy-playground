@@ -657,9 +657,10 @@ functionSumExpression
 // The start/suffix split preserves left-to-right folding while letting predicates
 // classify mixed scalar/function operands before ANTLR commits to an alternative.
 // A predicate steers a choice only where prediction meets it first, i.e. at the left edge: [Parr13] §15.7.
+// The scalar side takes the sum tier, so a chain of scalars can stand in front of a curve: 1 + 2 + f.
 functionSumStart
     : {IsFunctionProductExpressionStart(1)}? functionProductExpression #functionSumFunctionStart
-    | {IsNumberProductExpressionStart(1)}? numberProductExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev
+    | {IsNumberProductExpressionStart(1)}? numberExpression op=(PLUS|MINUS|WEDGE|VEE) functionProductExpression #functionShiftMinMaxRev
     ;
 
 functionSumSuffix
@@ -781,8 +782,9 @@ segmentLeftClosedRightClosed: '[' endpoint numberExpression? endpoint ']';
 // Numbers
 // One hierarchy of tiers, sum -> product -> unary -> atom, so that the atoms are spelled once and every construct takes the operand granularity it needs.
 // A mixed scalar/function operator binds its scalar side at the product tier: f + 1/2 takes the whole fraction, and f - x + y groups as (f - x) + y.
+// The same left edge as the product tier, so the scalar side of 1 + 2 + f is 1 + 2.
 numberExpression
-    : numberExpression op=(PLUS|MINUS|WEDGE|VEE) numberProductExpression #numberSumSubMinMax
+    : numberExpression {!IsFunctionOperandStart(2)}? op=(PLUS|MINUS|WEDGE|VEE) numberProductExpression #numberSumSubMinMax
     | numberProductExpression #numberSumAtom
     ;
 

@@ -560,7 +560,7 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
     public override List<string> VisitFunctionShiftMinMaxRev(
         Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var first = context.numberProductExpression().Accept(this).Single();
+        var first = context.numberExpression().Accept(this).Single();
         var second = context.functionProductExpression().Accept(this).Single();
 
         return [ApplyNumberFunctionSumCode(first, context.op.Type, second)];

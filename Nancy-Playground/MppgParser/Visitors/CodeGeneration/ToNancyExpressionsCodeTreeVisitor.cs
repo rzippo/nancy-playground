@@ -392,7 +392,7 @@ internal sealed class ToNancyExpressionsCodeTreeVisitor : MppgBaseVisitor<Genera
 
     public override GeneratedCode VisitFunctionShiftMinMaxRev(Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var first = context.numberProductExpression().Accept(this).SingleExpression();
+        var first = context.numberExpression().Accept(this).SingleExpression();
         var second = context.functionProductExpression().Accept(this).SingleExpression();
         return GeneratedCode.Expression(ApplyNumberFunctionSum(first, context.op.Type, second));
     }

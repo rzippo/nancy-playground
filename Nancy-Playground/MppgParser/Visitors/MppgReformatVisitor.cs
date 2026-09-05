@@ -189,10 +189,10 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     /// </summary>
     public override string? VisitFunctionShiftMinMaxRev(Unipi.MppgParser.Grammar.MppgParser.FunctionShiftMinMaxRevContext context)
     {
-        var left = context.numberProductExpression();
+        var left = context.numberExpression();
         var right = context.functionProductExpression();
 
-        return $"{RenderOperand(left, IsCompoundNumberProduct(left))} {context.op.Text} {RenderOperand(right, IsCompoundFunctionProduct(right))}";
+        return $"{RenderOperand(left, IsCompoundNumberExpression(left))} {context.op.Text} {RenderOperand(right, IsCompoundFunctionProduct(right))}";
     }
 
     /// <summary>
