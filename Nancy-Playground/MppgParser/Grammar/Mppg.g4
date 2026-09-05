@@ -676,8 +676,8 @@ functionProductExpression
 // The scalar side ends at the first operator whose right side is not a number: in x * y * f it is x * y.
 functionProductStart
     : {IsFunctionOperandStart(1)}? functionUnaryExpression #functionProductFunctionStart
-    | {IsNumberProductExpressionStart(1)}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
-    | {IsNumberProductExpressionStart(1)}? numberProductExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
+    | {IsNumberFunctionOperationStart(1, "*")}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
+    | {IsNumberFunctionOperationStart(1, "comp")}? numberProductExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
     ;
 
 // The scalar on the right of a product operator binds at the unary tier, one operand at a time, so that a chain keeps folding left to right.
@@ -802,9 +802,10 @@ numberEnclosedExpression
 // The product tier, and the scalar operand of a mixed sum operator (f + 1/2): a chain of number atoms joined by the product-level operators.
 // It excludes +, -, /\ and \/: in f - x + y the scalar side is x alone, and the sum folds as (f - x) + y.
 // It is left-recursive, so a chain folds left to right: 1/2/3 groups as (1/2)/3.
+// The chain stops where the operand belongs to the function side, decided at the left edge: left to the operand's own {IsNumberVariable(...)}?, it swallowed the operator of 10 * b.
 numberProductExpression
     : numberUnaryExpression #numberProductAtom
-    | numberProductExpression op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberUnaryExpression #numberProductMulDiv
+    | numberProductExpression {!IsFunctionOperandStart(2)}? op=(PROD_SIGN|DIV_SIGN|DIV_OP|MOD_OP) numberUnaryExpression #numberProductMulDiv
     ;
 
 // The unary tier.
