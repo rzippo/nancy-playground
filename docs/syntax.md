@@ -206,6 +206,7 @@ These operations return a _function_.
 | f * scalar | Function multiplication by a scalar value. | ✅ |
 | f / scalar | Function division by a scalar value. | ✅ |
 | scalar / f | (min,+) deconvolution of the constant the scalar stands for and $f$. | ✅ |
+| scalar1 comp scalar2 | Composition of the constants the two scalars stand for, i.e. the constant $scalar_1$. | ✅ |
 
 > `hShift` and `hshift` are both fine, like `vShift` and `vshift`.
 > Fun thing: this is not documented, but used heavily in the PhD Thesis of Guidolin--Pina.
@@ -234,6 +235,7 @@ So `f / 1/2` is `(f / 1) / 2`, the same grouping that `a / 1/2` has when `a` is 
 
 A scalar written in front of a curve takes as much of the scalar side as its own tier allows, so `1 + 2 + f` shifts by three and `2 * 3 * f` scales by six.
 A scalar over a curve, `scalar / f`, is the deconvolution of the constant that scalar stands for, not a division of the curve.
+A scalar on each side of `comp` composes the two constants they stand for, so `5 comp 3` is the constant 5, and the grouping it takes is the one the precedence above gives it.
 
 Some mixed scalar/function forms are Nancy extensions beyond the subset that RTaW computes successfully.
 For example, `f(x) comp g` is accepted as a mixed scalar/function composition and returns a function.

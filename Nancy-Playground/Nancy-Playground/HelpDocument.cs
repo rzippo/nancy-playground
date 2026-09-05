@@ -555,7 +555,7 @@ They require syntax version 1.3 or later.
                     new HelpItem
                     {
                         Name = "Composition",
-                        Formats = ["f comp g"],
+                        Formats = ["f comp g", "scalar1 comp scalar2"],
                         Description = "Composition of functions: (f ∘ g)(x) = f(g(x)).",
                         Tags = ["composition", "operation"]
                     },
