@@ -40,6 +40,18 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
+    /// Builds a deconvolution written with the scalar first, as in <c>2 / f</c>, the scalar standing for the constant curve.
+    /// </summary>
+    public override IExpression VisitFunctionScalarDeconvolutionRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDeconvolutionRevContext context)
+    {
+        var scalar = (RationalExpression)context.numberProductExpression().Accept(this);
+        var curve = (CurveExpression)context.functionUnaryExpression().Accept(this);
+
+        return Expressions.Expressions.Deconvolution(ConstantCurveExpression(scalar), curve);
+    }
+
+    /// <summary>
     /// Builds a composition with a scalar written first, which is the constant that scalar stands for.
     /// </summary>
     public override IExpression VisitFunctionScalarCompositionRev(

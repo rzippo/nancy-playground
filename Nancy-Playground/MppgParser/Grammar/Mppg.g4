@@ -298,6 +298,7 @@ grammar Mppg;
     private bool IsFunctionProductExpressionStart(int lookaheadIndex) =>
         IsFunctionOperandStart(lookaheadIndex)
         || IsNumberFunctionOperationStart(lookaheadIndex, "*")
+        || IsNumberFunctionOperationStart(lookaheadIndex, "/")
         || IsNumberFunctionOperationStart(lookaheadIndex, "comp");
 
     private bool IsNumberFunctionOperationStart(int lookaheadIndex, string operation)
@@ -673,11 +674,13 @@ functionProductExpression
     ;
 
 // Product-level predicates distinguish convolution/composition from scalar multiplication, division, and sampling forms that share the same tokens.
+// A scalar over a curve is the deconvolution of the constant it stands for, as k / f, the shape the scalar-first alternatives share.
 // The scalar on the left of a product operator binds at the product tier: 1/2 * f groups as (1/2) * f, and x/y * f as (x/y) * f.
 // The scalar side ends at the first operator whose right side is not a number: in x * y * f it is x * y.
 functionProductStart
     : {IsFunctionOperandStart(1)}? functionUnaryExpression #functionProductFunctionStart
     | {IsNumberFunctionOperationStart(1, "*")}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
+    | {IsNumberFunctionOperationStart(1, "/")}? numberProductExpression '/' functionUnaryExpression #functionScalarDeconvolutionRev
     | {IsNumberFunctionOperationStart(1, "comp")}? numberProductExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
     ;
 

@@ -537,6 +537,15 @@ class ToNancyExpressionsCodeVisitor : MppgBaseVisitor<List<string>>
         return [ConstantCurveExpressionCode(first)];
     }
 
+    public override List<string> VisitFunctionScalarDeconvolutionRev(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDeconvolutionRevContext context)
+    {
+        var first = context.numberProductExpression().Accept(this).Single();
+        var second = context.functionUnaryExpression().Accept(this).Single();
+
+        return [$"Expressions.Deconvolution({ConstantCurveExpressionCode(first)}, {second})"];
+    }
+
     public override List<string> VisitFunctionSumChain(
         Unipi.MppgParser.Grammar.MppgParser.FunctionSumChainContext context)
     {

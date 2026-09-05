@@ -230,6 +230,16 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     }
 
     /// <summary>
+    /// Writes a deconvolution with a scalar written first.
+    /// </summary>
+    public override string? VisitFunctionScalarDeconvolutionRev(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarDeconvolutionRevContext context)
+    {
+        var left = context.numberProductExpression();
+
+        return $"{RenderOperand(left, IsCompoundNumberProduct(left))} / {Render(context.functionUnaryExpression())}";
+    }
+
+    /// <summary>
     /// Writes a composition with the scalar written first.
     /// </summary>
     public override string? VisitFunctionScalarCompositionRev(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)

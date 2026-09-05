@@ -185,6 +185,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionScalarMulRev([NotNull] MppgParser.FunctionScalarMulRevContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarDeconvolutionRev</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarDeconvolutionRev([NotNull] MppgParser.FunctionScalarDeconvolutionRevContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionScalarCompositionRev</c>
 	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
 	/// </summary>
