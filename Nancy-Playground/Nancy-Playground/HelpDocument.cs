@@ -424,8 +424,8 @@ Both `*` and `*_` denote the (min,+) convolution. They are aliases.
                     new HelpItem
                     {
                         Name = "(min,+) deconvolution",
-                        Formats = ["f1 / f2", "f1 /_ f2"],
-                        Description = "(min,+) deconvolution of f1 by f2.",
+                        Formats = ["f1 / f2", "f1 /_ f2", "scalar / f"],
+                        Description = "(min,+) deconvolution of f1 by f2, a scalar standing for the constant it names.",
                         Tags = ["deconvolution", "min-plus", "operation"]
                     },
                     new HelpItem
