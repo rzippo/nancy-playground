@@ -43,6 +43,9 @@ public class ScalarFunctionChainParsing
         "2 * 3 comp b comp c",
         "10 * n comp b",
         "n * n comp b",
+        "10 comp 10",
+        "10 comp 10 * b",
+        "10 comp n comp b",
     ];
 
     /// <summary>
@@ -63,6 +66,7 @@ public class ScalarFunctionChainParsing
         "1/2 + 1/2 + b",
         "10 * 2 + b",
         "b + 10 + 10",
+        "b + 10 comp 10",
     ];
 
     /// <summary>

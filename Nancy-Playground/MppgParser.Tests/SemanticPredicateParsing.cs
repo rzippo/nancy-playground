@@ -408,6 +408,35 @@ public class SemanticPredicateParsing
                 typeof(GrammarMppgParser.FunctionScalarDeconvolutionRevContext)));
     }
 
+    public static IEnumerable<object[]> ScalarCompositionCases =>
+        new List<string>
+        {
+            "5 comp 3",
+            "x comp 3",
+            "x * y comp 3",
+            "5 comp x",
+        }.ToXUnitTestCases();
+
+    /// <summary>
+    /// Each scalar of a composition stands for the constant curve it names, so a composition between two of them returns a curve.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(ScalarCompositionCases))]
+    public void CompositionBetweenTwoScalarsParsesAsAFunction(string mppg)
+    {
+        var (context, _, errors) = ParseExpression(mppg);
+
+        Assert.Empty(errors.Select(error => error.ToString(verbose: true)));
+
+        var expressionContext = context.functionExpression();
+        Assert.NotNull(expressionContext);
+
+        Assert.NotNull(
+            FindDescendant(
+                expressionContext,
+                typeof(GrammarMppgParser.FunctionScalarScalarCompositionContext)));
+    }
+
     public static IEnumerable<object[]> InvalidNumberLeftDivisionByFunctionCases =>
         new List<string>
         {

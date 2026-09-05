@@ -12,6 +12,25 @@ public class CodeConversion
     /// The lexer skips the blanks, so '- 4' and '-4' are the same tokens, and both are one negative literal rather than a negation applied to a positive one.
     /// </summary>
     /// <summary>
+    /// A composition between two scalars converts to the constant the left one names.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConversionEmitsTheLeftConstantForACompositionOfScalars(bool useNancyExpressions)
+    {
+        var code = Program.ToNancyCode(
+            """
+            g := 5 comp 3
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains("new Rational(5)", fullCode);
+    }
+
+    /// <summary>
     /// A scalar over a curve converts to the deconvolution of the constant the scalar stands for.
     /// </summary>
     [Theory]

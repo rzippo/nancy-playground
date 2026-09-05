@@ -1,0 +1,6 @@
+--output-mode
+ConvertReferencePrints
+--run-mode
+PerStatement
+--on-error
+Stop

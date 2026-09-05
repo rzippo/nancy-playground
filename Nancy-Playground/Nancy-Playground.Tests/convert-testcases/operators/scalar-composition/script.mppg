@@ -1,0 +1,11 @@
+// Composing two scalars, each standing for the constant curve it names, so 5 comp 3 is the constant 5.
+// The converted code calls the operation rather than working the constant out for itself.
+f := bucket(2, 3)
+
+constantComposition := 5 comp 3
+chainComposition := 2 * 3 comp 10
+compositionThenConvolution := 5 comp 3 * f
+
+constantComposition(10)
+chainComposition(10)
+compositionThenConvolution(10)

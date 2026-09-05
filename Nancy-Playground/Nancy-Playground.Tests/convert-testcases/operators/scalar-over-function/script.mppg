@@ -1,0 +1,13 @@
+// The scalar-first forms that compute today: a scalar over a curve, and scalar chains in front of one.
+// Converted code must compute what the playground computes, the deconvolution through the library.
+f := bucket(2, 3)
+
+scalarOverFunction := 10 / f
+scalarOverFunctionChain := 2 * 5 / f
+scalarSumChain := 1 + 2 + f
+scalarProductChain := 2 * 3 * f
+
+scalarOverFunction(10)
+scalarOverFunctionChain(10)
+scalarSumChain(10)
+scalarProductChain(10)
