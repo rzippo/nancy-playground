@@ -64,6 +64,23 @@ public partial class ExpressionVisitor
     }
 
     /// <summary>
+    /// Builds a composition between two scalars, each standing for the constant curve it names, as in <c>2 comp 3</c>.
+    /// </summary>
+    /// <remarks>
+    /// $C_k \circ C_j$ is $C_k(j)$, which is $k$ wherever it is read.
+    /// </remarks>
+    public override IExpression VisitFunctionScalarScalarComposition(
+        Unipi.MppgParser.Grammar.MppgParser.FunctionScalarScalarCompositionContext context)
+    {
+        var outer = (RationalExpression)context.numberProductExpression().Accept(this);
+        var inner = (RationalExpression)context.numberUnaryExpression().Accept(this);
+
+        return Expressions.Expressions.Composition(
+            ConstantCurveExpression(outer),
+            ConstantCurveExpression(inner));
+    }
+
+    /// <summary>
     /// Builds a chain of sum-level operations, folding it left to right.
     /// </summary>
     public override IExpression VisitFunctionSumChain(

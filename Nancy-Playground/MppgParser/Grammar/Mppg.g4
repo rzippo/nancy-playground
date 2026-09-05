@@ -299,7 +299,8 @@ grammar Mppg;
         IsFunctionOperandStart(lookaheadIndex)
         || IsNumberFunctionOperationStart(lookaheadIndex, "*")
         || IsNumberFunctionOperationStart(lookaheadIndex, "/")
-        || IsNumberFunctionOperationStart(lookaheadIndex, "comp");
+        || IsNumberFunctionOperationStart(lookaheadIndex, "comp")
+        || IsNumberScalarCompositionStart(lookaheadIndex);
 
     private bool IsNumberFunctionOperationStart(int lookaheadIndex, string operation)
     {
@@ -307,6 +308,15 @@ grammar Mppg;
         return numberEnd > 0
             && TokenStream.LT(numberEnd).Text == operation
             && IsFunctionOperandStart(numberEnd + 1);
+    }
+
+    // A scalar over comp reads as the constant curve it names, so the composition between two of them is a curve.
+    private bool IsNumberScalarCompositionStart(int lookaheadIndex)
+    {
+        var numberEnd = TryGetNumberProductExpressionEnd(lookaheadIndex);
+        return numberEnd > 0
+            && TokenStream.LT(numberEnd).Text == "comp"
+            && !IsFunctionOperandStart(numberEnd + 1);
     }
 
     private bool IsNumberProductExpressionStart(int lookaheadIndex) =>
@@ -477,6 +487,10 @@ grammar Mppg;
                 return true;
 
             if (token.Type != IDENTIFIER && FunctionExpressionStarters.Contains(text))
+                return true;
+
+            // every composition returns a curve, including the one between two scalars
+            if (token.Type != IDENTIFIER && text == "comp")
                 return true;
 
             if (text == "(")
@@ -682,6 +696,7 @@ functionProductStart
     | {IsNumberFunctionOperationStart(1, "*")}? numberProductExpression '*' functionUnaryExpression #functionScalarMulRev
     | {IsNumberFunctionOperationStart(1, "/")}? numberProductExpression '/' functionUnaryExpression #functionScalarDeconvolutionRev
     | {IsNumberFunctionOperationStart(1, "comp")}? numberProductExpression 'comp' functionUnaryExpression #functionScalarCompositionRev
+    | {IsNumberScalarCompositionStart(1)}? numberProductExpression 'comp' numberUnaryExpression #functionScalarScalarComposition
     ;
 
 // The scalar on the right of a product operator binds at the unary tier, one operand at a time, so that a chain keeps folding left to right.

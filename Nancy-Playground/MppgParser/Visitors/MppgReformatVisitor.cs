@@ -240,6 +240,16 @@ public class MppgReformatVisitor : MppgBaseVisitor<string?>
     }
 
     /// <summary>
+    /// Writes a composition between two scalars.
+    /// </summary>
+    public override string? VisitFunctionScalarScalarComposition(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarScalarCompositionContext context)
+    {
+        var left = context.numberProductExpression();
+
+        return $"{RenderOperand(left, IsCompoundNumberProduct(left))} comp {Render(context.numberUnaryExpression())}";
+    }
+
+    /// <summary>
     /// Writes a composition with the scalar written first.
     /// </summary>
     public override string? VisitFunctionScalarCompositionRev(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarCompositionRevContext context)

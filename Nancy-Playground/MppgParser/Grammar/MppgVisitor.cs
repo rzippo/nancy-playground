@@ -199,6 +199,13 @@ public interface IMppgVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionScalarCompositionRev([NotNull] MppgParser.FunctionScalarCompositionRevContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarScalarComposition</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionScalarScalarComposition([NotNull] MppgParser.FunctionScalarScalarCompositionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMinPlusConvolutionSuffix</c>
 	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
 	/// </summary>

@@ -483,6 +483,14 @@ internal sealed class ToNancyCodeTreeVisitor : MppgBaseVisitor<GeneratedCode>
         return GeneratedCode.Expression(Invoke(Member(IdentifierName("Curve"), "Deconvolution"), ConstantCurveCode(first), second));
     }
 
+    public override GeneratedCode VisitFunctionScalarScalarComposition(Unipi.MppgParser.Grammar.MppgParser.FunctionScalarScalarCompositionContext context)
+    {
+        var first = context.numberProductExpression().Accept(this).SingleExpression();
+        var second = context.numberUnaryExpression().Accept(this).SingleExpression();
+        return GeneratedCode.Expression(
+            Invoke(Member(IdentifierName("Curve"), "Composition"), ConstantCurveCode(first), ConstantCurveCode(second)));
+    }
+
     private static ExpressionSyntax ApplyFunctionFunctionSum(ExpressionSyntax left, int operationType, ExpressionSyntax right) =>
         operationType switch
         {

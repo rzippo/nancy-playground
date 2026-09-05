@@ -306,6 +306,17 @@ public partial class MppgBaseVisitor<Result> : AbstractParseTreeVisitor<Result>,
 	/// <return>The visitor result.</return>
 	public virtual Result VisitFunctionScalarCompositionRev([NotNull] MppgParser.FunctionScalarCompositionRevContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by the <c>functionScalarScalarComposition</c>
+	/// labeled alternative in <see cref="MppgParser.functionProductStart"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitFunctionScalarScalarComposition([NotNull] MppgParser.FunctionScalarScalarCompositionContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by the <c>functionMinPlusConvolutionSuffix</c>
 	/// labeled alternative in <see cref="MppgParser.functionProductSuffix"/>.
 	/// <para>
