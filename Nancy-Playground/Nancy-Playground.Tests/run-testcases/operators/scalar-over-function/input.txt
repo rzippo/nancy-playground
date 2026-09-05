@@ -1,0 +1,13 @@
+x := 2
+y := 3
+f := bucket(2, 3)
+
+scalarOverFunction := 10 / f
+scalarChainOverFunction := 2 * 5 / f
+scalarSumChain := 1 + 2 + f
+scalarProductChain := 2 * 3 * f
+
+scalarOverFunction(10)
+scalarChainOverFunction(10)
+scalarSumChain(10)
+scalarProductChain(10)

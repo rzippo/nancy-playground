@@ -13,7 +13,7 @@ public class ScalarFunctionChainParsing
     /// <summary>
     /// The product tier, where <c>*</c> is both the number chain's own operator and the scalar-times-function one.
     /// The cases vary what surrounds it: the scalar side, the function chain after it, signs, brackets, and the number kinds a scalar can be spelled with.
-    /// <c>comp</c> rides along, the number chain never continuing over it.
+    /// <c>comp</c> and the scalar-over-curve <c>/</c> ride along, the number chain never continuing over the first and stopping before the curve on the second.
     /// </summary>
     public static List<string> ProductChains =>
     [
@@ -34,6 +34,10 @@ public class ScalarFunctionChainParsing
         "10 * -b * c",
         "-10 * b * c",
         "-1/2 * b * c",
+        "10 / b",
+        "10 / b / c",
+        "2 * 5 / b",
+        "1/2 / b",
         "10 comp b",
         "10 comp b comp c",
         "2 * 3 comp b comp c",

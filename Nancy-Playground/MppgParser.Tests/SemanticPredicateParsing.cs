@@ -379,14 +379,45 @@ public class SemanticPredicateParsing
             FindDescendant(shiftContext, typeof(GrammarMppgParser.NumberProductMulDivContext)));
     }
 
-    public static IEnumerable<object[]> InvalidNumberLeftDivisionByFunctionCases =>
+    public static IEnumerable<object[]> NumberOverFunctionCases =>
         new List<string>
         {
             "x / f",
-            "x div f",
+            "5 / f",
             "(x / y) / f",
+            "x / y / f",
         }.ToXUnitTestCases();
 
+    /// <summary>
+    /// A number over a curve is the deconvolution of the constant the number stands for, so it routes to the scalar-first alternative rather than to the scalar division of a curve.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(NumberOverFunctionCases))]
+    public void NumberOverFunctionParsesAsADeconvolution(string mppg)
+    {
+        var (context, _, errors) = ParseExpression(mppg);
+
+        Assert.Empty(errors.Select(error => error.ToString(verbose: true)));
+
+        var expressionContext = context.functionExpression();
+        Assert.NotNull(expressionContext);
+
+        Assert.NotNull(
+            FindDescendant(
+                expressionContext,
+                typeof(GrammarMppgParser.FunctionScalarDeconvolutionRevContext)));
+    }
+
+    public static IEnumerable<object[]> InvalidNumberLeftDivisionByFunctionCases =>
+        new List<string>
+        {
+            "x div f",
+            "x mod f",
+        }.ToXUnitTestCases();
+
+    /// <summary>
+    /// The integer operators have no curve on either side, so they do not reach the deconvolution above.
+    /// </summary>
     [Theory]
     [MemberData(nameof(InvalidNumberLeftDivisionByFunctionCases))]
     public void NumberLeftDivisionByFunctionDoesNotParseAsMixedFunction(string mppg)

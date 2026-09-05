@@ -253,6 +253,8 @@ public class CurveParsing
             ("f * 5", BucketFunction().Scale(new Rational(5))),
             ("5 * f", BucketFunction().Scale(new Rational(5))),
             ("f / 5", BucketFunction().Scale(new Rational(1, 5))),
+            // a scalar over a curve is the deconvolution of the constant it stands for
+            ("5 / f", ConstantFunction(new Rational(5)).Deconvolution(BucketFunction())),
             ("f + 5", BucketFunction().VerticalShift(new Rational(5))),
             ("5 + f", BucketFunction().VerticalShift(new Rational(5))),
             ("f - 5", BucketFunction().VerticalShift(new Rational(-5))),

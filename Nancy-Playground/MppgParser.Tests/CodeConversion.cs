@@ -11,6 +11,26 @@ public class CodeConversion
     /// A sign in front of a number is part of the literal, wherever the literal appears and whatever separates the two.
     /// The lexer skips the blanks, so '- 4' and '-4' are the same tokens, and both are one negative literal rather than a negation applied to a positive one.
     /// </summary>
+    /// <summary>
+    /// A scalar over a curve converts to the deconvolution of the constant the scalar stands for.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ConversionEmitsDeconvolutionForAScalarOverACurve(bool useNancyExpressions)
+    {
+        var code = Program.ToNancyCode(
+            """
+            f := ratency(1, 2)
+            g := 5 / f
+            """,
+            useNancyExpressions);
+
+        var fullCode = string.Join(Environment.NewLine, code);
+
+        Assert.Contains("Deconvolution", fullCode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
